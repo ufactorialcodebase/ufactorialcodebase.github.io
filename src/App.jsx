@@ -1,6 +1,10 @@
 import React from "react";
+import { Routes, Route, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Sparkles, Network, Wand2, Eye, Trash2, UserRound } from "lucide-react";
+
+// Import demo pages
+import { CodeEntry, TryItOut, SeeItInAction } from "./pages/demo";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -61,13 +65,22 @@ function Button({ children, variant = "primary", href = "#", className = "" }) {
   );
 }
 
-function LightButton({ children, variant = "primary", href = "#", className = "" }) {
+function LightButton({ children, variant = "primary", href = "#", to = null, className = "" }) {
   const base =
     "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-black/20";
   const styles =
     variant === "primary"
       ? "bg-black text-white hover:bg-black/90"
       : "bg-white text-black hover:bg-black/5 border border-black/10";
+
+  // Use Link for internal navigation
+  if (to) {
+    return (
+      <Link to={to} className={`${base} ${styles} ${className}`}>
+        {children}
+      </Link>
+    );
+  }
 
   return (
     <a href={href} className={`${base} ${styles} ${className}`}>
@@ -81,11 +94,7 @@ function Nav() {
     <div className="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur supports-[backdrop-filter]:bg-black/40">
       <Container className="py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Brand assets (add these files to /public):
-                - /ufactorial-mark.png  (logo only)
-                - /ufactorial-lockup.png (logo + name)
-            */}
+          <Link to="/" className="flex items-center gap-3">
             <img
               src="/ufactorial-mark.png"
               alt="Ufactorial"
@@ -96,7 +105,7 @@ function Nav() {
               alt="Ufactorial"
               className="hidden h-7 w-auto sm:block"
             />
-          </div>
+          </Link>
           <div className="hidden items-center gap-6 md:flex">
             <a className="text-sm text-white/70 hover:text-white" href="#product">
               Product
@@ -168,7 +177,6 @@ function Hero() {
                 playsInline
                 poster="/hero-poster.jpg"
               >
-                {/* Replace these with your generated loop */}
                 <source src="/hero-loop.webm" type="video/webm" />
                 <source src="/hero-loop.mp4" type="video/mp4" />
               </video>
@@ -261,7 +269,7 @@ function ThirtySeconds() {
           <div className="lg:col-span-7">
             <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
               <div className="text-xs font-semibold text-black/50">User</div>
-              <div className="mt-2 text-lg font-semibold text-black">“I hate my job.”</div>
+              <div className="mt-2 text-lg font-semibold text-black">"I hate my job."</div>
 
               <div className="mt-6 text-xs font-semibold text-black/50">HrdAI</div>
               <div className="mt-2 text-base leading-7 text-black/80">
@@ -342,12 +350,14 @@ function ExploreTeaser() {
               <ArrowRight className="h-5 w-5 text-black/50 transition group-hover:translate-x-0.5" />
             </div>
             <p className="mt-2 text-sm leading-6 text-black/70">
-              Chat with a guided profile and watch memory and actions form in real time.
+              Start fresh and watch memory and actions form in real time as you chat.
             </p>
             <div className="mt-5">
-              <LightButton href="#">Start the demo</LightButton>
+              <LightButton to="/demo">Start the demo</LightButton>
             </div>
-            <div className="mt-6 h-24 rounded-2xl border border-black/10 bg-black/[0.03]" />
+            <div className="mt-6 h-24 rounded-2xl border border-black/10 bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center">
+              <span className="text-sm text-black/40">Fresh start experience</span>
+            </div>
           </div>
 
           <div className="group rounded-3xl border border-black/10 bg-white p-7 shadow-sm transition hover:shadow-md">
@@ -356,18 +366,20 @@ function ExploreTeaser() {
               <ArrowRight className="h-5 w-5 text-black/50 transition group-hover:translate-x-0.5" />
             </div>
             <p className="mt-2 text-sm leading-6 text-black/70">
-              Choose a persona journey and see how HrdAI builds context over time.
+              Chat as Alex—a PM with rich history—and see how HrdAI surfaces relevant context.
             </p>
             <div className="mt-5">
-              <LightButton href="#" variant="secondary">
+              <LightButton to="/demo" variant="secondary">
                 View journeys
               </LightButton>
             </div>
-            <div className="mt-6 h-24 rounded-2xl border border-black/10 bg-black/[0.03]" />
+            <div className="mt-6 h-24 rounded-2xl border border-black/10 bg-gradient-to-br from-purple-50 to-amber-50 flex items-center justify-center">
+              <span className="text-sm text-black/40">Rich context experience</span>
+            </div>
           </div>
         </div>
 
-        <div className="mt-4 text-xs text-black/55">No setup required. You can reset the demo at any time.</div>
+        <div className="mt-4 text-xs text-black/55">Access code required. You can reset the demo at any time.</div>
       </Container>
     </div>
   );
@@ -421,10 +433,10 @@ function FinalCTA() {
             See what it feels like when your AI remembers.
           </div>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <LightButton href="#explore">
+            <LightButton to="/demo">
               Explore HrdAI <ArrowRight className="ml-2 h-4 w-4" />
             </LightButton>
-            <LightButton href="#" variant="secondary">
+            <LightButton href="#footer" variant="secondary">
               Request a demo
             </LightButton>
           </div>
@@ -440,7 +452,7 @@ function Footer() {
       <Container>
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <div>
-            <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3">
               <img
                 src="/ufactorial-mark.png"
                 alt="Ufactorial"
@@ -451,7 +463,7 @@ function Footer() {
                 alt="Ufactorial"
                 className="h-6 w-auto"
               />
-            </div>
+            </Link>
             <div className="mt-1 text-xs text-black/55">Demo mode: avoid sensitive personal information. Reset anytime.</div>
           </div>
           <div className="flex items-center gap-5 text-sm">
@@ -471,7 +483,8 @@ function Footer() {
   );
 }
 
-export default function HrdAIHomePage() {
+// Landing page component
+function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       <Nav />
@@ -484,5 +497,17 @@ export default function HrdAIHomePage() {
       <FinalCTA />
       <Footer />
     </div>
+  );
+}
+
+// Main App with routing
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/demo" element={<CodeEntry />} />
+      <Route path="/demo/try-it-out" element={<TryItOut />} />
+      <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
+    </Routes>
   );
 }
