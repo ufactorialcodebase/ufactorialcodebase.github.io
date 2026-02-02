@@ -114,6 +114,60 @@ export async function useAccessCode(code) {
 }
 
 /**
+ * Get initial greeting for chat session
+ * ISS-026: No welcome message for demo modes
+ * 
+ * @returns {Promise<{greeting: string, sessionId: string, toolCalls: Array, retrievalTrace: Object, error?: string}>}
+ */
+export async function getGreeting() {
+  const accessCode = getAccessCode();
+  if (!accessCode) {
+    return { error: 'No access code. Please enter your code.' };
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE}/chat/greeting`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Code': accessCode,
+      },
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        clearAccessCode();
+        return { error: 'Access code expired or invalid.' };
+      }
+      if (response.status === 429) {
+        const error = await response.json();
+        return { error: error.detail || 'Rate limit exceeded. Please wait.' };
+      }
+      const error = await response.json();
+      return { error: error.detail || 'Failed to get greeting' };
+    }
+    
+    const data = await response.json();
+    
+    // Store session ID for continuity
+    if (data.session_id) {
+      setSessionId(data.session_id);
+    }
+    
+    return {
+      greeting: data.greeting,
+      sessionId: data.session_id,
+      toolCalls: data.tool_calls || [],
+      retrievalTrace: data.retrieval_trace,
+      responseTimeMs: data.response_time_ms,
+    };
+  } catch (error) {
+    console.error('Greeting error:', error);
+    return { error: 'Network error. Please try again.' };
+  }
+}
+
+/**
  * Send a chat message (non-streaming)
  * @param {string} message - User message
  * @param {string} [sessionId] - Optional session ID

@@ -3,7 +3,7 @@ import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain } f
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanel';
-import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon } from '../../lib/api';
+import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting } from '../../lib/api';
 
 /**
  * Generate a unique message ID
@@ -26,6 +26,7 @@ export default function Chat({
 }) {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true); // ISS-026: Loading greeting
   const [showContextPanel, setShowContextPanel] = useState(() => {
     // Default to hidden on mobile, shown on desktop
     return typeof window !== 'undefined' ? window.innerWidth >= 1024 : true;
@@ -142,6 +143,44 @@ export default function Chat({
   }, []);
   
   /**
+   * Load greeting from API
+   */
+  const loadGreeting = useCallback(async () => {
+    setIsInitializing(true);
+    
+    try {
+      const result = await getGreeting();
+      
+      if (result.error) {
+        console.error('Greeting error:', result.error);
+        // Fall back to empty chat - user can still interact
+        setIsInitializing(false);
+        return;
+      }
+      
+      // Add greeting as first message
+      if (result.greeting) {
+        setMessages([{
+          id: generateId(),
+          role: 'assistant',
+          content: result.greeting,
+          toolCalls: result.toolCalls,
+          timestamp: new Date().toISOString(),
+        }]);
+        
+        // Set retrieval trace for context panel
+        if (result.retrievalTrace) {
+          setCurrentRetrievalTrace(result.retrievalTrace);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load greeting:', e);
+    } finally {
+      setIsInitializing(false);
+    }
+  }, []);
+  
+  /**
    * Handle reset conversation
    */
   const handleReset = useCallback(async () => {
@@ -167,7 +206,10 @@ export default function Chat({
     setIsLoading(false);
     setIsRetrieving(false);
     clearSessionId();
-  }, [abortFn]);
+    
+    // Load new greeting for fresh session
+    await loadGreeting();
+  }, [abortFn, loadGreeting]);
   
   /**
    * Handle exit demo
@@ -194,6 +236,11 @@ export default function Chat({
   }, [abortFn, onExit]);
   
   const isAlexMode = mode === 'alex';
+  
+  // ISS-026: Load greeting on mount
+  useEffect(() => {
+    loadGreeting();
+  }, [loadGreeting]);
   
   // Handle browser close/refresh - persist session using sendBeacon
   useEffect(() => {
@@ -298,10 +345,21 @@ export default function Chat({
           mode={mode}
         />
         
-        {/* Suggested prompts (shown when empty) */}
-        {messages.length === 0 && !isLoading && (
+        {/* Loading indicator while greeting loads */}
+        {isInitializing && (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 mx-auto mb-3"></div>
+              <p className="text-sm text-slate-500">Preparing your assistant...</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Suggested prompts - only for Alex mode to guide users through memory demo */}
+        {/* ISS-032: Try It Out should be blank slate, Alex mode needs prompts */}
+        {isAlexMode && !isLoading && !isInitializing && (
           <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-            <div className="text-xs font-medium text-slate-500 mb-3">Try saying:</div>
+            <div className="text-xs font-medium text-slate-500 mb-3">Try asking Alex about:</div>
             <div className="flex flex-wrap gap-2">
               {suggestedPrompts.map((prompt, i) => (
                 <button
@@ -319,7 +377,7 @@ export default function Chat({
         {/* Input area */}
         <MessageInput 
           onSend={handleSend} 
-          disabled={isLoading}
+          disabled={isLoading || isInitializing}
           placeholder={isAlexMode ? "Chat as Alex..." : "Type a message..."}
         />
       </div>
