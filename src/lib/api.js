@@ -460,3 +460,133 @@ export async function checkHealth() {
     return { status: 'error', error: 'Cannot connect to API' };
   }
 }
+
+// =============================================================================
+// PERSONA SESSION MANAGEMENT (for simulated demo mode)
+// =============================================================================
+
+/**
+ * Start a persona session for simulated demo
+ * @param {string} accessCode - The visitor's access code (e.g., DEMO-SIM-001)
+ * @param {string} personaId - The persona to chat as (e.g., 'alex')
+ * @returns {Promise<{success: boolean, userId?: string, error?: string}>}
+ */
+export async function startPersonaSession(accessCode, personaId) {
+  try {
+    const response = await fetch(`${API_BASE}/personas/start-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Code': accessCode,
+      },
+      body: JSON.stringify({ persona_id: personaId }),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      return { success: false, error: error.detail || 'Failed to start persona session' };
+    }
+    
+    const data = await response.json();
+    return {
+      success: true,
+      userId: data.user_id,
+      personaId: data.persona_id,
+    };
+  } catch (error) {
+    console.error('Start persona session error:', error);
+    return { success: false, error: 'Network error. Please try again.' };
+  }
+}
+
+/**
+ * End a persona session (triggers analytics update and optional snapshot reset)
+ * @param {string} accessCode - The visitor's access code
+ * @param {number} [durationMs] - Optional session duration in milliseconds
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function endPersonaSession(accessCode, durationMs = null) {
+  try {
+    const response = await fetch(`${API_BASE}/personas/end-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Code': accessCode,
+      },
+      body: JSON.stringify({ duration_ms: durationMs }),
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      return { success: false, error: error.detail || 'Failed to end persona session' };
+    }
+    
+    const data = await response.json();
+    return {
+      success: true,
+      personaId: data.persona_id,
+      sessionDurationMs: data.session_duration_ms,
+    };
+  } catch (error) {
+    console.error('End persona session error:', error);
+    return { success: false, error: 'Network error' };
+  }
+}
+
+/**
+ * End persona session using sendBeacon (for beforeunload)
+ * @param {string} accessCode - The visitor's access code
+ */
+export function endPersonaSessionBeacon(accessCode) {
+  if (!accessCode) return;
+  
+  const url = `${API_BASE}/personas/end-session`;
+  const data = JSON.stringify({
+    access_code: accessCode,  // Include in body since we can't use headers
+  });
+  
+  const blob = new Blob([data], { type: 'application/json' });
+  navigator.sendBeacon(url, blob);
+}
+
+/**
+ * List available personas
+ * @returns {Promise<{personas: Array, error?: string}>}
+ */
+export async function listPersonas() {
+  try {
+    const response = await fetch(`${API_BASE}/personas`);
+    
+    if (!response.ok) {
+      const error = await response.json();
+      return { personas: [], error: error.detail || 'Failed to fetch personas' };
+    }
+    
+    const data = await response.json();
+    return { personas: data.personas || [] };
+  } catch (error) {
+    console.error('List personas error:', error);
+    return { personas: [], error: 'Network error' };
+  }
+}
+
+/**
+ * Get a single persona's details
+ * @param {string} personaId - The persona ID
+ * @returns {Promise<{persona: Object, error?: string}>}
+ */
+export async function getPersona(personaId) {
+  try {
+    const response = await fetch(`${API_BASE}/personas/${personaId}`);
+    
+    if (!response.ok) {
+      const error = await response.json();
+      return { persona: null, error: error.detail || 'Persona not found' };
+    }
+    
+    return { persona: await response.json() };
+  } catch (error) {
+    console.error('Get persona error:', error);
+    return { persona: null, error: 'Network error' };
+  }
+}

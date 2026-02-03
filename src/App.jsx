@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Sparkles, Network, Wand2, Eye, Trash2, UserRound } from "lucide-react";
 
 // Import demo pages
-import { CodeEntry, TryItOut, SeeItInAction } from "./pages/demo";
+import { CodeEntry, TryItOut, SeeItInAction, PersonaSelection, SimulatedChat } from "./pages/demo";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -508,6 +508,8 @@ export default function App() {
       <Route path="/demo" element={<CodeEntry />} />
       <Route path="/demo/try-it-out" element={<TryItOut />} />
       <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
+      <Route path="/demo/simulated" element={<PersonaSelection />} />
+      <Route path="/demo/simulated/chat" element={<SimulatedChat />} />
     </Routes>
   );
 }

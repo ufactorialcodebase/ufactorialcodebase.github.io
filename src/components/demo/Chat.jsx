@@ -18,6 +18,7 @@ function generateId() {
 export default function Chat({ 
   mode = 'try_it_out', 
   onExit,
+  personaName = 'Alex',
   suggestedPrompts = [
     "My brother Jack lives in Boston",
     "I'm planning a dinner party next Saturday",
@@ -236,6 +237,8 @@ export default function Chat({
   }, [abortFn, onExit]);
   
   const isAlexMode = mode === 'alex';
+  const isSimulatedMode = mode === 'simulated';
+  const showHelperPrompts = isAlexMode || isSimulatedMode;
   
   // ISS-026: Load greeting on mount
   useEffect(() => {
@@ -278,20 +281,22 @@ export default function Chat({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl ${
-                isAlexMode 
+                (isAlexMode || isSimulatedMode)
                   ? 'bg-gradient-to-br from-violet-500 to-indigo-600' 
                   : 'bg-gradient-to-br from-emerald-500 to-teal-600'
-              } text-white shadow-lg shadow-${isAlexMode ? 'violet' : 'emerald'}-500/25`}>
-                {isAlexMode ? <Brain className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+              } text-white shadow-lg shadow-${(isAlexMode || isSimulatedMode) ? 'violet' : 'emerald'}-500/25`}>
+                {(isAlexMode || isSimulatedMode) ? <Brain className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
               </div>
               <div>
                 <h1 className="text-lg font-semibold text-slate-800">
-                  {isAlexMode ? 'See It In Action' : 'Try It Yourself'}
+                  {isSimulatedMode ? 'Simulated Demo' : (isAlexMode ? 'See It In Action' : 'Try It Yourself')}
                 </h1>
                 <p className="text-xs text-slate-500">
-                  {isAlexMode 
-                    ? "Chat as Alex and see rich context retrieval"
-                    : "Start fresh and watch memory build"
+                  {isSimulatedMode
+                    ? "Chat as a persona and see rich context retrieval"
+                    : (isAlexMode 
+                      ? "Chat as Alex and see rich context retrieval"
+                      : "Start fresh and watch memory build")
                   }
                 </p>
               </div>
@@ -355,11 +360,11 @@ export default function Chat({
           </div>
         )}
         
-        {/* Suggested prompts - only for Alex mode to guide users through memory demo */}
-        {/* ISS-032: Try It Out should be blank slate, Alex mode needs prompts */}
-        {isAlexMode && !isLoading && !isInitializing && (
+        {/* Suggested prompts - for Alex and Simulated modes to guide users through memory demo */}
+        {/* ISS-032: Try It Out should be blank slate, Alex/Simulated modes need prompts */}
+        {showHelperPrompts && !isLoading && !isInitializing && (
           <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-            <div className="text-xs font-medium text-slate-500 mb-3">Try asking Alex about:</div>
+            <div className="text-xs font-medium text-slate-500 mb-3">Try asking {personaName} about:</div>
             <div className="flex flex-wrap gap-2">
               {suggestedPrompts.map((prompt, i) => (
                 <button
@@ -378,7 +383,7 @@ export default function Chat({
         <MessageInput 
           onSend={handleSend} 
           disabled={isLoading || isInitializing}
-          placeholder={isAlexMode ? "Chat as Alex..." : "Type a message..."}
+          placeholder={(isAlexMode || isSimulatedMode) ? `Chat as ${personaName}...` : "Type a message..."}
         />
       </div>
       

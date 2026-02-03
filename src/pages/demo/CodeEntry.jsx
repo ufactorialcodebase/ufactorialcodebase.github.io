@@ -77,7 +77,9 @@ export default function CodeEntry() {
     setAccessCode(codeToUse);
     
     // Navigate based on mode
-    if (activation.mode === 'alex') {
+    if (activation.mode === 'simulated') {
+      navigate('/demo/simulated');
+    } else if (activation.mode === 'see_it_in_action') {
       navigate('/demo/see-it-in-action');
     } else {
       navigate('/demo/try-it-out');
@@ -237,10 +239,10 @@ export default function CodeEntry() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold">ALEX</span>
-                  <span className="text-sm font-medium text-slate-700">See It In Action</span>
+                  <span className="font-mono text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold">SIM</span>
+                  <span className="text-sm font-medium text-slate-700">Simulated Demo</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Pre-built persona - see rich context retrieval</p>
+                <p className="text-xs text-slate-500 mt-1">Chat as a persona - see rich context retrieval</p>
               </div>
             </div>
           </div>
