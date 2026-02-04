@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain } from 'lucide-react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
@@ -35,6 +35,7 @@ export default function Chat({
   const [currentRetrievalTrace, setCurrentRetrievalTrace] = useState(null);
   const [isRetrieving, setIsRetrieving] = useState(false);
   const [abortFn, setAbortFn] = useState(null);
+  const greetingLoaded = useRef(false); // Prevent double greeting from StrictMode
   
   /**
    * Handle sending a message
@@ -209,7 +210,9 @@ export default function Chat({
     clearSessionId();
     
     // Load new greeting for fresh session
+    greetingLoaded.current = false; // Allow greeting to load again
     await loadGreeting();
+    greetingLoaded.current = true; // Mark as loaded after completion
   }, [abortFn, loadGreeting]);
   
   /**
@@ -242,6 +245,10 @@ export default function Chat({
   
   // ISS-026: Load greeting on mount
   useEffect(() => {
+    // Prevent double execution from React StrictMode
+    if (greetingLoaded.current) return;
+    greetingLoaded.current = true;
+    
     loadGreeting();
   }, [loadGreeting]);
   
@@ -364,7 +371,7 @@ export default function Chat({
         {/* ISS-032: Try It Out should be blank slate, Alex/Simulated modes need prompts */}
         {showHelperPrompts && !isLoading && !isInitializing && (
           <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-            <div className="text-xs font-medium text-slate-500 mb-3">Try asking {personaName} about:</div>
+            <div className="text-xs font-medium text-slate-500 mb-3">{personaName} might say:</div>
             <div className="flex flex-wrap gap-2">
               {suggestedPrompts.map((prompt, i) => (
                 <button

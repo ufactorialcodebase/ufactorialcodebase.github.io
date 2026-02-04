@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Chat from '../../components/demo/Chat';
 import { getAccessCode, startPersonaSession, endPersonaSession } from '../../lib/api';
@@ -12,6 +12,7 @@ export default function SimulatedChat() {
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(null);
   const [personaUserId, setPersonaUserId] = useState(null);
+  const initStarted = useRef(false); // Prevent double init from StrictMode
   
   // Get persona info from session storage
   const personaId = sessionStorage.getItem('hrdai_persona_id');
@@ -19,6 +20,10 @@ export default function SimulatedChat() {
   
   // Check for access code and persona on mount
   useEffect(() => {
+    // Prevent double execution from React StrictMode
+    if (initStarted.current) return;
+    initStarted.current = true;
+    
     const accessCode = getAccessCode();
     
     if (!accessCode) {

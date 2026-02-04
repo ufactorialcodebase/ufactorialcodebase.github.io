@@ -488,6 +488,15 @@ export async function startPersonaSession(accessCode, personaId) {
     }
     
     const data = await response.json();
+    
+    // Use the backend's success value, not just HTTP status
+    if (!data.success) {
+      return {
+        success: false,
+        error: data.error || 'Failed to start persona session',
+      };
+    }
+    
     return {
       success: true,
       userId: data.user_id,
