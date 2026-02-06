@@ -5,6 +5,20 @@ import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanel';
 import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting } from '../../lib/api';
 
+// Static introductory messages for first-time users (no LLM call needed)
+// Split into two messages to avoid wall-of-text
+const INTRO_MESSAGE_1 = `Hello, I am hrdAI, your trusted AI life manager.
+
+My purpose is to establish a genuine connection with you, so that you may see me as a caring life manager, personal only to you. As we talk, I securely memorize various aspects of your life from your preferences, stories, people and their connection to you.
+
+I recall and use these memories in the right context when I respond, and also will proactively engage you on things we have discussed. Hopefully making our two way conversations feel personal and relevant to you instead of like talking to a general static AI.
+
+What we discuss, and your personal data, is not shared or distributed to any party and stays private.`;
+
+const INTRO_MESSAGE_2 = `My ultimate goal is to be of use to you and be trusted enough to do things on your behalf whether it is creating responses to people, tracking goals or todos, keeping you accountable to your goals etc. I'm not fully there yet, but as I grow, I'll talk to apps you trust so you don't have to hop between them to get by your day. Hopefully this reduces your mental load as you can rely on your trusted personal manager, who knows your preferences, people and style, to get things done!
+
+Since this is our first interaction, I would love to know more about you. Could you tell me a little about yourself? What is your name and where do you live?`;
+
 /**
  * Generate a unique message ID
  */
@@ -68,8 +82,8 @@ export default function Chat({
       },
       
       onToolCalls: (calls) => {
+        // Legacy handler (not used by current backend)
         toolCalls = calls;
-        // Update message with tool calls
         setMessages(prev => {
           const updated = [...prev];
           const lastIdx = updated.length - 1;
@@ -81,6 +95,55 @@ export default function Chat({
           }
           return updated;
         });
+      },
+      
+      onToolStart: (toolData) => {
+        // Tool execution starting - add to list with pending state
+        const newTool = {
+          id: toolData.tool_id || `tool_${Date.now()}`,
+          name: toolData.name,
+          input: toolData.input || {},
+          success: null, // Pending
+          duration_ms: null,
+        };
+        toolCalls = [...toolCalls, newTool];
+        
+        // Update message with new tool call
+        setMessages(prev => {
+          const lastMessage = prev[prev.length - 1];
+          if (lastMessage?.id === assistantId) {
+            return prev.map(m =>
+              m.id === assistantId
+                ? { ...m, toolCalls: [...toolCalls] }
+                : m
+            );
+          } else {
+            // Create assistant message with tool call
+            return [...prev, {
+              id: assistantId,
+              role: 'assistant',
+              content: '',
+              toolCalls: [...toolCalls],
+              timestamp: new Date().toISOString(),
+            }];
+          }
+        });
+      },
+      
+      onToolComplete: (toolData) => {
+        // Tool execution finished - update the tool in the list
+        toolCalls = toolCalls.map(tc =>
+          tc.name === toolData.name && tc.success === null
+            ? { ...tc, success: toolData.success, duration_ms: toolData.duration_ms, error: toolData.error }
+            : tc
+        );
+        
+        // Update message with completed tool
+        setMessages(prev => prev.map(m =>
+          m.id === assistantId
+            ? { ...m, toolCalls: [...toolCalls] }
+            : m
+        ));
       },
       
       onContent: (delta) => {
@@ -145,7 +208,30 @@ export default function Chat({
   }, []);
   
   /**
-   * Load greeting from API
+   * Load static intro messages for first-time users (try_it_out mode)
+   * No LLM call needed - instant display
+   */
+  const loadStaticIntro = useCallback(() => {
+    const now = new Date().toISOString();
+    setMessages([
+      {
+        id: generateId(),
+        role: 'assistant',
+        content: INTRO_MESSAGE_1,
+        timestamp: now,
+      },
+      {
+        id: generateId(),
+        role: 'assistant',
+        content: INTRO_MESSAGE_2,
+        timestamp: now,
+      },
+    ]);
+    setIsInitializing(false);
+  }, []);
+
+  /**
+   * Load greeting from API (for returning users and persona modes)
    */
   const loadGreeting = useCallback(async () => {
     setIsInitializing(true);
@@ -209,9 +295,13 @@ export default function Chat({
     setIsRetrieving(false);
     clearSessionId();
     
-    // Load new greeting for fresh session
+    // Load new greeting/intro for fresh session
     greetingLoaded.current = false; // Allow greeting to load again
-    await loadGreeting();
+    if (mode === 'try_it_out') {
+      loadStaticIntro();
+    } else {
+      await loadGreeting();
+    }
     greetingLoaded.current = true; // Mark as loaded after completion
   }, [abortFn, loadGreeting]);
   
@@ -244,13 +334,24 @@ export default function Chat({
   const showHelperPrompts = isAlexMode || isSimulatedMode;
   
   // ISS-026: Load greeting on mount
+  // Try It Out mode: static intro for new users, LLM greeting for returning users
+  // Alex/Simulated modes: always LLM greeting (returning user context)
   useEffect(() => {
     // Prevent double execution from React StrictMode
     if (greetingLoaded.current) return;
     greetingLoaded.current = true;
     
-    loadGreeting();
-  }, [loadGreeting]);
+    if (mode === 'try_it_out') {
+      // For try_it_out, we check if this is a new or returning user
+      // by attempting to get a greeting - if it comes back with a greeting
+      // that means the backend found user data (returning user)
+      // For now: always show static intro for try_it_out
+      // TODO: Detect returning user and call loadGreeting() instead
+      loadStaticIntro();
+    } else {
+      loadGreeting();
+    }
+  }, [loadGreeting, loadStaticIntro, mode]);
   
   // Handle browser close/refresh - persist session using sendBeacon
   useEffect(() => {

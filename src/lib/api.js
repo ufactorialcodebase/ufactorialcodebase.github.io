@@ -307,7 +307,16 @@ export function sendMessageStream(message, callbacks) {
                 callbacks.onRetrievalTrace?.(parsed);
                 break;
               case 'tool_calls':
+                // Legacy event type (not used by current backend)
                 callbacks.onToolCalls?.(parsed.tool_calls || []);
+                break;
+              case 'tool_start':
+                // Tool execution starting - add to list
+                callbacks.onToolStart?.(parsed);
+                break;
+              case 'tool_complete':
+                // Tool execution finished - update card with result
+                callbacks.onToolComplete?.(parsed);
                 break;
               case 'content':
                 callbacks.onContent?.(parsed.delta || '');
