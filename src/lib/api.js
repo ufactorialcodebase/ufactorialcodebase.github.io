@@ -156,6 +156,7 @@ export async function getGreeting() {
     
     return {
       greeting: data.greeting,
+      messages: data.messages || [data.greeting],
       sessionId: data.session_id,
       toolCalls: data.tool_calls || [],
       retrievalTrace: data.retrieval_trace,

@@ -5,20 +5,6 @@ import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanel';
 import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting } from '../../lib/api';
 
-// Static introductory messages for first-time users (no LLM call needed)
-// Split into two messages to avoid wall-of-text
-const INTRO_MESSAGE_1 = `Hello, I am hrdAI, your trusted AI life manager.
-
-My purpose is to establish a genuine connection with you, so that you may see me as a caring life manager, personal only to you. As we talk, I securely memorize various aspects of your life from your preferences, stories, people and their connection to you.
-
-I recall and use these memories in the right context when I respond, and also will proactively engage you on things we have discussed. Hopefully making our two way conversations feel personal and relevant to you instead of like talking to a general static AI.
-
-What we discuss, and your personal data, is not shared or distributed to any party and stays private.`;
-
-const INTRO_MESSAGE_2 = `My ultimate goal is to be of use to you and be trusted enough to do things on your behalf whether it is creating responses to people, tracking goals or todos, keeping you accountable to your goals etc. I'm not fully there yet, but as I grow, I'll talk to apps you trust so you don't have to hop between them to get by your day. Hopefully this reduces your mental load as you can rely on your trusted personal manager, who knows your preferences, people and style, to get things done!
-
-Since this is our first interaction, I would love to know more about you. Could you tell me a little about yourself? What is your name and where do you live?`;
-
 /**
  * Generate a unique message ID
  */
@@ -207,31 +193,14 @@ export default function Chat({
     setAbortFn(() => abort);
   }, []);
   
-  /**
-   * Load static intro messages for first-time users (try_it_out mode)
-   * No LLM call needed - instant display
-   */
-  const loadStaticIntro = useCallback(() => {
-    const now = new Date().toISOString();
-    setMessages([
-      {
-        id: generateId(),
-        role: 'assistant',
-        content: INTRO_MESSAGE_1,
-        timestamp: now,
-      },
-      {
-        id: generateId(),
-        role: 'assistant',
-        content: INTRO_MESSAGE_2,
-        timestamp: now,
-      },
-    ]);
-    setIsInitializing(false);
-  }, []);
+  // loadStaticIntro removed - all modes now use loadGreeting()
+  // Backend handles new vs returning user logic and returns appropriate messages
 
   /**
-   * Load greeting from API (for returning users and persona modes)
+   * Load greeting from API (all modes)
+   * Backend returns `messages` array - each becomes a separate chat bubble.
+   * New users: [static intro, LLM opener]  
+   * Returning users: [personalized greeting]
    */
   const loadGreeting = useCallback(async () => {
     setIsInitializing(true);
@@ -246,15 +215,23 @@ export default function Chat({
         return;
       }
       
-      // Add greeting as first message
-      if (result.greeting) {
-        setMessages([{
-          id: generateId(),
-          role: 'assistant',
-          content: result.greeting,
-          toolCalls: result.toolCalls,
-          timestamp: new Date().toISOString(),
-        }]);
+      // Use messages array for multi-bubble display, fall back to single greeting
+      const greetingMessages = result.messages && result.messages.length > 0
+        ? result.messages
+        : result.greeting ? [result.greeting] : [];
+      
+      if (greetingMessages.length > 0) {
+        const now = new Date().toISOString();
+        setMessages(
+          greetingMessages.map((text, i) => ({
+            id: generateId(),
+            role: 'assistant',
+            content: text,
+            // Attach tool calls to last message only
+            toolCalls: i === greetingMessages.length - 1 ? result.toolCalls : [],
+            timestamp: now,
+          }))
+        );
         
         // Set retrieval trace for context panel
         if (result.retrievalTrace) {
@@ -295,14 +272,10 @@ export default function Chat({
     setIsRetrieving(false);
     clearSessionId();
     
-    // Load new greeting/intro for fresh session
-    greetingLoaded.current = false; // Allow greeting to load again
-    if (mode === 'try_it_out') {
-      loadStaticIntro();
-    } else {
-      await loadGreeting();
-    }
-    greetingLoaded.current = true; // Mark as loaded after completion
+    // Load new greeting for fresh session (all modes use backend)
+    greetingLoaded.current = false;
+    await loadGreeting();
+    greetingLoaded.current = true;
   }, [abortFn, loadGreeting]);
   
   /**
@@ -334,24 +307,16 @@ export default function Chat({
   const showHelperPrompts = isAlexMode || isSimulatedMode;
   
   // ISS-026: Load greeting on mount
-  // Try It Out mode: static intro for new users, LLM greeting for returning users
-  // Alex/Simulated modes: always LLM greeting (returning user context)
+  // All modes call backend - it handles new vs returning user logic:
+  //   New users: [static intro, LLM-generated opener] (two bubbles)
+  //   Returning users: [personalized greeting] (one bubble)
   useEffect(() => {
     // Prevent double execution from React StrictMode
     if (greetingLoaded.current) return;
     greetingLoaded.current = true;
     
-    if (mode === 'try_it_out') {
-      // For try_it_out, we check if this is a new or returning user
-      // by attempting to get a greeting - if it comes back with a greeting
-      // that means the backend found user data (returning user)
-      // For now: always show static intro for try_it_out
-      // TODO: Detect returning user and call loadGreeting() instead
-      loadStaticIntro();
-    } else {
-      loadGreeting();
-    }
-  }, [loadGreeting, loadStaticIntro, mode]);
+    loadGreeting();
+  }, [loadGreeting]);
   
   // Handle browser close/refresh - persist session using sendBeacon
   useEffect(() => {
