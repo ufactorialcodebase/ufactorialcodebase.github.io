@@ -636,11 +636,16 @@ function Footer() {
               © {new Date().getFullYear()} uFactorial. All rights reserved.
             </div>
           </div>
-          <div className="flex items-center gap-5 text-sm">
-            <a className="text-black/70 hover:text-black" href="#trust">Trust</a>
-            <a className="text-black/70 hover:text-black" href="#how">How it works</a>
-            <a className="text-black/70 hover:text-black" href="#explore">Explore</a>
-            <a className="text-black/70 hover:text-black" href="#waitlist">Waitlist</a>
+          <div className="flex flex-col items-start gap-4 sm:items-end">
+            <div className="flex items-center gap-5 text-sm">
+              <a className="text-black/70 hover:text-black" href="#trust">Trust</a>
+              <a className="text-black/70 hover:text-black" href="#how">How it works</a>
+              <a className="text-black/70 hover:text-black" href="#explore">Explore</a>
+              <a className="text-black/70 hover:text-black" href="#waitlist">Waitlist</a>
+            </div>
+            <a href="mailto:contactus@ufactorial.com" className="text-sm text-black/50 hover:text-black transition">
+              contactus@ufactorial.com
+            </a>
           </div>
         </div>
       </Container>
