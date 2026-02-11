@@ -5,6 +5,7 @@ import { ArrowRight, ShieldCheck, Sparkles, Network, Wand2, Eye, Trash2, UserRou
 
 // Import demo pages
 import { CodeEntry, TryItOut, SeeItInAction, PersonaSelection, SimulatedChat } from "./pages/demo";
+import LandingPageV2 from "./pages/LandingPageV2";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -144,21 +145,21 @@ function Hero() {
             className="lg:col-span-5"
           >
             <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
-              HrdAI is a personal AI manager that remembers—and acts.
+              HridAI is a personal AI manager that remembers—and acts.
             </h1>
             <p className="mt-5 text-base leading-7 text-white/70 sm:text-lg">
-              HrdAI turns conversations into structured memory and next-best actions across your goals,
+              HridAI turns conversations into structured memory and next-best actions across your goals,
               relationships, and life admin.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button href="#explore">
-                Explore HrdAI <ArrowRight className="ml-2 h-4 w-4" />
+                Explore HridAI <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button variant="secondary" href="#footer">
-                Request a demo
+              <Button variant="secondary" href="#waitlist">
+                Join the waitlist
               </Button>
             </div>
-            <div className="mt-4 text-xs text-white/55">Guided demo. No login required.</div>
+            <div className="mt-4 text-xs text-white/55">Early access. Access Code required. Join the waitlist to receive it.</div>
           </motion.div>
 
           <motion.div
@@ -216,7 +217,7 @@ function Pillars() {
         <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
           <SectionHeader
             title="Built for real life, not just chat."
-            body="HrdAI is designed to keep context durable and useful—and to reduce the mental overhead of keeping track of everything."
+            body="HridAI is designed to keep context durable and useful—and to reduce the mental overhead of keeping track of everything."
           />
         </motion.div>
 
@@ -271,7 +272,7 @@ function ThirtySeconds() {
               <div className="text-xs font-semibold text-black/50">User</div>
               <div className="mt-2 text-lg font-semibold text-black">"I hate my job."</div>
 
-              <div className="mt-6 text-xs font-semibold text-black/50">HrdAI</div>
+              <div className="mt-6 text-xs font-semibold text-black/50">HridAI</div>
               <div className="mt-2 text-base leading-7 text-black/80">
                 That sounds exhausting. Want to take one small step today—follow up with your recruiter and open a
                 resume task?
@@ -305,7 +306,7 @@ function HowItWorks() {
     <div id="how" className="bg-white py-14 sm:py-18">
       <Container>
         <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
-          <SectionHeader title="How HrdAI works" />
+          <SectionHeader title="How HridAI works" />
         </motion.div>
 
         <div className="mt-10 grid gap-4 lg:grid-cols-3">
@@ -340,7 +341,7 @@ function ExploreTeaser() {
     <div id="explore" className="bg-white py-14 sm:py-18">
       <Container>
         <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
-          <SectionHeader title="Explore HrdAI" body="Choose a guided demo, or watch curated journeys." />
+          <SectionHeader title="Explore HridAI" body="Early access. Access Code required. Join the waitlist to receive it." />
         </motion.div>
 
         <div className="mt-10 grid gap-4 lg:grid-cols-2">
@@ -353,7 +354,7 @@ function ExploreTeaser() {
               Start fresh and watch memory and actions form in real time as you chat.
             </p>
             <div className="mt-5">
-              <LightButton to="/demo">Start the demo</LightButton>
+              <LightButton to="/demo">Try HridAI</LightButton>
             </div>
             <div className="mt-6 h-24 rounded-2xl border border-black/10 bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center">
               <span className="text-sm text-black/40">Fresh start experience</span>
@@ -362,15 +363,15 @@ function ExploreTeaser() {
 
           <div className="group rounded-3xl border border-black/10 bg-white p-7 shadow-sm transition hover:shadow-md">
             <div className="flex items-center justify-between">
-              <div className="text-lg font-semibold text-black">See it in action</div>
+              <div className="text-lg font-semibold text-black">Simulated demo</div>
               <ArrowRight className="h-5 w-5 text-black/50 transition group-hover:translate-x-0.5" />
             </div>
             <p className="mt-2 text-sm leading-6 text-black/70">
-              Chat as Alex—a PM with rich history—and see how HrdAI surfaces relevant context.
+              We had AI create three unique personas and simulated conversations between them and their HridAI. Choose a persona and chat as them to see it in action.
             </p>
             <div className="mt-5">
               <LightButton to="/demo" variant="secondary">
-                View journeys
+                See it in action
               </LightButton>
             </div>
             <div className="mt-6 h-24 rounded-2xl border border-black/10 bg-gradient-to-br from-purple-50 to-amber-50 flex items-center justify-center">
@@ -434,12 +435,95 @@ function FinalCTA() {
           </div>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <LightButton to="/demo">
-              Explore HrdAI <ArrowRight className="ml-2 h-4 w-4" />
+              Explore HridAI <ArrowRight className="ml-2 h-4 w-4" />
             </LightButton>
-            <LightButton href="#footer" variant="secondary">
-              Request a demo
+            <LightButton href="#waitlist" variant="secondary">
+              Join the waitlist
             </LightButton>
           </div>
+        </div>
+      </Container>
+    </div>
+  );
+}
+
+function Waitlist() {
+  const iframeRef = React.useRef(null);
+
+  React.useEffect(() => {
+    // Detect user context for hidden fields
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    const referrer = document.referrer || "";
+    const utmSource = new URLSearchParams(window.location.search).get("utm_source") || "";
+
+    // Parse device type from user agent
+    const ua = navigator.userAgent || "";
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+    const isTablet = /iPad|Android(?!.*Mobi)/i.test(ua);
+    const device = isTablet ? "tablet" : isMobile ? "mobile" : "desktop";
+
+    const params = new URLSearchParams({
+      alignLeft: "1",
+      hideTitle: "1",
+      transparentBackground: "1",
+      dynamicHeight: "1",
+      timezone: tz,
+      referrer: referrer,
+      utm_source: utmSource,
+      device: device,
+    });
+    const embedUrl = `https://tally.so/embed/Pd5BOQ?${params.toString()}`;
+
+    if (iframeRef.current) {
+      iframeRef.current.dataset.tallySrc = embedUrl;
+    }
+
+    // Load Tally widget script
+    const widgetUrl = "https://tally.so/widgets/embed.js";
+
+    const load = () => {
+      if (typeof window.Tally !== "undefined") {
+        window.Tally.loadEmbeds();
+      } else {
+        document.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((el) => {
+          el.src = el.dataset.tallySrc;
+        });
+      }
+    };
+
+    if (typeof window.Tally !== "undefined") {
+      load();
+    } else if (!document.querySelector(`script[src="${widgetUrl}"]`)) {
+      const s = document.createElement("script");
+      s.src = widgetUrl;
+      s.onload = load;
+      s.onerror = load;
+      document.body.appendChild(s);
+    }
+  }, []);
+
+  return (
+    <div id="waitlist" className="bg-white py-14 sm:py-18">
+      <Container>
+        <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
+          <SectionHeader
+            title="Join the waitlist"
+            body="We're onboarding in small groups to keep the experience personal. Early members help shape the product."
+          />
+        </motion.div>
+
+        <div className="mt-10 max-w-xl">
+          <iframe
+            ref={iframeRef}
+            data-tally-src="https://tally.so/embed/Pd5BOQ?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+            loading="lazy"
+            width="100%"
+            height="400"
+            frameBorder="0"
+            marginHeight="0"
+            marginWidth="0"
+            title="Join the waitlist"
+          />
         </div>
       </Container>
     </div>
@@ -495,6 +579,7 @@ function LandingPage() {
       <ExploreTeaser />
       <TrustStrip />
       <FinalCTA />
+      <Waitlist />
       <Footer />
     </div>
   );
@@ -504,7 +589,8 @@ function LandingPage() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<LandingPageV2 />} />
+      <Route path="/v1" element={<LandingPage />} />
       <Route path="/demo" element={<CodeEntry />} />
       <Route path="/demo/try-it-out" element={<TryItOut />} />
       <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />

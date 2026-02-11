@@ -231,7 +231,7 @@ export default function PersonaSelection() {
               Choose a Persona
             </h1>
             <p className="mt-3 text-slate-600 max-w-lg mx-auto">
-              Experience how HrdAI surfaces relevant context from past conversations. 
+              Experience how HridAI surfaces relevant context from past conversations. 
               Select a persona to chat as them and see their memories in action.
             </p>
           </motion.div>

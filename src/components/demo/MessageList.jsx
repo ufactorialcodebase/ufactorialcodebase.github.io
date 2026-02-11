@@ -110,8 +110,8 @@ export default function MessageList({ messages, isLoading, mode = 'try_it_out' }
           </h3>
           <p className="text-slate-500 text-sm mb-6">
             {isAlexMode 
-              ? "Ask about your schedule, family, or ongoing projects. Watch how HrdAI remembers everything."
-              : "Share something about yourself and watch HrdAI build memory in real-time."
+              ? "Ask about your schedule, family, or ongoing projects. Watch how HridAI remembers everything."
+              : "Share something about yourself and watch HridAI build memory in real-time."
             }
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-600 text-sm">

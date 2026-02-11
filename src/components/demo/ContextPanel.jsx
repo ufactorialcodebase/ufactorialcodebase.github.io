@@ -395,7 +395,7 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
           </div>
           <div>
             <span className="text-sm font-semibold text-slate-800">Context Retrieved</span>
-            <p className="text-xs text-slate-400">What HrdAI knows about this</p>
+            <p className="text-xs text-slate-400">What HridAI knows about this</p>
           </div>
         </div>
       </div>
@@ -573,7 +573,7 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
           </div>
           <p className="text-sm font-medium text-slate-500">Building Memory</p>
           <p className="text-xs text-slate-400 mt-1">
-            As you share more, HrdAI will<br />remember and connect the dots
+            As you share more, HridAI will<br />remember and connect the dots
           </p>
         </div>
       )}

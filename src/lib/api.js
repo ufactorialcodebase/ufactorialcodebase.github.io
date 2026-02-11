@@ -1,5 +1,5 @@
 /**
- * API Client for HrdAI Demo
+ * API Client for HridAI Demo
  * 
  * Handles:
  * - Access code validation

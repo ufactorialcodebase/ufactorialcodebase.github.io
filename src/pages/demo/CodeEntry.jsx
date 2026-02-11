@@ -126,7 +126,7 @@ export default function CodeEntry() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 mb-5 shadow-xl shadow-slate-900/20">
             <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-800">Welcome to HrdAI</h1>
+          <h1 className="text-3xl font-bold text-slate-800">Welcome to HridAI</h1>
           <p className="mt-3 text-slate-500">
             Enter your access code, then choose how you'd like to explore
           </p>
@@ -140,7 +140,7 @@ export default function CodeEntry() {
               <div>
                 <div className="font-semibold text-amber-800">API Unavailable</div>
                 <div className="text-sm text-amber-700 mt-1">
-                  Cannot connect to the HrdAI API. Please try again later.
+                  Cannot connect to the HridAI API. Please try again later.
                 </div>
               </div>
             </div>
@@ -267,7 +267,7 @@ export default function CodeEntry() {
             </button>
             
             <p className={`text-sm ${isButtonDisabled ? 'text-slate-400' : 'text-slate-600'}`}>
-              Begin with a blank slate. Chat naturally and watch as HrdAI builds memory of your 
+              Begin with a blank slate. Chat naturally and watch as HridAI builds memory of your 
               conversations in real-time. Perfect for understanding how the system learns.
             </p>
           </div>
@@ -321,7 +321,7 @@ export default function CodeEntry() {
             </button>
             
             <p className={`text-sm ${isButtonDisabled ? 'text-slate-400' : 'text-slate-600'}`}>
-              Step into a persona's shoes and chat as them. See how HrdAI surfaces relevant 
+              Step into a persona's shoes and chat as them. See how HridAI surfaces relevant 
               context about their family, work, and goals without being asked.
             </p>
           </div>
@@ -331,8 +331,8 @@ export default function CodeEntry() {
         <motion.div variants={fadeUp} className="mt-8 text-center">
           <p className="text-sm text-slate-500">
             Don't have a code?{' '}
-            <a href="/#footer" className="text-slate-700 font-medium underline underline-offset-2 hover:no-underline">
-              Request access
+            <a href="/#waitlist" className="text-slate-700 font-medium underline underline-offset-2 hover:no-underline">
+              Join the waitlist
             </a>
           </p>
           <p className="text-xs text-slate-400 mt-2">
