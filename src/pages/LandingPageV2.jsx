@@ -552,13 +552,16 @@ function FounderStory() {
             </h2>
             <div className="mt-6 space-y-4 text-base leading-7 text-black/70">
               <p>
-                I'm Pratik — 15 years in data and AI, including building and deploying AI products for Fortune 100 clients. When our first child was born, life became unmanageable. Everything in my head, everything falling through. Every AI made me re-explain my situation from scratch. Every productivity app needed me to organize first.
+                I'm Pratik — 15 years in data and AI, including building and deploying AI products for Fortune 100 clients. When our first child was born, life became unmanageable. Everything in my head, everything falling through. Every AI made me re-explain my situation from scratch. Every productivity app needed me to organize first. And most importantly, I didn't trust any app to use my data for me.
               </p>
               <p>
-                So I built HridAI — the thing I wished existed. When my wife used an early prototype during her postpartum experience and said it was the first time something actually understood her, I knew this had to exist for everyone.
+                So, with a bold vision, I built HridAI — an app that puts you at the center of its intelligence. When my wife used an early prototype during her postpartum experience and said it was the first time something actually understood her, I knew this had to exist for everyone.
               </p>
               <p className="text-black/90 font-medium">
                 The gap isn't intelligence. It's trust — an AI that remembers your life, shows you what it knows, and earns the right to help manage it.
+              </p>
+              <p>
+                We are just getting started and have a long way to go. My hope is that HridAI inspires a new generation of AI built directly for the benefit of the individual, the community, and humanity at large — slowly and surely building trust in a movement of AI for good.
               </p>
             </div>
           </div>
