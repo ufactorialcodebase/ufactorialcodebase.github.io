@@ -11,6 +11,7 @@ import {
   Zap,
   Quote,
   User,
+  Users,
 } from "lucide-react";
 
 const fadeUp = {
@@ -196,6 +197,10 @@ const scenarios = [
       { icon: "network", color: "text-blue-500", title: "Context connected", text: "3 work stress related stories detected recently" },
       { icon: "zap", color: "text-amber-500", title: "Pending Todos", text: "Recruiter follow-up · Resume refresh" },
     ],
+    people: [
+      { name: "John", relation: "Colleague" },
+      { name: "Project Lira", relation: "Project" },
+    ],
   },
   {
     label: "Family",
@@ -207,16 +212,26 @@ const scenarios = [
       { icon: "network", color: "text-blue-500", title: "Context connected", text: "Sarah's restaurant preference linked to your shared interests" },
       { icon: "zap", color: "text-amber-500", title: "Pending Todos", text: "Plan date night · Reply to mom" },
     ],
+    people: [
+      { name: "Samantha", relation: "Mom" },
+      { name: "Max", relation: "Child (6 mo)" },
+      { name: "Judy", relation: "Child (3 yr)" },
+      { name: "Sarah", relation: "Wife" },
+    ],
   },
   {
     label: "Health",
     emoji: "🏃",
     user: "I've been so tired lately.",
-    ai: "I've noticed you've mentioned feeling tired three times this month. Your sleep has been shorter since you started the new project two weeks ago. Want me to set a reminder to wind down by 10pm on work nights? Also, you skipped your last two Thursday runs — sometimes those help your energy.",
+    ai: "I've noticed you've mentioned feeling tired three times this month. Your sleep has been shorter since you started the new project two weeks ago. Is Max still waking up every 3 hours? I can set a reminder to wind down by 10pm on work nights, so you get a few hours before the first time Max is up.",
     context: [
       { icon: "brain", color: "text-violet-500", title: "Memory recalled", text: '"Feeling exhausted" — mentioned 3 times in 2 weeks' },
       { icon: "network", color: "text-blue-500", title: "Context connected", text: "Sleep pattern shift correlates with new project start" },
-      { icon: "zap", color: "text-amber-500", title: "Pending Todos", text: "Thursday run · 10pm wind-down reminder" },
+      { icon: "zap", color: "text-amber-500", title: "Pending Todos", text: "10pm wind-down reminder" },
+    ],
+    people: [
+      { name: "Project Lira", relation: "Project" },
+      { name: "Max", relation: "Child (6 mo)" },
     ],
   },
 ];
@@ -316,6 +331,22 @@ function Example() {
                     </div>
                   );
                 })}
+
+                <div className="rounded-2xl border border-black/10 bg-white p-4">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-3.5 w-3.5 text-emerald-500" />
+                    <div className="text-xs font-semibold text-black/50">Related people / entities</div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {s.people.map((p, i) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 rounded-full bg-black/[0.04] px-3 py-1 text-xs text-black/70">
+                        <span className="font-medium text-black/90">{p.name}</span>
+                        <span className="text-black/40">·</span>
+                        <span>{p.relation}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
