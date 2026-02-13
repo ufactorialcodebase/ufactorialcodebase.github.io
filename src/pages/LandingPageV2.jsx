@@ -561,7 +561,7 @@ function FounderStory() {
                 The gap isn't intelligence. It's trust — an AI that remembers your life, shows you what it knows, and earns the right to help manage it.
               </p>
               <p>
-                We are just getting started and have a long way to go. My hope is that HridAI inspires a new generation of AI built directly for the benefit of the individual, the community, and humanity at large — slowly and surely building trust in a movement of AI for good.
+                We are just getting started and have a long way to go. That's why I founded uFactorial — because it starts with you. Our mission is to build AI that unlocks your potential, not just answers your questions. I hope HridAI inspires a new generation of AI built for the benefit of the individual, the community, and humanity at large — slowly and surely building trust in a movement of AI for good.
               </p>
             </div>
           </div>
