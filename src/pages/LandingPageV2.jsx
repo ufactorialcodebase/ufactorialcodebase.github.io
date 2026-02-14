@@ -470,7 +470,7 @@ function Explore() {
               <ArrowRight className="h-5 w-5 text-black/50 transition group-hover:translate-x-0.5" />
             </div>
             <p className="mt-2 text-sm leading-6 text-black/70">
-              Start fresh and watch memory and actions form in real time as you chat.
+              Start a new conversation or pick up where you left off. HridAI remembers you across sessions, so come back anytime and see how it grows with you.
             </p>
             <div className="mt-5">
               <LightButton to="/demo">Try HridAI</LightButton>

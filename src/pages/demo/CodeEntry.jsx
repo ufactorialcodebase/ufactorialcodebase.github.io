@@ -260,15 +260,14 @@ export default function CodeEntry() {
                 </>
               ) : (
                 <>
-                  Start Fresh
+                  Chat with your HridAI
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
             
             <p className={`text-sm ${isButtonDisabled ? 'text-slate-400' : 'text-slate-600'}`}>
-              Begin with a blank slate. Chat naturally and watch as HridAI builds memory of your 
-              conversations in real-time. Perfect for understanding how the system learns.
+              Start a new conversation or pick up where you left off. HridAI remembers you across sessions, so come back anytime and see how it grows with you.
             </p>
           </div>
           
