@@ -7,6 +7,8 @@
  * - Context retrieval
  */
 
+import { supabase } from './supabase'
+
 // API base URL - change for production
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -50,6 +52,26 @@ export function setSessionId(sessionId) {
  */
 export function clearSessionId() {
   sessionStorage.removeItem('hrdai_session_id');
+}
+
+/**
+ * Get auth headers. JWT takes priority over access code.
+ * @returns {Promise<Object>} Headers object with auth
+ */
+async function getAuthHeaders() {
+  // Try JWT first
+  if (supabase) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.access_token) {
+      return { 'Authorization': `Bearer ${session.access_token}` }
+    }
+  }
+  // Fall back to access code
+  const code = getAccessCode()
+  if (code) {
+    return { 'X-Access-Code': code }
+  }
+  return {}
 }
 
 /**
@@ -120,24 +142,23 @@ export async function useAccessCode(code) {
  * @returns {Promise<{greeting: string, sessionId: string, toolCalls: Array, retrievalTrace: Object, error?: string}>}
  */
 export async function getGreeting() {
-  const accessCode = getAccessCode();
-  if (!accessCode) {
-    return { error: 'No access code. Please enter your code.' };
+  const authHeaders = await getAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { error: 'Not authenticated. Please sign in or enter an access code.' };
   }
-  
+
   try {
     const response = await fetch(`${API_BASE}/chat/greeting`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Access-Code': accessCode,
+        ...authHeaders,
       },
     });
-    
+
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        clearAccessCode();
-        return { error: 'Access code expired or invalid.' };
+        return { error: 'Authentication failed. Please sign in again or re-enter your access code.' };
       }
       if (response.status === 429) {
         const error = await response.json();
@@ -175,17 +196,17 @@ export async function getGreeting() {
  * @returns {Promise<{response: string, sessionId: string, toolCalls: Array, retrievalTrace: Object, error?: string}>}
  */
 export async function sendMessage(message, sessionId = null) {
-  const accessCode = getAccessCode();
-  if (!accessCode) {
-    return { error: 'No access code. Please enter your code.' };
+  const authHeaders = await getAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { error: 'Not authenticated. Please sign in or enter an access code.' };
   }
-  
+
   try {
     const response = await fetch(`${API_BASE}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Access-Code': accessCode,
+        ...authHeaders,
       },
       body: JSON.stringify({
         message,
@@ -195,8 +216,7 @@ export async function sendMessage(message, sessionId = null) {
     
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        clearAccessCode();
-        return { error: 'Access code expired or invalid. Please re-enter.' };
+        return { error: 'Authentication failed. Please sign in again or re-enter your access code.' };
       }
       const error = await response.json();
       return { error: error.detail || 'Chat request failed' };
@@ -234,21 +254,21 @@ export async function sendMessage(message, sessionId = null) {
  * @returns {Function} Abort function to cancel the stream
  */
 export function sendMessageStream(message, callbacks) {
-  const accessCode = getAccessCode();
-  if (!accessCode) {
-    callbacks.onError?.('No access code. Please enter your code.');
-    return () => {};
-  }
-  
   const controller = new AbortController();
-  
+
   (async () => {
+    const authHeaders = await getAuthHeaders();
+    if (Object.keys(authHeaders).length === 0) {
+      callbacks.onError?.('Not authenticated. Please sign in or enter an access code.');
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Access-Code': accessCode,
+          ...authHeaders,
         },
         body: JSON.stringify({
           message,
@@ -259,8 +279,7 @@ export function sendMessageStream(message, callbacks) {
       
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
-          clearAccessCode();
-          callbacks.onError?.('Access code expired or invalid. Please re-enter.');
+          callbacks.onError?.('Authentication failed. Please sign in again or re-enter your access code.');
           return;
         }
         const error = await response.json();
@@ -357,22 +376,22 @@ export function sendMessageStream(message, callbacks) {
  * @returns {Promise<Object>}
  */
 export async function getContext(message = null) {
-  const accessCode = getAccessCode();
-  if (!accessCode) {
-    return { error: 'No access code' };
+  const authHeaders = await getAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { error: 'Not authenticated. Please sign in or enter an access code.' };
   }
-  
+
   try {
     const params = new URLSearchParams();
     if (message) {
       params.set('message', message);
     }
-    
+
     const url = `${API_BASE}/context${params.toString() ? '?' + params.toString() : ''}`;
-    
+
     const response = await fetch(url, {
       headers: {
-        'X-Access-Code': accessCode,
+        ...authHeaders,
       },
     });
     
@@ -395,17 +414,17 @@ export async function getContext(message = null) {
  * @returns {Promise<{success: boolean, episodesCreated?: number, error?: string}>}
  */
 export async function endSession(sessionId, persist = true) {
-  const accessCode = getAccessCode();
-  if (!accessCode || !sessionId) {
-    return { success: false, error: 'Missing access code or session ID' };
+  const authHeaders = await getAuthHeaders();
+  if (Object.keys(authHeaders).length === 0 || !sessionId) {
+    return { success: false, error: 'Missing authentication or session ID' };
   }
-  
+
   try {
     const response = await fetch(`${API_BASE}/chat/end`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Access-Code': accessCode,
+        ...authHeaders,
       },
       body: JSON.stringify({
         session_id: sessionId,
