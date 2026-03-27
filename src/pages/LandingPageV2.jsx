@@ -473,7 +473,7 @@ function Explore() {
               Start a new conversation or pick up where you left off. HridAI remembers you across sessions, so come back anytime and see how it grows with you.
             </p>
             <div className="mt-5">
-              <LightButton to="/demo">Try HridAI</LightButton>
+              <LightButton to="/signup">Try HridAI</LightButton>
             </div>
           </div>
 
