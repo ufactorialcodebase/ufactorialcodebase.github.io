@@ -4,6 +4,8 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanel';
 import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting } from '../../lib/api';
+import { signOut } from '../../lib/auth';
+import { useAuth } from '../../hooks/useAuth';
 
 /**
  * Generate a unique message ID
@@ -25,6 +27,8 @@ export default function Chat({
     "I need to call mom about the holiday plans",
   ],
 }) {
+  const { session } = useAuth();
+  const isAuthUser = !!session;
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true); // ISS-026: Loading greeting
@@ -283,7 +287,7 @@ export default function Chat({
    */
   const handleExit = useCallback(async () => {
     abortFn?.();
-    
+
     // End session on backend to trigger persistence
     const sessionId = getSessionId();
     if (sessionId) {
@@ -296,11 +300,19 @@ export default function Chat({
         console.warn('Failed to end session:', e);
       }
     }
-    
+
     clearSessionId();
     clearAccessCode();
+
+    // Sign out of Supabase Auth for authenticated users
+    if (isAuthUser) {
+      try { await signOut(); } catch (e) { console.warn('Sign out error:', e); }
+      window.location.href = '/signup';
+      return;
+    }
+
     onExit?.();
-  }, [abortFn, onExit]);
+  }, [abortFn, onExit, isAuthUser]);
   
   const isAlexMode = mode === 'alex';
   const isSimulatedMode = mode === 'simulated';
@@ -403,14 +415,14 @@ export default function Chat({
                 )}
               </button>
               
-              {/* Exit button */}
+              {/* Exit / Sign off button */}
               <button
                 onClick={handleExit}
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-150"
-                title="Exit demo"
+                title={isAuthUser ? "Sign off & exit" : "Exit demo"}
               >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Exit</span>
+                <span className="hidden sm:inline">{isAuthUser ? 'Sign off & Exit' : 'Exit'}</span>
               </button>
             </div>
           </div>

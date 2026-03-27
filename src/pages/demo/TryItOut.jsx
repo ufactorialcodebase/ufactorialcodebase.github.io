@@ -16,10 +16,10 @@ export default function TryItOut() {
   useEffect(() => {
     if (!initialized) return;
     if (!getAccessCode() && !session) {
-      navigate('/demo');
+      navigate('/signup');
     }
   }, [navigate, session, initialized]);
-  
+
   const handleExit = () => {
     navigate('/demo');
   };
