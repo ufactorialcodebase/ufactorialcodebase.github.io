@@ -10,6 +10,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import { AuthProvider } from "./hooks/useAuth.jsx";
 import AuthGuard from "./components/AuthGuard";
 
@@ -607,6 +609,8 @@ export default function App() {
         <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
         <Route path="/demo/simulated" element={<PersonaSelection />} />
         <Route path="/demo/simulated/chat" element={<AuthGuard><SimulatedChat /></AuthGuard>} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
       </Routes>
     </AuthProvider>
   );
