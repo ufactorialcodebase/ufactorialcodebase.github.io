@@ -11,6 +11,7 @@ import Signup from "./pages/Signup";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
 import { AuthProvider } from "./hooks/useAuth.jsx";
+import AuthGuard from "./components/AuthGuard";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -600,12 +601,12 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
         <Route path="/demo" element={<CodeEntry />} />
-        <Route path="/demo/try-it-out" element={<TryItOut />} />
+        <Route path="/demo/try-it-out" element={<AuthGuard><TryItOut /></AuthGuard>} />
         <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
         <Route path="/demo/simulated" element={<PersonaSelection />} />
-        <Route path="/demo/simulated/chat" element={<SimulatedChat />} />
+        <Route path="/demo/simulated/chat" element={<AuthGuard><SimulatedChat /></AuthGuard>} />
       </Routes>
     </AuthProvider>
   );
