@@ -150,7 +150,8 @@ function LoginForm({ onSuccess }) {
     setLoading(true)
     try {
       await signIn(email, password)
-      onSuccess()
+      // Use full page navigation so auth state re-initializes from Supabase session
+      window.location.href = '/demo/try-it-out'
     } catch (err) {
       setError(err.message || 'Invalid email or password.')
     } finally {
