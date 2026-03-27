@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Loader2, AlertCircle, KeyRound, Sparkles, Brain, CheckCircle, User } from 'lucide-react';
+import { ArrowRight, Loader2, AlertCircle, KeyRound, Sparkles, Brain, CheckCircle } from 'lucide-react';
 import { validateAccessCode, useAccessCode, setAccessCode, checkHealth } from '../../lib/api';
 
 const fadeUp = {
@@ -128,7 +128,7 @@ export default function CodeEntry() {
           </div>
           <h1 className="text-3xl font-bold text-slate-800">Welcome to HridAI</h1>
           <p className="mt-3 text-slate-500">
-            Enter your access code, then choose how you'd like to explore
+            Enter your access code to explore the simulated demo
           </p>
         </motion.div>
         
@@ -216,74 +216,20 @@ export default function CodeEntry() {
           )}
         </motion.div>
         
-        {/* Two Mode Cards */}
-        <motion.div variants={fadeUp} className="grid md:grid-cols-2 gap-6">
-          {/* Try It Yourself */}
+        {/* Single Mode Card — Simulated Demo only */}
+        <motion.div variants={fadeUp} className="max-w-md mx-auto">
           <div className={`
             p-6 rounded-2xl border-2 transition-all duration-200
-            ${isButtonDisabled 
-              ? 'border-slate-200 bg-slate-50/50' 
-              : 'border-emerald-200 bg-white hover:border-emerald-300 hover:shadow-lg'
-            }
-          `}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`
-                p-2.5 rounded-xl shadow-lg
-                ${isButtonDisabled 
-                  ? 'bg-slate-300 shadow-slate-300/25' 
-                  : 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/25'
-                }
-              `}>
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <h2 className={`text-lg font-bold ${isButtonDisabled ? 'text-slate-400' : 'text-slate-800'}`}>
-                Try It Yourself
-              </h2>
-            </div>
-            
-            <button
-              onClick={() => handleEnterMode('try')}
-              disabled={isButtonDisabled}
-              className={`
-                w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl
-                font-semibold transition-all duration-150 mb-4
-                ${isButtonDisabled
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-emerald-500/25'
-                }
-              `}
-            >
-              {isEntering && enteringMode === 'try' ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Entering...
-                </>
-              ) : (
-                <>
-                  Chat with your HridAI
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-            
-            <p className={`text-sm ${isButtonDisabled ? 'text-slate-400' : 'text-slate-600'}`}>
-              Start a new conversation or pick up where you left off. HridAI remembers you across sessions, so come back anytime and see how it grows with you.
-            </p>
-          </div>
-          
-          {/* Simulated Demo */}
-          <div className={`
-            p-6 rounded-2xl border-2 transition-all duration-200
-            ${isButtonDisabled 
-              ? 'border-slate-200 bg-slate-50/50' 
+            ${isButtonDisabled
+              ? 'border-slate-200 bg-slate-50/50'
               : 'border-violet-200 bg-white hover:border-violet-300 hover:shadow-lg'
             }
           `}>
             <div className="flex items-center gap-3 mb-4">
               <div className={`
                 p-2.5 rounded-xl shadow-lg
-                ${isButtonDisabled 
-                  ? 'bg-slate-300 shadow-slate-300/25' 
+                ${isButtonDisabled
+                  ? 'bg-slate-300 shadow-slate-300/25'
                   : 'bg-gradient-to-br from-violet-500 to-indigo-600 shadow-violet-500/25'
                 }
               `}>
@@ -293,7 +239,7 @@ export default function CodeEntry() {
                 Simulated Demo
               </h2>
             </div>
-            
+
             <button
               onClick={() => handleEnterMode('simulated')}
               disabled={isButtonDisabled}
@@ -318,24 +264,26 @@ export default function CodeEntry() {
                 </>
               )}
             </button>
-            
+
             <p className={`text-sm ${isButtonDisabled ? 'text-slate-400' : 'text-slate-600'}`}>
-              Step into a persona's shoes and chat as them. See how HridAI surfaces relevant 
+              Step into a persona's shoes and chat as them. See how HridAI surfaces relevant
               context about their family, work, and goals without being asked.
             </p>
           </div>
         </motion.div>
         
-        {/* Help text */}
         <motion.div variants={fadeUp} className="mt-8 text-center">
           <p className="text-sm text-slate-500">
+            Want your own HridAI?{' '}
+            <a href="/signup" className="text-slate-700 font-medium underline underline-offset-2 hover:no-underline">
+              Sign up with an access code
+            </a>
+          </p>
+          <p className="text-xs text-slate-400 mt-2">
             Don't have a code?{' '}
             <a href="/#waitlist" className="text-slate-700 font-medium underline underline-offset-2 hover:no-underline">
               Join the waitlist
             </a>
-          </p>
-          <p className="text-xs text-slate-400 mt-2">
-            One code works for both modes. Sessions are limited per code.
           </p>
         </motion.div>
       </motion.div>
