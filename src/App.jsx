@@ -6,6 +6,10 @@ import { ArrowRight, ShieldCheck, Sparkles, Network, Wand2, Eye, Trash2, UserRou
 // Import demo pages
 import { CodeEntry, TryItOut, SeeItInAction, PersonaSelection, SimulatedChat } from "./pages/demo";
 import LandingPageV2 from "./pages/LandingPageV2";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import AuthCallback from "./pages/AuthCallback";
+import { AuthProvider } from "./hooks/useAuth.jsx";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -588,14 +592,19 @@ function LandingPage() {
 // Main App with routing
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LandingPageV2 />} />
-      <Route path="/v1" element={<LandingPage />} />
-      <Route path="/demo" element={<CodeEntry />} />
-      <Route path="/demo/try-it-out" element={<TryItOut />} />
-      <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
-      <Route path="/demo/simulated" element={<PersonaSelection />} />
-      <Route path="/demo/simulated/chat" element={<SimulatedChat />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<LandingPageV2 />} />
+        <Route path="/v1" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/demo" element={<CodeEntry />} />
+        <Route path="/demo/try-it-out" element={<TryItOut />} />
+        <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
+        <Route path="/demo/simulated" element={<PersonaSelection />} />
+        <Route path="/demo/simulated/chat" element={<SimulatedChat />} />
+      </Routes>
+    </AuthProvider>
   );
 }
