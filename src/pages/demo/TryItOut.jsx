@@ -2,19 +2,23 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Chat from '../../components/demo/Chat';
 import { getAccessCode } from '../../lib/api';
+import { useAuth } from '../../hooks/useAuth';
 
 /**
  * "Try It Out" demo page - fresh start experience
+ * Accessible via access code OR authenticated Supabase session
  */
 export default function TryItOut() {
   const navigate = useNavigate();
-  
-  // Check for access code on mount
+  const { session, initialized } = useAuth();
+
+  // Check for access code or auth session on mount
   useEffect(() => {
-    if (!getAccessCode()) {
+    if (!initialized) return;
+    if (!getAccessCode() && !session) {
       navigate('/demo');
     }
-  }, [navigate]);
+  }, [navigate, session, initialized]);
   
   const handleExit = () => {
     navigate('/demo');
