@@ -9,6 +9,7 @@ import LandingPageV2 from "./pages/LandingPageV2";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AuthCallback from "./pages/AuthCallback";
+import Profile from "./pages/Profile";
 import { AuthProvider } from "./hooks/useAuth.jsx";
 
 const fadeUp = {
@@ -599,6 +600,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/demo" element={<CodeEntry />} />
         <Route path="/demo/try-it-out" element={<TryItOut />} />
         <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
