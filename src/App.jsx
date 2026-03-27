@@ -1,13 +1,12 @@
 import React from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Sparkles, Network, Wand2, Eye, Trash2, UserRound } from "lucide-react";
 
 // Import demo pages
 import { CodeEntry, TryItOut, SeeItInAction, PersonaSelection, SimulatedChat } from "./pages/demo";
 import LandingPageV2 from "./pages/LandingPageV2";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import AuthPage from "./pages/Signup";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
 import Privacy from "./pages/Privacy";
@@ -600,8 +599,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPageV2 />} />
         <Route path="/v1" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Navigate to="/signup" replace />} />
+        <Route path="/signup" element={<AuthPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
         <Route path="/demo" element={<CodeEntry />} />
