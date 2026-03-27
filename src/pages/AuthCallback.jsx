@@ -9,7 +9,7 @@ export default function AuthCallback() {
     const handle = async () => {
       if (!supabase) { navigate('/login'); return }
       const { data: { session } } = await supabase.auth.getSession()
-      navigate(session ? '/demo/try-it-out' : '/login')
+      navigate(session ? '/hridai' : '/signup')
     }
     handle()
   }, [navigate])

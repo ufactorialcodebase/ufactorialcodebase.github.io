@@ -105,7 +105,7 @@ export default function CodeEntry() {
     setAccessCode(codeToUse);
     
     if (mode === 'try') {
-      navigate('/demo/try-it-out');
+      navigate('/hridai');
     } else {
       navigate('/demo/simulated');
     }

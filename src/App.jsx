@@ -604,7 +604,8 @@ export default function App() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
         <Route path="/demo" element={<CodeEntry />} />
-        <Route path="/demo/try-it-out" element={<AuthGuard><TryItOut /></AuthGuard>} />
+        <Route path="/hridai" element={<AuthGuard><TryItOut /></AuthGuard>} />
+              <Route path="/demo/try-it-out" element={<Navigate to="/hridai" replace />} />
         <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
         <Route path="/demo/simulated" element={<PersonaSelection />} />
         <Route path="/demo/simulated/chat" element={<AuthGuard><SimulatedChat /></AuthGuard>} />
