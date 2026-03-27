@@ -1,9 +1,17 @@
 import { supabase } from './supabase'
 
-export async function signUp(email, password) {
-  if (!supabase) throw new Error('Auth not configured')
-  const { data, error } = await supabase.auth.signUp({ email, password })
-  if (error) throw error
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+
+export async function signUp(email, password, accessCode) {
+  const res = await fetch(`${API_BASE}/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, access_code: accessCode }),
+  })
+  const data = await res.json()
+  if (!data.success) {
+    throw new Error(data.message || 'Signup failed.')
+  }
   return data
 }
 
