@@ -7,9 +7,17 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handle = async () => {
-      if (!supabase) { navigate('/login'); return }
+      if (!supabase) { navigate('/signup'); return }
       const { data: { session } } = await supabase.auth.getSession()
-      navigate(session ? '/hridai' : '/signup')
+      if (!session) { navigate('/signup'); return }
+
+      // Password recovery flow → send to profile to set new password
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('type') === 'recovery') {
+        navigate('/profile')
+      } else {
+        navigate('/hridai')
+      }
     }
     handle()
   }, [navigate])
