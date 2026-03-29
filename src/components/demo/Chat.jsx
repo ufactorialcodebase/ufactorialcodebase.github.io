@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain } from 'lucide-react';
+import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Moon, Sun } from 'lucide-react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanel';
 import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting } from '../../lib/api';
 import { signOut } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../hooks/useTheme';
 
 /**
  * Generate a unique message ID
@@ -29,6 +30,7 @@ export default function Chat({
 }) {
   const { session } = useAuth();
   const isAuthUser = !!session;
+  const { isDark, toggle: toggleTheme } = useTheme();
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true); // ISS-026: Loading greeting
@@ -358,11 +360,11 @@ export default function Chat({
   }, [showContextPanel]);
   
   return (
-    <div className="h-screen flex bg-gradient-to-br from-slate-50 to-white">
+    <div className="h-screen flex bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex-shrink-0 bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
+        <header className="flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl ${
@@ -373,10 +375,10 @@ export default function Chat({
                 {(isAlexMode || isSimulatedMode) ? <Brain className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-slate-800">
+                <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
                   {isSimulatedMode ? 'Simulated Demo' : (isAlexMode ? 'See It In Action' : 'Try It Yourself')}
                 </h1>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {isSimulatedMode
                     ? "Chat as a persona and see rich context retrieval"
                     : (isAlexMode 
@@ -388,10 +390,19 @@ export default function Chat({
             </div>
             
             <div className="flex items-center gap-2">
+              {/* Theme toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-150"
+                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+
               {/* Reset button */}
               <button
                 onClick={handleReset}
-                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-100 transition-all duration-150"
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-150"
                 title="Reset conversation"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -402,9 +413,9 @@ export default function Chat({
               <button
                 onClick={() => setShowContextPanel(!showContextPanel)}
                 className={`p-2.5 rounded-full transition-all duration-150 ${
-                  showContextPanel 
-                    ? 'bg-slate-100 text-slate-700' 
-                    : 'text-slate-500 hover:bg-slate-100'
+                  showContextPanel
+                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
                 title={showContextPanel ? 'Hide context panel' : 'Show context panel'}
               >
@@ -418,7 +429,7 @@ export default function Chat({
               {/* Exit / Sign off button */}
               <button
                 onClick={handleExit}
-                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-150"
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-600 dark:hover:text-red-400 transition-all duration-150"
                 title={isAuthUser ? "Sign off & exit" : "Exit demo"}
               >
                 <LogOut className="w-4 h-4" />
@@ -439,8 +450,8 @@ export default function Chat({
         {isInitializing && (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 mx-auto mb-3"></div>
-              <p className="text-sm text-slate-500">Preparing your assistant...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-500 mx-auto mb-3"></div>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Preparing your assistant...</p>
             </div>
           </div>
         )}
@@ -449,13 +460,13 @@ export default function Chat({
         {/* ISS-032: Try It Out should be blank slate, Alex/Simulated modes need prompts */}
         {showHelperPrompts && !isLoading && !isInitializing && (
           <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-            <div className="text-xs font-medium text-slate-500 mb-3">{personaName} might say:</div>
+            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">{personaName} might say:</div>
             <div className="flex flex-wrap gap-2">
               {suggestedPrompts.map((prompt, i) => (
                 <button
                   key={i}
                   onClick={() => handleSend(prompt)}
-                  className="px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:shadow-sm transition-all duration-150"
+                  className="px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 hover:shadow-sm transition-all duration-150"
                 >
                   "{prompt}"
                 </button>
@@ -476,8 +487,8 @@ export default function Chat({
       {showContextPanel && (
         <>
           {/* Mobile overlay backdrop */}
-          <div 
-            className="lg:hidden fixed inset-0 bg-black/20 z-40"
+          <div
+            className="lg:hidden fixed inset-0 bg-black/20 dark:bg-black/50 z-40"
             onClick={() => setShowContextPanel(false)}
           />
           
@@ -485,15 +496,15 @@ export default function Chat({
           <aside className={`
             fixed lg:relative inset-y-0 right-0 z-50
             w-[85vw] sm:w-96 lg:w-96
-            border-l border-slate-200 bg-white
-            shadow-2xl lg:shadow-lg lg:shadow-slate-200/50
+            border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900
+            shadow-2xl lg:shadow-lg lg:shadow-slate-200/50 dark:lg:shadow-slate-950/50
             transform transition-transform duration-300 ease-out
             ${showContextPanel ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
           `}>
             {/* Mobile close button */}
             <button
               onClick={() => setShowContextPanel(false)}
-              className="lg:hidden absolute top-4 left-4 p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors z-10"
+              className="lg:hidden absolute top-4 left-4 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors z-10"
             >
               <PanelRightClose className="w-5 h-5" />
             </button>

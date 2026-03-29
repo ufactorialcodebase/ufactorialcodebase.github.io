@@ -16,7 +16,7 @@ function MessageBubble({ message, mode }) {
       <div className={`
         flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm
         ${isUser 
-          ? 'bg-gradient-to-br from-slate-700 to-slate-900 text-white' 
+          ? 'bg-gradient-to-br from-slate-700 to-slate-900 dark:from-slate-500 dark:to-slate-700 text-white'
           : mode === 'alex'
             ? 'bg-gradient-to-br from-violet-500 to-indigo-600 text-white'
             : 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
@@ -46,10 +46,10 @@ function MessageBubble({ message, mode }) {
         <div className={`
           inline-block px-4 py-3 
           ${isUser 
-            ? 'bg-gradient-to-br from-slate-700 to-slate-900 text-white rounded-2xl rounded-br-md shadow-lg shadow-slate-900/10' 
+            ? 'bg-gradient-to-br from-slate-700 to-slate-900 text-white rounded-2xl rounded-br-md shadow-lg shadow-slate-900/10'
             : isError
-              ? 'bg-red-50 text-red-800 border border-red-200 rounded-2xl rounded-bl-md'
-              : 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-bl-md shadow-sm'
+              ? 'bg-red-50 dark:bg-red-950 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800 rounded-2xl rounded-bl-md'
+              : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-2xl rounded-bl-md shadow-sm'
           }
         `}>
           {message.content ? (
@@ -57,7 +57,7 @@ function MessageBubble({ message, mode }) {
               {message.content}
             </div>
           ) : isStreaming ? (
-            <span className="flex items-center gap-2 text-slate-400">
+            <span className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
               <Loader2 className="w-4 h-4 animate-spin" />
               <span className="text-sm">Thinking...</span>
             </span>
@@ -66,7 +66,7 @@ function MessageBubble({ message, mode }) {
         
         {/* Timestamp or status */}
         {message.responseTimeMs && !isUser && (
-          <div className="mt-1.5 text-xs text-slate-400 flex items-center gap-1">
+          <div className="mt-1.5 text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             {(message.responseTimeMs / 1000).toFixed(1)}s response
           </div>
@@ -105,16 +105,16 @@ export default function MessageList({ messages, isLoading, mode = 'try_it_out' }
               <Sparkles className="w-10 h-10 text-white" />
             )}
           </div>
-          <h3 className="text-lg font-semibold text-slate-800 mb-2">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">
             {isAlexMode ? "Welcome back, Alex!" : "Start a Conversation"}
           </h3>
-          <p className="text-slate-500 text-sm mb-6">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
             {isAlexMode 
               ? "Ask about your schedule, family, or ongoing projects. Watch how HridAI remembers everything."
               : "Share something about yourself and watch HridAI build memory in real-time."
             }
           </p>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-600 text-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             Ready to chat
           </div>
