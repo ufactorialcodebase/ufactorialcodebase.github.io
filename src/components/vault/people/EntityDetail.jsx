@@ -1,23 +1,7 @@
 // src/components/vault/people/EntityDetail.jsx
 import { useState } from 'react'
 import InlineEdit from '../InlineEdit'
-
-const TYPE_COLORS = {
-  person: 'var(--entity-person)',
-  organization: 'var(--entity-org)',
-  location: 'var(--entity-place)',
-}
-
-function getTypeColor(type) {
-  return TYPE_COLORS[type] || 'var(--entity-other)'
-}
-
-function getTypeLabel(type) {
-  if (type === 'organization') return 'Org'
-  if (type === 'location') return 'Place'
-  if (type === 'person') return 'Person'
-  return type || 'Other'
-}
+import { getTypeColor, getTypeLabel } from './entity-utils'
 
 export default function EntityDetail({ entity, onUpdate, onDelete }) {
   const [addingAlias, setAddingAlias] = useState(false)

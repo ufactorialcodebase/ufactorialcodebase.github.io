@@ -7,6 +7,8 @@ export default function InlineEdit({ value, onSave, placeholder = 'Empty', class
   const [draft, setDraft] = useState(value)
   const inputRef = useRef(null)
 
+  useEffect(() => { setDraft(value) }, [value])
+
   useEffect(() => {
     if (editing && inputRef.current) {
       inputRef.current.focus()

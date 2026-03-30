@@ -49,7 +49,7 @@ export default function AuthPage() {
         {tab === 'signup' ? (
           <SignupForm onSuccess={() => setTab('login')} />
         ) : (
-          <LoginForm onSuccess={() => navigate('/hridai')} />
+          <LoginForm onSuccess={() => { window.location.href = '/vault/chat' }} />
         )}
 
         <p className="mt-6 text-center text-xs text-white/30">
@@ -151,7 +151,7 @@ function LoginForm({ onSuccess }) {
     try {
       await signIn(email, password)
       // Use full page navigation so auth state re-initializes from Supabase session
-      window.location.href = '/vault/chat'
+      onSuccess()
     } catch (err) {
       setError(err.message || 'Invalid email or password.')
     } finally {

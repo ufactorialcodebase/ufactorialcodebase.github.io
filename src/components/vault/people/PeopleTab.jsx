@@ -12,6 +12,7 @@ export default function PeopleTab() {
   const [entities, setEntities] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState(null)
   const [selectedEntity, setSelectedEntity] = useState(null)
@@ -34,7 +35,7 @@ export default function PeopleTab() {
     }
     fetchEntities()
     return () => { cancelled = true }
-  }, [])
+  }, [retryCount])
 
   const filtered = useMemo(() => {
     let list = Array.isArray(entities) ? entities : []
@@ -98,7 +99,7 @@ export default function PeopleTab() {
         <div className="text-center py-12">
           <p className="text-red-400 text-sm">{error}</p>
           <button
-            onClick={() => { setLoading(true); setError(null); location.reload() }}
+            onClick={() => { setLoading(true); setError(null); setRetryCount(c => c + 1) }}
             className="mt-3 text-[var(--accent-indigo)] text-sm hover:underline"
           >
             Retry

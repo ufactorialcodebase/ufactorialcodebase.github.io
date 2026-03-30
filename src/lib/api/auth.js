@@ -1,4 +1,5 @@
 // src/lib/api/auth.js
+import { BASE_URL } from '../api-client.js'
 
 export function getAccessCode() {
   return sessionStorage.getItem('hrdai_access_code')
@@ -25,7 +26,6 @@ export function clearSessionId() {
 }
 
 export async function validateAccessCode(code) {
-  const { BASE_URL } = await import('../api-client.js')
   try {
     const response = await fetch(`${BASE_URL}/auth/validate`, {
       method: 'POST',
@@ -45,7 +45,6 @@ export async function validateAccessCode(code) {
 }
 
 export async function useAccessCode(code) {
-  const { BASE_URL } = await import('../api-client.js')
   try {
     const response = await fetch(`${BASE_URL}/auth/use`, {
       method: 'POST',

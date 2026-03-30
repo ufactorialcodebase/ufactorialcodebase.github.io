@@ -14,6 +14,7 @@ export default function SelfTab() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [wellnessVisible, setWellnessVisible] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
   // TODO: Replace with real tier check once GET /api/vault/stats returns tier
   const readOnly = false
 
@@ -29,7 +30,7 @@ export default function SelfTab() {
     }
     fetchSelf()
     return () => { cancelled = true }
-  }, [])
+  }, [retryCount])
 
   const handleUpdate = async (aspect, updatedItems) => {
     try {
@@ -59,7 +60,7 @@ export default function SelfTab() {
         <PageHeader title="Your Self" subtitle="Everything HridAI knows about you" />
         <div className="text-center py-12">
           <p className="text-red-400 text-sm">{error}</p>
-          <button onClick={() => { setLoading(true); setError(null); location.reload() }}
+          <button onClick={() => { setLoading(true); setError(null); setRetryCount(c => c + 1) }}
             className="mt-3 text-[var(--accent-indigo)] text-sm hover:underline">Retry</button>
         </div>
       </div>
@@ -73,7 +74,8 @@ export default function SelfTab() {
   const wellness = data?.wellness || []
   const keyDates = data?.key_dates || []
 
-  const isEmpty = !data || (goals.length === 0 && preferences.length === 0 && hobbies.length === 0)
+  const hasInfo = info && (info.name || info.location || info.occupation)
+  const isEmpty = !data || (!hasInfo && goals.length === 0 && preferences.length === 0 && hobbies.length === 0)
 
   if (isEmpty) {
     return (

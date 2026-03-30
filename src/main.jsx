@@ -2,6 +2,7 @@ import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom'
 import './index.css'
+import './styles/vault-theme.css'
 import App from './App.jsx'
 
 /**

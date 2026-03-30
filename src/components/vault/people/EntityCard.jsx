@@ -1,21 +1,5 @@
 // src/components/vault/people/EntityCard.jsx
-
-const TYPE_COLORS = {
-  person: 'var(--entity-person)',
-  organization: 'var(--entity-org)',
-  location: 'var(--entity-place)',
-}
-
-function getTypeColor(type) {
-  return TYPE_COLORS[type] || 'var(--entity-other)'
-}
-
-function getTypeLabel(type) {
-  if (type === 'organization') return 'Org'
-  if (type === 'location') return 'Place'
-  if (type === 'person') return 'Person'
-  return type || 'Other'
-}
+import { getTypeColor, getTypeLabel } from './entity-utils'
 
 function timeAgo(dateStr) {
   if (!dateStr) return null
