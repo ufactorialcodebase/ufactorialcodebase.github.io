@@ -13,6 +13,9 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import { AuthProvider } from "./hooks/useAuth.jsx";
 import AuthGuard from "./components/AuthGuard";
+import VaultLayout from "./components/vault/VaultLayout";
+import ChatTab from "./components/vault/ChatTab";
+import PlaceholderTab from "./components/vault/PlaceholderTab";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -611,6 +614,17 @@ export default function App() {
         <Route path="/demo/simulated/chat" element={<AuthGuard><SimulatedChat /></AuthGuard>} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/vault" element={<AuthGuard><VaultLayout /></AuthGuard>}>
+          <Route path="chat" element={<ChatTab />} />
+          <Route path="self" element={<PlaceholderTab />} />
+          <Route path="people" element={<PlaceholderTab />} />
+          <Route path="topics" element={<PlaceholderTab />} />
+          <Route path="todos" element={<PlaceholderTab />} />
+          <Route path="dates" element={<PlaceholderTab />} />
+          <Route path="artifacts" element={<PlaceholderTab />} />
+          <Route path="lists" element={<PlaceholderTab />} />
+          <Route path="world" element={<PlaceholderTab />} />
+        </Route>
       </Routes>
     </AuthProvider>
   );

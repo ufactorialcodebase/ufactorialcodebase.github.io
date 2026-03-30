@@ -151,7 +151,7 @@ function LoginForm({ onSuccess }) {
     try {
       await signIn(email, password)
       // Use full page navigation so auth state re-initializes from Supabase session
-      window.location.href = '/hridai'
+      window.location.href = '/vault/chat'
     } catch (err) {
       setError(err.message || 'Invalid email or password.')
     } finally {
