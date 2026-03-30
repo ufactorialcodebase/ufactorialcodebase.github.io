@@ -21,6 +21,42 @@ export async function getAuthHeaders() {
 }
 
 /**
+ * Create a Stripe Checkout session and return the URL.
+ * @returns {Promise<string>} Checkout URL to redirect to
+ */
+export async function createCheckoutSession() {
+  const authHeaders = await getAuthHeaders()
+  const res = await fetch(`${BASE_URL}/payments/checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders },
+  })
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.detail || 'Failed to create checkout session')
+  }
+  const data = await res.json()
+  return data.checkout_url
+}
+
+/**
+ * Create a Stripe Customer Portal session and return the URL.
+ * @returns {Promise<string>} Portal URL to redirect to
+ */
+export async function createPortalSession() {
+  const authHeaders = await getAuthHeaders()
+  const res = await fetch(`${BASE_URL}/payments/portal`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders },
+  })
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.detail || 'Failed to create portal session')
+  }
+  const data = await res.json()
+  return data.portal_url
+}
+
+/**
  * Fetch wrapper that adds auth headers and handles common errors.
  * @param {string} path - API path (e.g., '/vault/self')
  * @param {Object} options - fetch options (method, body, headers, etc.)
