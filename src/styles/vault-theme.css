@@ -1,0 +1,62 @@
+/* src/styles/vault-theme.css */
+
+.vault-theme {
+  /* Backgrounds */
+  --bg-primary: #0f1729;
+  --bg-secondary: #1a2238;
+  --bg-tertiary: #243049;
+
+  /* Text */
+  --text-primary: #e8edf5;
+  --text-secondary: #8b95a8;
+  --text-tertiary: #5a6478;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-active: rgba(255, 255, 255, 0.15);
+
+  /* Accents */
+  --accent-indigo: #6366f1;
+  --accent-rose: #ec4899;
+  --accent-teal: #14b8a6;
+  --accent-amber: #f59e0b;
+  --accent-violet: #8b5cf6;
+  --accent-cyan: #06b6d4;
+
+  /* Entity type colors */
+  --entity-person: #60a5fa;
+  --entity-org: #34d399;
+  --entity-place: #fb923c;
+  --entity-other: #c084fc;
+
+  /* Status colors */
+  --status-active: #60a5fa;
+  --status-resolved: #34d399;
+  --status-dormant: #8b95a8;
+  --status-idle: #8b95a8;
+}
+
+/* Vault-scoped scrollbar */
+.vault-theme ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vault-theme ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.vault-theme ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Vault font scoping */
+.vault-theme {
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+.vault-theme h1,
+.vault-theme h2,
+.vault-theme h3 {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
