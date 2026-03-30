@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { signUp, signIn, signInWithMagicLink, resetPassword } from '../lib/auth'
-import { validateAccessCode } from '../lib/api'
+import { validateAccessCode } from '../lib/api/index.js'
 
 export default function AuthPage() {
   const navigate = useNavigate()

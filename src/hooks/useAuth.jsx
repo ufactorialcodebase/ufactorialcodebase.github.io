@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { supabase } from '../lib/supabase'
 import { getSession } from '../lib/auth'
-import { getAccessCode } from '../lib/api'
+import { getAccessCode } from '../lib/api/index.js'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 

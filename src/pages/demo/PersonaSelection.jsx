@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Brain, User, Sparkles, Lock, ChevronRight } from 'lucide-react';
-import { getAccessCode } from '../../lib/api';
+import { getAccessCode } from '../../lib/api/index.js';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },

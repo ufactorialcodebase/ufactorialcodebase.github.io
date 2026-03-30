@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Chat from '../../components/demo/Chat';
-import { getAccessCode } from '../../lib/api';
+import { getAccessCode } from '../../lib/api/index.js';
 import { useAuth } from '../../hooks/useAuth';
 
 /**

@@ -3,7 +3,7 @@ import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Mo
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanel';
-import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting } from '../../lib/api';
+import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting } from '../../lib/api/index.js';
 import { signOut } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';

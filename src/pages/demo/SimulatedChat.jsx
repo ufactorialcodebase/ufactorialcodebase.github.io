@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Chat from '../../components/demo/Chat';
-import { getAccessCode, startPersonaSession, endPersonaSession } from '../../lib/api';
+import { getAccessCode, startPersonaSession, endPersonaSession } from '../../lib/api/index.js';
 
 /**
  * Simulated demo chat page
