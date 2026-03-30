@@ -16,6 +16,8 @@ import AuthGuard from "./components/AuthGuard";
 import VaultLayout from "./components/vault/VaultLayout";
 import ChatTab from "./components/vault/ChatTab";
 import PlaceholderTab from "./components/vault/PlaceholderTab";
+import SelfTab from "./components/vault/self/SelfTab";
+import PeopleTab from "./components/vault/people/PeopleTab";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -616,8 +618,8 @@ export default function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/vault" element={<AuthGuard><VaultLayout /></AuthGuard>}>
           <Route path="chat" element={<ChatTab />} />
-          <Route path="self" element={<PlaceholderTab />} />
-          <Route path="people" element={<PlaceholderTab />} />
+          <Route path="self" element={<SelfTab />} />
+          <Route path="people" element={<PeopleTab />} />
           <Route path="topics" element={<PlaceholderTab />} />
           <Route path="todos" element={<PlaceholderTab />} />
           <Route path="dates" element={<PlaceholderTab />} />
