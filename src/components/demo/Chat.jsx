@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Moon, Sun } from 'lucide-react';
+import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Moon, Sun, Zap } from 'lucide-react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanel';
-import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting } from '../../lib/api/index.js';
+import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting, createCheckoutSession } from '../../lib/api/index.js';
 import { signOut } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
@@ -28,8 +28,9 @@ export default function Chat({
     "I need to call mom about the holiday plans",
   ],
 }) {
-  const { session } = useAuth();
+  const { session, plan, conversationsRemaining } = useAuth();
   const isAuthUser = !!session;
+  const isFreeUser = isAuthUser && plan === 'free';
   const { isDark, toggle: toggleTheme } = useTheme();
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -316,6 +317,15 @@ export default function Chat({
     onExit?.();
   }, [abortFn, onExit, isAuthUser]);
   
+  const handleUpgrade = async () => {
+    try {
+      const url = await createCheckoutSession()
+      window.location.href = url
+    } catch (err) {
+      console.error('Checkout error:', err)
+    }
+  }
+
   const isAlexMode = mode === 'alex';
   const isSimulatedMode = mode === 'simulated';
   const showHelperPrompts = isAlexMode || isSimulatedMode;
@@ -399,6 +409,18 @@ export default function Chat({
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
+              {/* Upgrade button — free tier only */}
+              {isFreeUser && (
+                <button
+                  onClick={handleUpgrade}
+                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-150"
+                  title="Upgrade to Premium"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span className="hidden sm:inline">Upgrade</span>
+                </button>
+              )}
+
               {/* Reset button */}
               <button
                 onClick={handleReset}
@@ -475,10 +497,25 @@ export default function Chat({
           </div>
         )}
         
+        {/* Conversation limit banner */}
+        {isFreeUser && conversationsRemaining <= 0 && (
+          <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800 text-center">
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              You've used all 5 conversations this week. Resets Monday.
+            </p>
+            <button
+              onClick={handleUpgrade}
+              className="mt-1 text-sm font-medium text-amber-600 dark:text-amber-400 hover:underline"
+            >
+              Upgrade for unlimited →
+            </button>
+          </div>
+        )}
+
         {/* Input area */}
-        <MessageInput 
-          onSend={handleSend} 
-          disabled={isLoading || isInitializing}
+        <MessageInput
+          onSend={handleSend}
+          disabled={isLoading || isInitializing || (isFreeUser && conversationsRemaining <= 0)}
           placeholder={(isAlexMode || isSimulatedMode) ? `Chat as ${personaName}...` : "Type a message..."}
         />
       </div>
