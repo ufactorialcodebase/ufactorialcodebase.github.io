@@ -16,3 +16,6 @@ export {
 } from './personas.js'
 
 export { getStats } from './vault-stats.js'
+
+export { getSelf, updateSelf } from './vault-self.js'
+export { getEntities, getEntity, updateEntity, deleteEntity } from './vault-entities.js'
