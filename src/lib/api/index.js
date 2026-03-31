@@ -21,3 +21,7 @@ export { getSelf, updateSelf } from './vault-self.js'
 export { getEntities, getEntity, updateEntity, deleteEntity } from './vault-entities.js'
 
 export { createCheckoutSession, createPortalSession } from '../api-client.js'
+
+export { getTopics, updateTopic, deleteTopic } from './vault-topics.js'
+export { getTodos, createTodo, updateTodo, completeTodo, deleteTodo } from './vault-todos.js'
+export { getDates, createDate, deleteDate } from './vault-dates.js'
