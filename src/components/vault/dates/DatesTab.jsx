@@ -7,14 +7,15 @@ import DateCard from './DateCard'
 import CreateDateForm from './CreateDateForm'
 import { getDates, createDate, deleteDate } from '../../../lib/api/vault-dates'
 
-function daysUntilDate(dateStr) {
-  if (!dateStr) return Infinity
-  const parts = dateStr.split('-')
+function daysUntilDate(monthDay) {
+  if (!monthDay) return Infinity
+  const parts = monthDay.split('-')
+  if (parts.length !== 2) return Infinity
+  const month = parseInt(parts[0]) - 1
+  const day = parseInt(parts[1])
+  if (isNaN(month) || isNaN(day)) return Infinity
   const now = new Date()
-  let month, day
-  if (parts.length === 3) { month = parseInt(parts[1]) - 1; day = parseInt(parts[2]) }
-  else if (parts.length === 2) { month = parseInt(parts[0]) - 1; day = parseInt(parts[1]) }
-  else return Infinity
+  now.setHours(0, 0, 0, 0)
   let next = new Date(now.getFullYear(), month, day)
   if (next < now) next = new Date(now.getFullYear() + 1, month, day)
   return Math.ceil((next - now) / 86400000)
@@ -49,7 +50,7 @@ export default function DatesTab() {
     const up = []
     const pa = []
     for (const d of dates) {
-      const days = daysUntilDate(d.date)
+      const days = daysUntilDate(d.month_day)
       if (days >= 0) up.push({ ...d, _daysUntil: days })
       else pa.push(d)
     }

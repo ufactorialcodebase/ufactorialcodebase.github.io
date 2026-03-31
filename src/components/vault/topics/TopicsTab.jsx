@@ -12,6 +12,7 @@ export default function TopicsTab() {
   const [error, setError] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
   const [statusFilter, setStatusFilter] = useState(null)
+  const [categoryFilter, setCategoryFilter] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -31,9 +32,15 @@ export default function TopicsTab() {
   }, [retryCount])
 
   const filtered = useMemo(() => {
-    if (!statusFilter) return topics
-    return topics.filter((t) => (t.current_status || 'active').toLowerCase() === statusFilter)
-  }, [topics, statusFilter])
+    let result = topics
+    if (statusFilter) {
+      result = result.filter((t) => (t.current_status || 'active').toLowerCase() === statusFilter)
+    }
+    if (categoryFilter) {
+      result = result.filter((t) => (t.category || '').toLowerCase() === categoryFilter)
+    }
+    return result
+  }, [topics, statusFilter, categoryFilter])
 
   const handleUpdate = async (updatedTopic) => {
     try {
@@ -94,7 +101,10 @@ export default function TopicsTab() {
   return (
     <div className="p-6 sm:p-8 max-w-3xl">
       <PageHeader title="Your Topics" subtitle="Themes and threads in your life" />
-      <TopicFilters statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} />
+      <TopicFilters
+        statusFilter={statusFilter} onStatusFilterChange={setStatusFilter}
+        categoryFilter={categoryFilter} onCategoryFilterChange={setCategoryFilter}
+      />
       {filtered.map((topic) => (
         <TopicRow key={topic.id} topic={topic} onUpdate={handleUpdate} onDelete={handleDelete} />
       ))}
