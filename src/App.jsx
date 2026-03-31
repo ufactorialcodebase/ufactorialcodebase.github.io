@@ -620,7 +620,7 @@ export default function App() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/vault" element={<AuthGuard><VaultLayout /></AuthGuard>}>
-          <Route path="chat" element={<ChatTab />} />
+          <Route path="chat" element={null} />
           <Route path="self" element={<SelfTab />} />
           <Route path="people" element={<PeopleTab />} />
           <Route path="topics" element={<TopicsTab />} />
