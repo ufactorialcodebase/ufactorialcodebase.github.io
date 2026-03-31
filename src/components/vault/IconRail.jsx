@@ -9,7 +9,7 @@ import {
 const TABS = [
   { path: '/vault/chat', icon: MessageCircle, label: 'Chat' },
   { path: '/vault/self', icon: User, label: 'Your Self' },
-  { path: '/vault/people', icon: Users, label: 'Your People' },
+  { path: '/vault/people', icon: Users, label: 'Your Entities' },
   { path: '/vault/topics', icon: Lightbulb, label: 'Your Topics' },
   { path: '/vault/todos', icon: CheckSquare, label: 'Your Todos' },
   { path: '/vault/dates', icon: Calendar, label: 'Your Dates' },

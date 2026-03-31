@@ -62,7 +62,9 @@ export default function DateCard({ date, onDelete }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-[var(--text-primary)] text-sm font-medium truncate">{date.name}</span>
+          <span className="text-[var(--text-primary)] text-base font-semibold">
+            {formatDate(date.month_day, date.year)}: {date.name}
+          </span>
           {date.importance && date.importance !== 'medium' && (
             <span className="px-1.5 py-0.5 rounded text-[9px] font-medium uppercase shrink-0"
               style={{ backgroundColor: impStyle.bg, color: impStyle.text }}>
@@ -70,10 +72,9 @@ export default function DateCard({ date, onDelete }) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[var(--text-tertiary)] text-xs">{formatDate(date.month_day, date.year)}</span>
+        <div className="flex items-center gap-2 mt-0.5">
           {date.recurs && (
-            <span className={`text-[10px] ${date.recurs === 'annual' ? 'text-amber-400' : 'text-[var(--text-tertiary)]'}`}>
+            <span className={`text-[11px] ${date.recurs === 'annual' ? 'text-amber-400' : 'text-[var(--text-tertiary)]'}`}>
               {date.recurs === 'annual' ? 'Recurring' : 'One-time'}
             </span>
           )}
@@ -84,7 +85,7 @@ export default function DateCard({ date, onDelete }) {
           )}
         </div>
         {date.notes && (
-          <p className="text-[var(--text-tertiary)] text-[11px] mt-0.5 truncate">{date.notes}</p>
+          <p className="text-[var(--text-tertiary)] text-xs mt-1 truncate">{date.notes}</p>
         )}
       </div>
       <span className="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wide font-medium shrink-0"

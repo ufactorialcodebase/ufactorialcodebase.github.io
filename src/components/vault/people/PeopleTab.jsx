@@ -15,7 +15,7 @@ export default function PeopleTab() {
   const [error, setError] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
   const [search, setSearch] = useState('')
-  const [typeFilter, setTypeFilter] = useState(null)
+  const [typeFilter, setTypeFilter] = useState('person')
   const [selectedEntity, setSelectedEntity] = useState(null)
 
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function PeopleTab() {
   if (loading) {
     return (
       <div className="p-6 sm:p-8">
-        <PageHeader title="Your People" subtitle="People, places, and organizations in your life" />
+        <PageHeader title="Your Entities" subtitle="People, places, and organizations in your life" />
         <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="h-32 bg-[var(--bg-secondary)] rounded-xl" />
@@ -115,7 +115,7 @@ export default function PeopleTab() {
   if (error) {
     return (
       <div className="p-6 sm:p-8">
-        <PageHeader title="Your People" subtitle="People, places, and organizations in your life" />
+        <PageHeader title="Your Entities" subtitle="People, places, and organizations in your life" />
         <div className="text-center py-12">
           <p className="text-red-400 text-sm">{error}</p>
           <button
@@ -132,7 +132,7 @@ export default function PeopleTab() {
   if (entities.length === 0) {
     return (
       <div className="p-6 sm:p-8">
-        <PageHeader title="Your People" subtitle="People, places, and organizations in your life" />
+        <PageHeader title="Your Entities" subtitle="People, places, and organizations in your life" />
         <EmptyState
           icon="👥"
           message="No people or places stored yet. As you mention people in conversation, HridAI will remember them here."
@@ -145,7 +145,7 @@ export default function PeopleTab() {
 
   return (
     <div className="p-6 sm:p-8">
-      <PageHeader title="Your People" subtitle="People, places, and organizations in your life" />
+      <PageHeader title="Your Entities" subtitle="People, places, and organizations in your life" />
       <FilterBar
         search={search}
         onSearchChange={setSearch}

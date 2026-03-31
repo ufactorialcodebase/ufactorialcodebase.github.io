@@ -2,10 +2,10 @@
 import { Search } from 'lucide-react'
 
 const TYPE_FILTERS = [
-  { value: null, label: 'All' },
   { value: 'person', label: 'People' },
   { value: 'organization', label: 'Orgs' },
   { value: 'location', label: 'Places' },
+  { value: null, label: 'All' },
 ]
 
 export default function FilterBar({ search, onSearchChange, typeFilter, onTypeFilterChange }) {
