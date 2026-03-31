@@ -28,7 +28,7 @@ export default function Chat({
     "I need to call mom about the holiday plans",
   ],
 }) {
-  const { session, plan, conversationsRemaining } = useAuth();
+  const { session, plan, conversationsRemaining, initialized: authInitialized } = useAuth();
   const isAuthUser = !!session;
   const isFreeUser = isAuthUser && plan === 'free';
   const { isDark, toggle: toggleTheme } = useTheme();
@@ -330,17 +330,16 @@ export default function Chat({
   const isSimulatedMode = mode === 'simulated';
   const showHelperPrompts = isAlexMode || isSimulatedMode;
   
-  // ISS-026: Load greeting on mount
-  // All modes call backend - it handles new vs returning user logic:
-  //   New users: [static intro, LLM-generated opener] (two bubbles)
-  //   Returning users: [personalized greeting] (one bubble)
+  // ISS-026 + ISS-052: Load greeting on mount, but only after auth is initialized.
+  // Without this gate, getAuthHeaders() races against Supabase session recovery
+  // and returns empty headers → greeting silently fails.
   useEffect(() => {
-    // Prevent double execution from React StrictMode
+    if (!authInitialized) return;
     if (greetingLoaded.current) return;
     greetingLoaded.current = true;
-    
+
     loadGreeting();
-  }, [loadGreeting]);
+  }, [authInitialized, loadGreeting]);
   
   // Handle browser close/refresh - persist session using sendBeacon
   useEffect(() => {
