@@ -72,8 +72,6 @@ export default function SelfTab() {
   const preferences = data?.preferences || []
   const hobbies = data?.hobbies || []
   const wellness = data?.wellness || []
-  const keyDates = data?.key_dates || []
-
   const hasInfo = info && (info.name || info.location || info.occupation)
   const isEmpty = !data || (!hasInfo && goals.length === 0 && preferences.length === 0 && hobbies.length === 0)
 
@@ -134,20 +132,6 @@ export default function SelfTab() {
               </span>
             ))}
           </div>
-        </ProfileSection>
-      )}
-
-      {keyDates.length > 0 && (
-        <ProfileSection title="Key Dates" color="var(--accent-cyan)" count={keyDates.length}>
-          {keyDates.map((date, i) => (
-            <div key={i} className="p-3 bg-[var(--bg-tertiary)] rounded-lg mb-2 flex justify-between">
-              <span className="text-[var(--text-primary)] text-sm">{date.title || date.name}</span>
-              <span className="text-[var(--text-tertiary)] text-xs">
-                {date.month && date.day ? `${date.month}/${date.day}` : ''}
-                {date.year ? `/${date.year}` : ''}
-              </span>
-            </div>
-          ))}
         </ProfileSection>
       )}
 
