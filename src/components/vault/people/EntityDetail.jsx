@@ -3,9 +3,11 @@ import { useState } from 'react'
 import InlineEdit from '../InlineEdit'
 import { getTypeColor, getTypeLabel } from './entity-utils'
 
-export default function EntityDetail({ entity, onUpdate, onDelete }) {
+export default function EntityDetail({ entity, onUpdate, onDelete, onMerge, allEntities = [] }) {
   const [addingAlias, setAddingAlias] = useState(false)
   const [newAlias, setNewAlias] = useState('')
+  const [merging, setMerging] = useState(false)
+  const [mergeTargetId, setMergeTargetId] = useState('')
   const color = getTypeColor(entity.type)
   const initial = (entity.name || '?').charAt(0).toUpperCase()
   const relationship = entity.relationship_to_self || entity.relationship
@@ -119,8 +121,64 @@ export default function EntityDetail({ entity, onUpdate, onDelete }) {
         </div>
       )}
 
+      {/* Merge UI */}
+      {merging && (
+        <div className="mb-4 p-3 bg-[var(--bg-tertiary)] rounded-lg">
+          <div className="text-[var(--text-secondary)] text-[10px] uppercase tracking-wide mb-2">
+            Merge "{entity.name}" into another entity
+          </div>
+          <p className="text-[var(--text-tertiary)] text-[10px] mb-2">
+            All relationships, mentions, and references will move to the selected entity. "{entity.name}" will be added as an alias and then removed.
+          </p>
+          <select
+            value={mergeTargetId}
+            onChange={(e) => setMergeTargetId(e.target.value)}
+            className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1.5 text-xs outline-none mb-2"
+          >
+            <option value="">Select entity to keep...</option>
+            {allEntities
+              .filter((e) => (e.id || e.entity_id) !== (entity.id || entity.entity_id))
+              .map((e) => (
+                <option key={e.id || e.entity_id} value={e.id || e.entity_id}>
+                  {e.name} ({getTypeLabel(e.type)})
+                </option>
+              ))}
+          </select>
+          <div className="flex gap-2">
+            <button
+              disabled={!mergeTargetId}
+              onClick={() => {
+                const target = allEntities.find((e) => (e.id || e.entity_id) === mergeTargetId)
+                if (confirm(`Merge "${entity.name}" into "${target?.name}"? This cannot be undone.`)) {
+                  onMerge?.(mergeTargetId, entity.id || entity.entity_id)
+                  setMerging(false)
+                  setMergeTargetId('')
+                }
+              }}
+              className="px-3 py-1 rounded-lg text-xs bg-[var(--accent-indigo)] text-white disabled:opacity-40 hover:opacity-90 transition-opacity"
+            >
+              Merge
+            </button>
+            <button
+              onClick={() => { setMerging(false); setMergeTargetId('') }}
+              className="px-3 py-1 rounded-lg text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="pt-4 border-t border-[var(--border-subtle)] flex gap-2">
+        {!merging && (
+          <button
+            onClick={() => setMerging(true)}
+            className="px-4 py-2 rounded-lg text-xs bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            Merge with...
+          </button>
+        )}
         <button
           onClick={() => onDelete(entity)}
           className="px-4 py-2 rounded-lg text-xs bg-[rgba(248,113,113,0.1)] text-red-400 hover:bg-[rgba(248,113,113,0.2)] transition-colors"

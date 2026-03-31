@@ -6,7 +6,7 @@ import SidePanel from '../SidePanel'
 import FilterBar from './FilterBar'
 import EntityCard from './EntityCard'
 import EntityDetail from './EntityDetail'
-import { getEntities, deleteEntity, updateEntity } from '../../../lib/api/vault-entities'
+import { getEntities, deleteEntity, updateEntity, mergeEntities } from '../../../lib/api/vault-entities'
 import { normalizeEntity } from './entity-utils'
 
 export default function PeopleTab() {
@@ -64,6 +64,24 @@ export default function PeopleTab() {
       setSelectedEntity(null)
     } catch (err) {
       alert('Failed to delete: ' + err.message)
+    }
+  }
+
+  const handleMerge = async (keepId, removeId) => {
+    try {
+      const result = await mergeEntities(keepId, removeId)
+      if (result.success) {
+        // Remove the merged-away entity, update the kept entity
+        setEntities((prev) => {
+          const updated = prev.filter((e) => (e.id || e.entity_id) !== removeId)
+          return updated.map((e) =>
+            (e.id || e.entity_id) === keepId ? normalizeEntity(result.merged_entity) : e
+          )
+        })
+        setSelectedEntity(null)
+      }
+    } catch (err) {
+      alert('Failed to merge: ' + err.message)
     }
   }
 
@@ -153,7 +171,13 @@ export default function PeopleTab() {
         title={selectedEntity?.name || 'Entity'}
       >
         {selectedEntity && (
-          <EntityDetail entity={selectedEntity} onUpdate={handleUpdateEntity} onDelete={handleDelete} />
+          <EntityDetail
+            entity={selectedEntity}
+            onUpdate={handleUpdateEntity}
+            onDelete={handleDelete}
+            onMerge={handleMerge}
+            allEntities={entities}
+          />
         )}
       </SidePanel>
     </div>

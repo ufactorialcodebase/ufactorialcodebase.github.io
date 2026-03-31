@@ -26,3 +26,10 @@ export async function deleteEntity(id) {
     method: 'DELETE',
   })
 }
+
+export async function mergeEntities(keepEntityId, removeEntityId) {
+  return apiFetch('/vault/entities/merge', {
+    method: 'POST',
+    body: { keep_entity_id: keepEntityId, remove_entity_id: removeEntityId },
+  })
+}
