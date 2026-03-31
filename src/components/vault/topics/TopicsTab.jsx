@@ -5,31 +5,17 @@ import EmptyState from '../EmptyState'
 import TopicFilters from './TopicFilters'
 import TopicRow from './TopicRow'
 import { getTopics, updateTopic, deleteTopic } from '../../../lib/api/vault-topics'
+import { useVaultData, setCached } from '../../../lib/vault-cache'
 
 export default function TopicsTab() {
+  const { data: topicData, loading, error, refetch } = useVaultData('topics', getTopics, {
+    transform: (result) => result.topics || []
+  })
   const [topics, setTopics] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
   const [statusFilter, setStatusFilter] = useState(null)
   const [categoryFilter, setCategoryFilter] = useState(null)
 
-  useEffect(() => {
-    let cancelled = false
-    async function fetchTopics() {
-      try {
-        const result = await getTopics()
-        if (!cancelled) {
-          setTopics(result.topics || [])
-          setLoading(false)
-        }
-      } catch (err) {
-        if (!cancelled) { setError(err.message); setLoading(false) }
-      }
-    }
-    fetchTopics()
-    return () => { cancelled = true }
-  }, [retryCount])
+  useEffect(() => { if (topicData) setTopics(topicData) }, [topicData])
 
   const filtered = useMemo(() => {
     let result = topics
@@ -48,7 +34,11 @@ export default function TopicsTab() {
         name: updatedTopic.name,
         current_status: updatedTopic.current_status,
       })
-      setTopics((prev) => prev.map((t) => t.id === updatedTopic.id ? { ...t, ...updatedTopic } : t))
+      setTopics((prev) => {
+        const updated = prev.map((t) => t.id === updatedTopic.id ? { ...t, ...updatedTopic } : t)
+        setCached('topics', updated)
+        return updated
+      })
     } catch (err) {
       alert('Failed to update: ' + err.message)
     }
@@ -57,7 +47,11 @@ export default function TopicsTab() {
   const handleDelete = async (topic) => {
     try {
       await deleteTopic(topic.id)
-      setTopics((prev) => prev.filter((t) => t.id !== topic.id))
+      setTopics((prev) => {
+        const updated = prev.filter((t) => t.id !== topic.id)
+        setCached('topics', updated)
+        return updated
+      })
     } catch (err) {
       alert('Failed to delete: ' + err.message)
     }
@@ -80,7 +74,7 @@ export default function TopicsTab() {
         <PageHeader title="Your Topics" subtitle="Themes and threads in your life" />
         <div className="text-center py-12">
           <p className="text-red-400 text-sm">{error}</p>
-          <button onClick={() => { setLoading(true); setError(null); setRetryCount(c => c + 1) }}
+          <button onClick={() => refetch()}
             className="mt-3 text-[var(--accent-indigo)] text-sm hover:underline">Retry</button>
         </div>
       </div>

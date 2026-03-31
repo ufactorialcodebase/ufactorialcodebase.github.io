@@ -8,36 +8,18 @@ import EntityCard from './EntityCard'
 import EntityDetail from './EntityDetail'
 import { getEntities, deleteEntity, updateEntity, mergeEntities } from '../../../lib/api/vault-entities'
 import { normalizeEntity } from './entity-utils'
+import { useVaultData, setCached } from '../../../lib/vault-cache'
 
 export default function PeopleTab() {
+  const { data: entityData, loading, error, refetch } = useVaultData('entities', getEntities, {
+    transform: (result) => (result.entities || result || []).map(normalizeEntity)
+  })
   const [entities, setEntities] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('person')
   const [selectedEntity, setSelectedEntity] = useState(null)
 
-  useEffect(() => {
-    let cancelled = false
-    async function fetchEntities() {
-      try {
-        const result = await getEntities()
-        if (!cancelled) {
-          const raw = result.entities || result || []
-          setEntities(raw.map(normalizeEntity))
-          setLoading(false)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.message)
-          setLoading(false)
-        }
-      }
-    }
-    fetchEntities()
-    return () => { cancelled = true }
-  }, [retryCount])
+  useEffect(() => { if (entityData) setEntities(entityData) }, [entityData])
 
   const filtered = useMemo(() => {
     let list = Array.isArray(entities) ? entities : []
@@ -60,7 +42,11 @@ export default function PeopleTab() {
     if (!confirm(`Delete ${entity.name}? This will remove them and all their relationships.`)) return
     try {
       await deleteEntity(entity.id || entity.entity_id)
-      setEntities((prev) => prev.filter((e) => (e.id || e.entity_id) !== (entity.id || entity.entity_id)))
+      setEntities((prev) => {
+        const updated = prev.filter((e) => (e.id || e.entity_id) !== (entity.id || entity.entity_id))
+        setCached('entities', updated)
+        return updated
+      })
       setSelectedEntity(null)
     } catch (err) {
       alert('Failed to delete: ' + err.message)
@@ -74,9 +60,11 @@ export default function PeopleTab() {
         // Remove the merged-away entity, update the kept entity
         setEntities((prev) => {
           const updated = prev.filter((e) => (e.id || e.entity_id) !== removeId)
-          return updated.map((e) =>
-            (e.id || e.entity_id) === keepId ? normalizeEntity(result.merged_entity) : e
-          )
+            .map((e) =>
+              (e.id || e.entity_id) === keepId ? normalizeEntity(result.merged_entity) : e
+            )
+          setCached('entities', updated)
+          return updated
         })
         setSelectedEntity(null)
       }
@@ -88,11 +76,13 @@ export default function PeopleTab() {
   const handleUpdateEntity = async (updatedEntity) => {
     try {
       await updateEntity(updatedEntity.id || updatedEntity.entity_id, updatedEntity)
-      setEntities((prev) =>
-        prev.map((e) =>
+      setEntities((prev) => {
+        const updated = prev.map((e) =>
           (e.id || e.entity_id) === (updatedEntity.id || updatedEntity.entity_id) ? updatedEntity : e
         )
-      )
+        setCached('entities', updated)
+        return updated
+      })
       setSelectedEntity(updatedEntity)
     } catch (err) {
       alert('Failed to update: ' + err.message)
@@ -119,7 +109,7 @@ export default function PeopleTab() {
         <div className="text-center py-12">
           <p className="text-red-400 text-sm">{error}</p>
           <button
-            onClick={() => { setLoading(true); setError(null); setRetryCount(c => c + 1) }}
+            onClick={() => refetch()}
             className="mt-3 text-[var(--accent-indigo)] text-sm hover:underline"
           >
             Retry

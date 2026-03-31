@@ -5,6 +5,13 @@ import {
   MessageCircle, User, Users, Lightbulb,
   CheckSquare, Calendar, FileText, List, Globe,
 } from 'lucide-react'
+import { getCached, setCached } from '../../lib/vault-cache'
+import { getSelf } from '../../lib/api/vault-self'
+import { getEntities } from '../../lib/api/vault-entities'
+import { getTopics } from '../../lib/api/vault-topics'
+import { getTodos } from '../../lib/api/vault-todos'
+import { getDates } from '../../lib/api/vault-dates'
+import { normalizeEntity } from './people/entity-utils'
 
 const TABS = [
   { path: '/vault/chat', icon: MessageCircle, label: 'Chat' },
@@ -17,6 +24,14 @@ const TABS = [
   { path: '/vault/lists', icon: List, label: 'Your Lists' },
   { path: '/vault/world', icon: Globe, label: 'Your World' },
 ]
+
+const PREFETCH = {
+  '/vault/self': () => !getCached('self') && getSelf().then(d => setCached('self', d)).catch(() => {}),
+  '/vault/people': () => !getCached('entities') && getEntities().then(r => setCached('entities', (r.entities || []).map(normalizeEntity))).catch(() => {}),
+  '/vault/topics': () => !getCached('topics') && getTopics().then(r => setCached('topics', r.topics || [])).catch(() => {}),
+  '/vault/todos': () => !getCached('todos') && getTodos({ include_completed: true }).then(r => setCached('todos', r.todos || [])).catch(() => {}),
+  '/vault/dates': () => !getCached('dates') && getDates().then(r => setCached('dates', r.dates || [])).catch(() => {}),
+}
 
 export default function IconRail() {
   const navigate = useNavigate()
@@ -32,7 +47,10 @@ export default function IconRail() {
           <div key={tab.path} className="relative">
             <button
               onClick={() => navigate(tab.path)}
-              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseEnter={() => {
+                setHoveredIndex(i)
+                PREFETCH[tab.path]?.()
+              }}
               onMouseLeave={() => setHoveredIndex(null)}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
                 isActive

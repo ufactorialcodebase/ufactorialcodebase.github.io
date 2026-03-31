@@ -8,34 +8,26 @@ import ProfileSection from './ProfileSection'
 import GoalItem from './GoalItem'
 import PreferenceItem from './PreferenceItem'
 import { getSelf, updateSelf } from '../../../lib/api/vault-self'
+import { useVaultData, setCached } from '../../../lib/vault-cache'
 
 export default function SelfTab() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { data: cachedData, loading, error, refetch } = useVaultData('self', getSelf)
+  const [localData, setLocalData] = useState(null)
+  const data = localData || cachedData
+
+  // Reset localData when cachedData refreshes
+  useEffect(() => { setLocalData(null) }, [cachedData])
+
   const [wellnessVisible, setWellnessVisible] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
   // TODO: Replace with real tier check once GET /api/vault/stats returns tier
   const readOnly = false
-
-  useEffect(() => {
-    let cancelled = false
-    async function fetchSelf() {
-      try {
-        const result = await getSelf()
-        if (!cancelled) { setData(result); setLoading(false) }
-      } catch (err) {
-        if (!cancelled) { setError(err.message); setLoading(false) }
-      }
-    }
-    fetchSelf()
-    return () => { cancelled = true }
-  }, [retryCount])
 
   const handleUpdate = async (aspect, updatedItems) => {
     try {
       await updateSelf(aspect, updatedItems)
-      setData((prev) => ({ ...prev, [aspect]: updatedItems }))
+      const updated = { ...data, [aspect]: updatedItems }
+      setLocalData(updated)
+      setCached('self', updated)
     } catch (err) {
       alert('Failed to save: ' + err.message)
     }
@@ -60,7 +52,7 @@ export default function SelfTab() {
         <PageHeader title="Your Self" subtitle="Everything HridAI knows about you" />
         <div className="text-center py-12">
           <p className="text-red-400 text-sm">{error}</p>
-          <button onClick={() => { setLoading(true); setError(null); setRetryCount(c => c + 1) }}
+          <button onClick={() => refetch()}
             className="mt-3 text-[var(--accent-indigo)] text-sm hover:underline">Retry</button>
         </div>
       </div>

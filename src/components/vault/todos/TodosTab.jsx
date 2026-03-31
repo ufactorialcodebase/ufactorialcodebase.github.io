@@ -6,31 +6,18 @@ import EmptyState from '../EmptyState'
 import TodoItem from './TodoItem'
 import CreateTodoForm from './CreateTodoForm'
 import { getTodos, createTodo, updateTodo, completeTodo, deleteTodo } from '../../../lib/api/vault-todos'
+import { useVaultData, setCached } from '../../../lib/vault-cache'
 
 export default function TodosTab() {
+  const { data: todoData, loading, error, refetch } = useVaultData('todos',
+    () => getTodos({ include_completed: true }), {
+    transform: (result) => result.todos || []
+  })
   const [todos, setTodos] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showCompleted, setShowCompleted] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-    async function fetchTodos() {
-      try {
-        const result = await getTodos({ include_completed: true })
-        if (!cancelled) {
-          setTodos(result.todos || [])
-          setLoading(false)
-        }
-      } catch (err) {
-        if (!cancelled) { setError(err.message); setLoading(false) }
-      }
-    }
-    fetchTodos()
-    return () => { cancelled = true }
-  }, [retryCount])
+  useEffect(() => { if (todoData) setTodos(todoData) }, [todoData])
 
   const pending = useMemo(() => {
     const priorityOrder = { high: 0, medium: 1, low: 2 }
@@ -56,7 +43,11 @@ export default function TodosTab() {
   const handleCreate = async (data) => {
     try {
       const newTodo = await createTodo(data)
-      setTodos((prev) => [...prev, newTodo])
+      setTodos((prev) => {
+        const updated = [...prev, newTodo]
+        setCached('todos', updated)
+        return updated
+      })
       setShowCreateForm(false)
     } catch (err) {
       alert('Failed to create: ' + err.message)
@@ -65,8 +56,12 @@ export default function TodosTab() {
 
   const handleComplete = async (todo) => {
     try {
-      const updated = await completeTodo(todo.id)
-      setTodos((prev) => prev.map((t) => t.id === todo.id ? updated : t))
+      const result = await completeTodo(todo.id)
+      setTodos((prev) => {
+        const updated = prev.map((t) => t.id === todo.id ? result : t)
+        setCached('todos', updated)
+        return updated
+      })
     } catch (err) {
       alert('Failed to complete: ' + err.message)
     }
@@ -79,7 +74,11 @@ export default function TodosTab() {
         priority: updatedTodo.priority,
         due_date: updatedTodo.due_date,
       })
-      setTodos((prev) => prev.map((t) => t.id === updatedTodo.id ? result : t))
+      setTodos((prev) => {
+        const updated = prev.map((t) => t.id === updatedTodo.id ? result : t)
+        setCached('todos', updated)
+        return updated
+      })
     } catch (err) {
       alert('Failed to update: ' + err.message)
     }
@@ -88,7 +87,11 @@ export default function TodosTab() {
   const handleDelete = async (todo) => {
     try {
       await deleteTodo(todo.id)
-      setTodos((prev) => prev.filter((t) => t.id !== todo.id))
+      setTodos((prev) => {
+        const updated = prev.filter((t) => t.id !== todo.id)
+        setCached('todos', updated)
+        return updated
+      })
     } catch (err) {
       alert('Failed to delete: ' + err.message)
     }
@@ -111,7 +114,7 @@ export default function TodosTab() {
         <PageHeader title="Your Todos" subtitle="Tasks and action items" />
         <div className="text-center py-12">
           <p className="text-red-400 text-sm">{error}</p>
-          <button onClick={() => { setLoading(true); setError(null); setRetryCount(c => c + 1) }}
+          <button onClick={() => refetch()}
             className="mt-3 text-[var(--accent-indigo)] text-sm hover:underline">Retry</button>
         </div>
       </div>

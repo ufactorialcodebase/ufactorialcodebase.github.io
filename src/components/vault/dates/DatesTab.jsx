@@ -6,6 +6,7 @@ import EmptyState from '../EmptyState'
 import DateCard from './DateCard'
 import CreateDateForm from './CreateDateForm'
 import { getDates, createDate, deleteDate } from '../../../lib/api/vault-dates'
+import { useVaultData, setCached } from '../../../lib/vault-cache'
 
 function daysUntilDate(monthDay) {
   if (!monthDay) return Infinity
@@ -22,28 +23,13 @@ function daysUntilDate(monthDay) {
 }
 
 export default function DatesTab() {
+  const { data: dateData, loading, error, refetch } = useVaultData('dates', getDates, {
+    transform: (result) => result.dates || []
+  })
   const [dates, setDates] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
   const [showCreateForm, setShowCreateForm] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-    async function fetchDates() {
-      try {
-        const result = await getDates()
-        if (!cancelled) {
-          setDates(result.dates || [])
-          setLoading(false)
-        }
-      } catch (err) {
-        if (!cancelled) { setError(err.message); setLoading(false) }
-      }
-    }
-    fetchDates()
-    return () => { cancelled = true }
-  }, [retryCount])
+  useEffect(() => { if (dateData) setDates(dateData) }, [dateData])
 
   const { upcoming, past } = useMemo(() => {
     const now = new Date()
@@ -61,7 +47,9 @@ export default function DatesTab() {
   const handleCreate = async (data) => {
     try {
       const result = await createDate(data)
-      setDates(result.dates || [])
+      const updated = result.dates || []
+      setDates(updated)
+      setCached('dates', updated)
       setShowCreateForm(false)
     } catch (err) {
       alert('Failed to add date: ' + err.message)
@@ -71,7 +59,9 @@ export default function DatesTab() {
   const handleDelete = async (date) => {
     try {
       const result = await deleteDate(date.name)
-      setDates(result.dates || [])
+      const updated = result.dates || []
+      setDates(updated)
+      setCached('dates', updated)
     } catch (err) {
       alert('Failed to delete: ' + err.message)
     }
@@ -94,7 +84,7 @@ export default function DatesTab() {
         <PageHeader title="Your Dates" subtitle="Birthdays, milestones, and important dates" />
         <div className="text-center py-12">
           <p className="text-red-400 text-sm">{error}</p>
-          <button onClick={() => { setLoading(true); setError(null); setRetryCount(c => c + 1) }}
+          <button onClick={() => refetch()}
             className="mt-3 text-[var(--accent-indigo)] text-sm hover:underline">Retry</button>
         </div>
       </div>
