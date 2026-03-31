@@ -23,6 +23,7 @@ import TodosTab from './components/vault/todos/TodosTab'
 import DatesTab from './components/vault/dates/DatesTab'
 import ArtifactsTab from './components/vault/artifacts/ArtifactsTab'
 import ListsTab from './components/vault/lists/ListsTab'
+import WorldTab from './components/vault/world/WorldTab'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -630,7 +631,7 @@ export default function App() {
           <Route path="dates" element={<DatesTab />} />
           <Route path="artifacts" element={<ArtifactsTab />} />
           <Route path="lists" element={<ListsTab />} />
-          <Route path="world" element={<PlaceholderTab />} />
+          <Route path="world" element={<WorldTab />} />
         </Route>
       </Routes>
     </AuthProvider>
