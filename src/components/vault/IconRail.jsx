@@ -11,6 +11,8 @@ import { getEntities } from '../../lib/api/vault-entities'
 import { getTopics } from '../../lib/api/vault-topics'
 import { getTodos } from '../../lib/api/vault-todos'
 import { getDates } from '../../lib/api/vault-dates'
+import { getArtifacts } from '../../lib/api/vault-artifacts'
+import { getLists } from '../../lib/api/vault-lists'
 import { normalizeEntity } from './people/entity-utils'
 
 const TABS = [
@@ -31,6 +33,8 @@ const PREFETCH = {
   '/vault/topics': () => !getCached('topics') && getTopics().then(r => setCached('topics', r.topics || [])).catch(() => {}),
   '/vault/todos': () => !getCached('todos') && getTodos({ include_completed: true }).then(r => setCached('todos', r.todos || [])).catch(() => {}),
   '/vault/dates': () => !getCached('dates') && getDates().then(r => setCached('dates', r.dates || [])).catch(() => {}),
+  '/vault/artifacts': () => !getCached('artifacts') && getArtifacts().then(r => setCached('artifacts', r.artifacts || [])).catch(() => {}),
+  '/vault/lists': () => !getCached('lists') && getLists().then(r => setCached('lists', r.lists || [])).catch(() => {}),
 }
 
 export default function IconRail() {
