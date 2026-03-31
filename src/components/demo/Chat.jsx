@@ -379,24 +379,25 @@ export default function Chat({
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl ${
                 (isAlexMode || isSimulatedMode)
-                  ? 'bg-gradient-to-br from-violet-500 to-indigo-600' 
+                  ? 'bg-gradient-to-br from-violet-500 to-indigo-600'
                   : 'bg-gradient-to-br from-emerald-500 to-teal-600'
               } text-white shadow-lg shadow-${(isAlexMode || isSimulatedMode) ? 'violet' : 'emerald'}-500/25`}>
                 {(isAlexMode || isSimulatedMode) ? <Brain className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
               </div>
-              <div>
-                <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-                  {isSimulatedMode ? 'Simulated Demo' : (isAlexMode ? 'See It In Action' : 'Try It Yourself')}
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {isSimulatedMode
-                    ? "Chat as a persona and see rich context retrieval"
-                    : (isAlexMode 
-                      ? "Chat as Alex and see rich context retrieval"
-                      : "Start fresh and watch memory build")
-                  }
-                </p>
-              </div>
+              <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                {isSimulatedMode ? 'Simulated Demo' : (isAlexMode ? 'See It In Action' : 'Your HridAI')}
+              </h1>
+              {/* Upgrade button — free tier only, next to title */}
+              {isFreeUser && (
+                <button
+                  onClick={handleUpgrade}
+                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-150"
+                  title="Upgrade to Premium"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span className="hidden sm:inline">Upgrade</span>
+                </button>
+              )}
             </div>
             
             <div className="flex items-center gap-2">
@@ -408,18 +409,6 @@ export default function Chat({
               >
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
-
-              {/* Upgrade button — free tier only */}
-              {isFreeUser && (
-                <button
-                  onClick={handleUpgrade}
-                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-150"
-                  title="Upgrade to Premium"
-                >
-                  <Zap className="w-4 h-4" />
-                  <span className="hidden sm:inline">Upgrade</span>
-                </button>
-              )}
 
               {/* Reset button */}
               <button
