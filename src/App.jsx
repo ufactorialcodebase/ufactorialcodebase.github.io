@@ -18,6 +18,9 @@ import ChatTab from "./components/vault/ChatTab";
 import PlaceholderTab from "./components/vault/PlaceholderTab";
 import SelfTab from "./components/vault/self/SelfTab";
 import PeopleTab from "./components/vault/people/PeopleTab";
+import TopicsTab from './components/vault/topics/TopicsTab'
+import TodosTab from './components/vault/todos/TodosTab'
+import DatesTab from './components/vault/dates/DatesTab'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -620,9 +623,9 @@ export default function App() {
           <Route path="chat" element={<ChatTab />} />
           <Route path="self" element={<SelfTab />} />
           <Route path="people" element={<PeopleTab />} />
-          <Route path="topics" element={<PlaceholderTab />} />
-          <Route path="todos" element={<PlaceholderTab />} />
-          <Route path="dates" element={<PlaceholderTab />} />
+          <Route path="topics" element={<TopicsTab />} />
+          <Route path="todos" element={<TodosTab />} />
+          <Route path="dates" element={<DatesTab />} />
           <Route path="artifacts" element={<PlaceholderTab />} />
           <Route path="lists" element={<PlaceholderTab />} />
           <Route path="world" element={<PlaceholderTab />} />
