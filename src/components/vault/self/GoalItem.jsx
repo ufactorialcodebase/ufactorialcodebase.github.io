@@ -22,16 +22,36 @@ export default function GoalItem({ goal, onUpdate, onDelete, readOnly }) {
     >
       <div className="flex-1 min-w-0">
         {readOnly ? (
-          <div className="text-[var(--text-primary)] text-sm">{goal.title || goal.value || goal.name}</div>
+          <div className="text-[var(--text-primary)] text-sm">{goal.text || goal.title || goal.value || goal.name}</div>
         ) : (
           <InlineEdit
-            value={goal.title || goal.value || goal.name}
-            onSave={(val) => onUpdate?.({ ...goal, title: val })}
+            value={goal.text || goal.title || goal.value || goal.name}
+            onSave={(val) => onUpdate?.({ ...goal, text: val })}
             className="text-sm"
           />
         )}
-        {goal.description && (
-          <div className="text-[var(--text-tertiary)] text-xs mt-0.5">{goal.description}</div>
+        {(goal.description || goal.timeline || goal.category) && (
+          <div className="flex items-center gap-2 mt-0.5">
+            {goal.category && (
+              <span className="text-[var(--text-tertiary)] text-[10px] uppercase tracking-wide">{goal.category}</span>
+            )}
+            {goal.timeline && (
+              <span className="text-[var(--text-tertiary)] text-[10px]">{goal.timeline}</span>
+            )}
+            {goal.description && (
+              <span className="text-[var(--text-tertiary)] text-xs">{goal.description}</span>
+            )}
+          </div>
+        )}
+        {goal.specific_actions && goal.specific_actions.length > 0 && (
+          <div className="mt-1.5 space-y-0.5">
+            {goal.specific_actions.map((action, i) => (
+              <div key={i} className="text-[var(--text-secondary)] text-[11px] flex items-start gap-1.5">
+                <span className="text-[var(--text-tertiary)] mt-0.5">-</span>
+                <span>{action}</span>
+              </div>
+            ))}
+          </div>
         )}
       </div>
       <div className="flex items-center gap-2 shrink-0 ml-2">
