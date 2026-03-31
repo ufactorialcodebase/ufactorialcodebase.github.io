@@ -27,3 +27,4 @@ export { getTodos, createTodo, updateTodo, completeTodo, deleteTodo } from './va
 export { getDates, createDate, deleteDate } from './vault-dates.js'
 export { getArtifacts, getArtifact, updateArtifact, deleteArtifact } from './vault-artifacts.js'
 export { getLists, createList, deleteList, addListItem, removeListItem } from './vault-lists.js'
+export { getWorld } from './vault-world.js'

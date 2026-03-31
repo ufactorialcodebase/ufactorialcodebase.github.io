@@ -13,6 +13,7 @@ import { getTodos } from '../../lib/api/vault-todos'
 import { getDates } from '../../lib/api/vault-dates'
 import { getArtifacts } from '../../lib/api/vault-artifacts'
 import { getLists } from '../../lib/api/vault-lists'
+import { getWorld } from '../../lib/api/vault-world'
 import { normalizeEntity } from './people/entity-utils'
 
 const TABS = [
@@ -35,6 +36,7 @@ const PREFETCH = {
   '/vault/dates': () => !getCached('dates') && getDates().then(r => setCached('dates', r.dates || [])).catch(() => {}),
   '/vault/artifacts': () => !getCached('artifacts') && getArtifacts().then(r => setCached('artifacts', r.artifacts || [])).catch(() => {}),
   '/vault/lists': () => !getCached('lists') && getLists().then(r => setCached('lists', r.lists || [])).catch(() => {}),
+  '/vault/world': () => !getCached('world') && getWorld().then(d => setCached('world', d)).catch(() => {}),
 }
 
 export default function IconRail() {
