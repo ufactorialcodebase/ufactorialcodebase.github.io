@@ -16,3 +16,15 @@ export function getTypeLabel(type) {
   if (type === 'person') return 'Person'
   return type || 'Other'
 }
+
+/**
+ * Normalize entity from backend shape (canonical_name, entity_type)
+ * to frontend shape (name, type) for consistent component usage.
+ */
+export function normalizeEntity(raw) {
+  return {
+    ...raw,
+    name: raw.name || raw.canonical_name || 'Unknown',
+    type: raw.type || raw.entity_type || 'other',
+  }
+}

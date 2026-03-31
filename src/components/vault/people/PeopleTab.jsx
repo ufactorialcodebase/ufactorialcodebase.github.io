@@ -7,6 +7,7 @@ import FilterBar from './FilterBar'
 import EntityCard from './EntityCard'
 import EntityDetail from './EntityDetail'
 import { getEntities, deleteEntity, updateEntity } from '../../../lib/api/vault-entities'
+import { normalizeEntity } from './entity-utils'
 
 export default function PeopleTab() {
   const [entities, setEntities] = useState([])
@@ -23,7 +24,8 @@ export default function PeopleTab() {
       try {
         const result = await getEntities()
         if (!cancelled) {
-          setEntities(result.entities || result || [])
+          const raw = result.entities || result || []
+          setEntities(raw.map(normalizeEntity))
           setLoading(false)
         }
       } catch (err) {

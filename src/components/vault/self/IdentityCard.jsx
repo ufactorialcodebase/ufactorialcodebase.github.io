@@ -2,8 +2,8 @@
 export default function IdentityCard({ info }) {
   const name = info?.name || 'Unknown'
   const initial = name.charAt(0).toUpperCase()
-  const location = info?.location || info?.lives_in
-  const occupation = info?.occupation
+  const location = info?.location || info?.lives_in || info?.city
+  const occupation = info?.occupation || info?.work_style
   const timezone = info?.timezone
 
   return (
