@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import {
   MessageCircle, User, Users, Lightbulb,
-  CheckSquare, Calendar, FileText, List, Globe,
+  CheckSquare, Calendar, FileText, List, Globe, Settings,
 } from 'lucide-react'
 import { getCached, setCached } from '../../lib/vault-cache'
 import { getSelf } from '../../lib/api/vault-self'
@@ -74,6 +74,30 @@ export default function IconRail() {
           </div>
         )
       })}
+
+      {/* Spacer pushes profile to bottom */}
+      <div className="flex-1" />
+
+      {/* Profile / Settings */}
+      <div className="relative">
+        <button
+          onClick={() => navigate('/profile')}
+          onMouseEnter={() => setHoveredIndex('profile')}
+          onMouseLeave={() => setHoveredIndex(null)}
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            pathname === '/profile'
+              ? 'bg-[rgba(99,102,241,0.15)] text-[var(--accent-indigo)]'
+              : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+          }`}
+        >
+          <Settings size={18} />
+        </button>
+        {hoveredIndex === 'profile' && (
+          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 rounded bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-xs whitespace-nowrap z-50 pointer-events-none">
+            Account & Billing
+          </div>
+        )}
+      </div>
     </nav>
   )
 }
