@@ -386,8 +386,8 @@ export default function Chat({
               <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
                 {isSimulatedMode ? 'Simulated Demo' : (isAlexMode ? 'See It In Action' : 'Your HridAI')}
               </h1>
-              {/* Upgrade button — free tier only, next to title */}
-              {isFreeUser && (
+              {/* Upgrade button (free) or Premium badge (premium) */}
+              {isFreeUser ? (
                 <button
                   onClick={handleUpgrade}
                   className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-150"
@@ -396,7 +396,12 @@ export default function Chat({
                   <Zap className="w-4 h-4" />
                   <span className="hidden sm:inline">Upgrade</span>
                 </button>
-              )}
+              ) : isAuthUser && plan === 'premium' ? (
+                <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <Zap className="w-3 h-3" />
+                  Premium
+                </span>
+              ) : null}
             </div>
             
             <div className="flex items-center gap-2">
