@@ -16,6 +16,7 @@ export function AuthProvider({ children }) {
   const [plan, setPlan] = useState('free')
   const [conversationsRemaining, setConversationsRemaining] = useState(5)
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState(null)
+  const [cancelAt, setCancelAt] = useState(null)
 
   const isAuthenticated = !!session || !!getAccessCode()
 
@@ -41,6 +42,7 @@ export function AuthProvider({ children }) {
         setPlan(data.plan || 'free')
         setConversationsRemaining(data.conversations_remaining ?? 5)
         setCurrentPeriodEnd(data.current_period_end || null)
+        setCancelAt(data.cancel_at || null)
       }
     } catch {
       // Silently fail
@@ -87,6 +89,7 @@ export function AuthProvider({ children }) {
     setPlan('free')
     setConversationsRemaining(5)
     setCurrentPeriodEnd(null)
+    setCancelAt(null)
   }, [])
 
   const refreshSubscription = useCallback(async () => {
@@ -98,7 +101,7 @@ export function AuthProvider({ children }) {
   const value = {
     user, session, userId, loading, initialized,
     isAuthenticated, getAuthHeader, clear,
-    plan, conversationsRemaining, currentPeriodEnd, refreshSubscription,
+    plan, conversationsRemaining, currentPeriodEnd, cancelAt, refreshSubscription,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

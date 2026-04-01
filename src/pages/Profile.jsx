@@ -8,7 +8,7 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { user, session, userId, clear, plan, conversationsRemaining, currentPeriodEnd } = useAuth()
+  const { user, session, userId, clear, plan, conversationsRemaining, currentPeriodEnd, cancelAt } = useAuth()
   const [displayName, setDisplayName] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [message, setMessage] = useState(null)
@@ -123,13 +123,26 @@ export default function Profile() {
                 <span className="text-sm text-white/80">{Math.max(0, 5 - (conversationsRemaining ?? 5))} of 5 used</span>
               </div>
             )}
-            {plan === 'premium' && currentPeriodEnd && (
+            {plan === 'premium' && currentPeriodEnd && !cancelAt && (
               <div className="flex justify-between items-center">
                 <span className="text-white/60 text-sm">Next billing date</span>
                 <span className="text-sm text-white/80">{new Date(currentPeriodEnd).toLocaleDateString()}</span>
               </div>
             )}
+            {plan === 'premium' && cancelAt && (
+              <div className="flex justify-between items-center">
+                <span className="text-white/60 text-sm">Access until</span>
+                <span className="text-sm text-amber-400">{new Date(cancelAt).toLocaleDateString()}</span>
+              </div>
+            )}
           </div>
+          {plan === 'premium' && cancelAt && (
+            <div className="mt-3 px-4 py-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <p className="text-sm text-amber-300">
+                Your subscription has been cancelled. You'll keep Premium access until {new Date(cancelAt).toLocaleDateString()}, then revert to the Free plan.
+              </p>
+            </div>
+          )}
           <div className="mt-4">
             {plan === 'free' ? (
               <button onClick={handleUpgrade} disabled={loading}
@@ -139,7 +152,7 @@ export default function Profile() {
             ) : (
               <button onClick={handleManageSubscription} disabled={loading}
                 className="w-full py-3 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/20 disabled:opacity-50 transition-colors">
-                Manage Subscription
+                {cancelAt ? 'Resubscribe' : 'Manage Subscription'}
               </button>
             )}
           </div>
