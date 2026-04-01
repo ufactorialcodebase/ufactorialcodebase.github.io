@@ -71,7 +71,13 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-black px-4 py-12">
       <div className="max-w-lg mx-auto space-y-8">
-        <h1 className="text-2xl font-bold text-white">Profile</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-white">Profile</h1>
+          <button onClick={() => navigate('/vault/chat')}
+            className="text-sm text-white/40 hover:text-white/70 transition-colors">
+            ← Back to Chat
+          </button>
+        </div>
         <div>
           <label className="block text-sm text-white/60 mb-1">Email</label>
           <p className="px-4 py-3 rounded-lg bg-white/5 text-white border border-white/10">{user?.email}</p>
