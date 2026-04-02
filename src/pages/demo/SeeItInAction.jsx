@@ -22,11 +22,11 @@ export default function SeeItInAction() {
   
   // Alex-specific prompts that showcase rich context retrieval
   const alexPrompts = [
-    "Planning dinner with the team this weekend",
-    "How's the Japan trip planning going?",
-    "Need to talk to Mike about the roadmap",
-    "Sarah's birthday is coming up",
-    "What was I stressed about recently?",
+    "How's the move to Phoenix going?",
+    "What do I still need to do before the baby arrives?",
+    "Tell me about the Japan trip — that was amazing",
+    "What's coming up this month?",
+    "I'm feeling nostalgic about SF",
   ];
   
   return (
