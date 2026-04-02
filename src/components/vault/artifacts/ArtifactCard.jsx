@@ -1,41 +1,6 @@
 // src/components/vault/artifacts/ArtifactCard.jsx
-
-function timeAgo(dateStr) {
-  if (!dateStr) return null
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const days = Math.floor(diff / 86400000)
-  if (days === 0) return 'Today'
-  if (days === 1) return '1 day ago'
-  if (days < 30) return `${days} days ago`
-  const months = Math.floor(days / 30)
-  return months === 1 ? '1 month ago' : `${months} months ago`
-}
-
-const CONTENT_TYPE_STYLES = {
-  action_plan: {
-    label: 'Action Plan',
-    bg: 'rgba(99,102,241,0.15)',
-    color: 'var(--accent-indigo)',
-  },
-  decision_brief: {
-    label: 'Decision Brief',
-    bg: 'rgba(20,184,166,0.15)',
-    color: '#14b8a6',
-  },
-  external_prompt: {
-    label: 'External Prompt',
-    bg: 'rgba(245,158,11,0.15)',
-    color: '#f59e0b',
-  },
-}
-
-function getContentTypeStyle(contentType) {
-  return CONTENT_TYPE_STYLES[contentType] || {
-    label: contentType || 'Document',
-    bg: 'rgba(107,114,128,0.15)',
-    color: '#6b7280',
-  }
-}
+import { timeAgo } from '../../../lib/format-utils'
+import { getContentTypeStyle } from './artifact-utils'
 
 export default function ArtifactCard({ artifact, onClick }) {
   const style = getContentTypeStyle(artifact.content_type)

@@ -1,6 +1,9 @@
 // src/components/vault/world/ForceGraph.jsx
 import { useRef, useEffect } from 'react'
-import * as d3 from 'd3'
+import { select } from 'd3-selection'
+import { zoom as d3Zoom, zoomIdentity } from 'd3-zoom'
+import { forceSimulation, forceManyBody, forceCenter, forceCollide, forceLink } from 'd3-force'
+import { drag as d3Drag } from 'd3-drag'
 
 const TYPE_COLORS = {
   you: '#fbbf24',
@@ -58,14 +61,14 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
     }))
 
     // Clear previous SVG content
-    const svg = d3.select(svgRef.current)
+    const svg = select(svgRef.current)
     svg.selectAll('*').remove()
 
     // Root group for zoom/pan
     const g = svg.append('g')
 
     // Zoom behavior
-    const zoom = d3.zoom()
+    const zoom = d3Zoom()
       .scaleExtent([0.3, 5])
       .on('zoom', (event) => {
         g.attr('transform', event.transform)
@@ -74,11 +77,11 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
     svg.call(zoom)
 
     // Force simulation
-    const simulation = d3.forceSimulation(nodeData)
-      .force('charge', d3.forceManyBody().strength(d => d.id === 'you' ? -300 : -100))
-      .force('center', d3.forceCenter(width / 2, height / 2).strength(0.03))
-      .force('collision', d3.forceCollide().radius(d => d.radius + 6))
-      .force('link', d3.forceLink(edgeData)
+    const simulation = forceSimulation(nodeData)
+      .force('charge', forceManyBody().strength(d => d.id === 'you' ? -300 : -100))
+      .force('center', forceCenter(width / 2, height / 2).strength(0.03))
+      .force('collision', forceCollide().radius(d => d.radius + 6))
+      .force('link', forceLink(edgeData)
         .id(d => d.id)
         .distance(d => d.source.id === 'you' || d.target.id === 'you' ? 150 : 60)
         .strength(d => d.strength || 0.3)
@@ -139,7 +142,7 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
     })
 
     // Drag behavior
-    const drag = d3.drag()
+    const drag = d3Drag()
       .on('start', (event, d) => {
         if (!event.active) simulation.alphaTarget(0.3).restart()
         d.fx = d.x
@@ -171,7 +174,7 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
     // Hover effects
     node
       .on('mouseenter', function (event, d) {
-        d3.select(this)
+        select(this)
           .transition()
           .duration(150)
           .attr('r', d.radius + 3)
@@ -182,7 +185,7 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
           .text(d.label)
       })
       .on('mouseleave', function (event, d) {
-        d3.select(this)
+        select(this)
           .transition()
           .duration(150)
           .attr('r', d.radius)

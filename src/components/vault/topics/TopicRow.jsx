@@ -1,6 +1,7 @@
 // src/components/vault/topics/TopicRow.jsx
 import { useState } from 'react'
 import { Trash2, ChevronDown } from 'lucide-react'
+import { timeAgo } from '../../../lib/format-utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import InlineEdit from '../InlineEdit'
 
@@ -26,17 +27,6 @@ const SENTIMENT_COLORS = {
 }
 
 const STATUS_CYCLE = ['active', 'resolved', 'dormant']
-
-function timeAgo(dateStr) {
-  if (!dateStr) return null
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const days = Math.floor(diff / 86400000)
-  if (days === 0) return 'Today'
-  if (days === 1) return '1 day ago'
-  if (days < 30) return `${days} days ago`
-  const months = Math.floor(days / 30)
-  return months === 1 ? '1 month ago' : `${months} months ago`
-}
 
 export default function TopicRow({ topic, onUpdate, onDelete }) {
   const [expanded, setExpanded] = useState(false)

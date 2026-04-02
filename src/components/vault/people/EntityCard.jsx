@@ -1,16 +1,6 @@
 // src/components/vault/people/EntityCard.jsx
 import { getTypeColor, getTypeLabel } from './entity-utils'
-
-function timeAgo(dateStr) {
-  if (!dateStr) return null
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const days = Math.floor(diff / 86400000)
-  if (days === 0) return 'Today'
-  if (days === 1) return '1 day ago'
-  if (days < 30) return `${days} days ago`
-  const months = Math.floor(days / 30)
-  return months === 1 ? '1 month ago' : `${months} months ago`
-}
+import { timeAgo } from '../../../lib/format-utils'
 
 export default function EntityCard({ entity, onClick }) {
   const color = getTypeColor(entity.type)

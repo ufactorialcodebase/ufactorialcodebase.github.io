@@ -1,5 +1,5 @@
 // src/components/vault/world/WorldTab.jsx
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
 import SidePanel from '../SidePanel'
@@ -25,10 +25,10 @@ export default function WorldTab() {
     return () => observer.disconnect()
   }, [])
 
-  const handleNodeClick = (node) => {
+  const handleNodeClick = useCallback((node) => {
     if (node.id === 'you') return
     setSelectedNode(node)
-  }
+  }, [])
 
   if (loading) {
     return (

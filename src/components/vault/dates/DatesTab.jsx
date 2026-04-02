@@ -7,20 +7,7 @@ import DateCard from './DateCard'
 import CreateDateForm from './CreateDateForm'
 import { getDates, createDate, deleteDate } from '../../../lib/api/vault-dates'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
-
-function daysUntilDate(monthDay) {
-  if (!monthDay) return Infinity
-  const parts = monthDay.split('-')
-  if (parts.length !== 2) return Infinity
-  const month = parseInt(parts[0]) - 1
-  const day = parseInt(parts[1])
-  if (isNaN(month) || isNaN(day)) return Infinity
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  let next = new Date(now.getFullYear(), month, day)
-  if (next < now) next = new Date(now.getFullYear() + 1, month, day)
-  return Math.ceil((next - now) / 86400000)
-}
+import { daysUntilDate } from '../../../lib/format-utils'
 
 export default function DatesTab() {
   const { data: dateData, loading, error, refetch } = useVaultData('dates', getDates, {

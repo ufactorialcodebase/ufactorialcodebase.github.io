@@ -18,21 +18,7 @@ const IMPORTANCE_STYLES = {
   low: { bg: 'rgba(139,149,168,0.12)', text: '#8b95a8' },
 }
 
-function daysUntil(monthDay) {
-  if (!monthDay) return null
-  const parts = monthDay.split('-')
-  if (parts.length !== 2) return null
-  const month = parseInt(parts[0]) - 1
-  const day = parseInt(parts[1])
-  if (isNaN(month) || isNaN(day)) return null
-
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  let next = new Date(now.getFullYear(), month, day)
-  if (next < now) next = new Date(now.getFullYear() + 1, month, day)
-  const diff = Math.ceil((next - now) / 86400000)
-  return diff
-}
+import { daysUntilDate as daysUntil } from '../../../lib/format-utils'
 
 function formatDate(monthDay, year) {
   if (!monthDay) return ''
