@@ -5,6 +5,7 @@ import { ArrowRight, ShieldCheck, Sparkles, Network, Wand2, Eye, Trash2, UserRou
 
 // Import demo pages
 import { CodeEntry, TryItOut, SeeItInAction, PersonaSelection, SimulatedChat } from "./pages/demo";
+import DemoSimulatedVault from "./pages/demo/DemoSimulatedVault";
 import LandingPageV2 from "./pages/LandingPageV2";
 import AuthPage from "./pages/Signup";
 import AuthCallback from "./pages/AuthCallback";
@@ -620,6 +621,17 @@ export default function App() {
         <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
         <Route path="/demo/simulated" element={<PersonaSelection />} />
         <Route path="/demo/simulated/chat" element={<AuthGuard><SimulatedChat /></AuthGuard>} />
+        <Route path="/demo/simulated/vault" element={<AuthGuard><DemoSimulatedVault /></AuthGuard>}>
+          <Route path="chat" element={null} />
+          <Route path="self" element={<SelfTab />} />
+          <Route path="people" element={<PeopleTab />} />
+          <Route path="dates" element={<DatesTab />} />
+          <Route path="todos" element={<TodosTab />} />
+          <Route path="lists" element={<ListsTab />} />
+          <Route path="topics" element={<TopicsTab />} />
+          <Route path="artifacts" element={<ArtifactsTab />} />
+          <Route path="world" element={<WorldTab />} />
+        </Route>
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/vault" element={<AuthGuard><VaultLayout /></AuthGuard>}>
