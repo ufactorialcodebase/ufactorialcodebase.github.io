@@ -111,17 +111,17 @@ export default function DemoSimulatedVault() {
       <div className="vault-theme h-screen flex bg-[var(--bg-primary)]">
         <IconRail basePath="/demo/simulated/vault" />
         <main className="flex-1 overflow-y-auto flex flex-col">
-          {/* Demo banner */}
-          <div className="flex-shrink-0 px-4 py-2 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 border-b border-violet-500/20 flex items-center justify-between">
+          {/* Demo banner — compact, doesn't push content */}
+          <div className="flex-shrink-0 px-4 py-1 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 border-b border-violet-500/20 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-violet-400 text-xs font-medium">DEMO</span>
-              <span className="text-[var(--text-secondary)] text-xs">
+              <span className="text-violet-400 text-[10px] font-semibold uppercase tracking-wider">Demo</span>
+              <span className="text-[var(--text-tertiary)] text-[10px]">
                 Exploring as {personaName || personaId} — changes won't be saved
               </span>
             </div>
             <button
               onClick={handleExit}
-              className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+              className="text-[10px] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
             >
               Exit Demo
             </button>
