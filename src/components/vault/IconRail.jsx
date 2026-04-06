@@ -39,14 +39,26 @@ const PREFETCH = {
   '/vault/world': () => !getCached('world') && getWorld().then(d => setCached('world', d)).catch(() => {}),
 }
 
-export default function IconRail() {
+export default function IconRail({ basePath = '/vault' }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [hoveredIndex, setHoveredIndex] = useState(null)
 
+  const tabs = [
+    { path: `${basePath}/chat`, icon: MessageCircle, label: 'Chat' },
+    { path: `${basePath}/self`, icon: User, label: 'Your Self' },
+    { path: `${basePath}/people`, icon: Users, label: 'Your Entities' },
+    { path: `${basePath}/dates`, icon: Calendar, label: 'Your Dates' },
+    { path: `${basePath}/todos`, icon: CheckSquare, label: 'Your Todos' },
+    { path: `${basePath}/lists`, icon: List, label: 'Your Lists' },
+    { path: `${basePath}/topics`, icon: Lightbulb, label: 'Your Topics' },
+    { path: `${basePath}/artifacts`, icon: FileText, label: 'Your Artifacts' },
+    { path: `${basePath}/world`, icon: Globe, label: 'Your World' },
+  ]
+
   return (
     <nav className="w-12 flex-shrink-0 bg-[var(--bg-secondary)] border-r border-[var(--border-subtle)] flex flex-col items-center py-3 gap-1">
-      {TABS.map((tab, i) => {
+      {tabs.map((tab, i) => {
         const Icon = tab.icon
         const isActive = pathname === tab.path
         return (

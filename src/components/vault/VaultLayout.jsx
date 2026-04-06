@@ -40,7 +40,7 @@ export default function VaultLayout() {
           {toast}
         </div>
       )}
-      <IconRail />
+      <IconRail basePath="/vault" />
       <main className="flex-1 overflow-y-auto relative">
         {/* Chat is always mounted to preserve session state — hidden when other tabs are active */}
         <div className={isChatActive ? '' : 'hidden'}>
