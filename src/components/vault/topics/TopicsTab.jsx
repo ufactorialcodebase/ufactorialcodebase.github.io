@@ -5,17 +5,32 @@ import EmptyState from '../EmptyState'
 import TopicFilters from './TopicFilters'
 import TopicRow from './TopicRow'
 import { getTopics, updateTopic, deleteTopic } from '../../../lib/api/vault-topics'
-import { useVaultData, setCached } from '../../../lib/vault-cache'
+import { getEntities } from '../../../lib/api/vault-entities'
+import { useVaultData, setCached, getCached } from '../../../lib/vault-cache'
+import { normalizeEntity } from '../people/entity-utils'
 
 export default function TopicsTab() {
   const { data: topicData, loading, error, refetch } = useVaultData('topics', getTopics, {
     transform: (result) => result.topics || []
+  })
+  const { data: entityData } = useVaultData('entities', getEntities, {
+    transform: (result) => (result.entities || result || []).map(normalizeEntity)
   })
   const [topics, setTopics] = useState([])
   const [statusFilter, setStatusFilter] = useState(null)
   const [categoryFilter, setCategoryFilter] = useState(null)
 
   useEffect(() => { if (topicData) setTopics(topicData) }, [topicData])
+
+  // Build entity name lookup: id → name
+  const entityLookup = useMemo(() => {
+    const map = {}
+    for (const e of (entityData || [])) {
+      map[e.id] = e.name
+      if (e.entity_id) map[e.entity_id] = e.name
+    }
+    return map
+  }, [entityData])
 
   const filtered = useMemo(() => {
     let result = topics
@@ -100,7 +115,7 @@ export default function TopicsTab() {
         categoryFilter={categoryFilter} onCategoryFilterChange={setCategoryFilter}
       />
       {filtered.map((topic) => (
-        <TopicRow key={topic.id} topic={topic} onUpdate={handleUpdate} onDelete={handleDelete} />
+        <TopicRow key={topic.id} topic={topic} onUpdate={handleUpdate} onDelete={handleDelete} entityLookup={entityLookup} />
       ))}
       {filtered.length === 0 && (
         <p className="text-[var(--text-tertiary)] text-sm text-center py-8">No topics match this filter.</p>

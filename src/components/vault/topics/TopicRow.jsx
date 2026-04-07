@@ -28,7 +28,7 @@ const SENTIMENT_COLORS = {
 
 const STATUS_CYCLE = ['active', 'resolved', 'dormant']
 
-export default function TopicRow({ topic, onUpdate, onDelete }) {
+export default function TopicRow({ topic, onUpdate, onDelete, entityLookup = {} }) {
   const [expanded, setExpanded] = useState(false)
   const [hovered, setHovered] = useState(false)
   const status = (topic.current_status || 'active').toLowerCase()
@@ -135,7 +135,7 @@ export default function TopicRow({ topic, onUpdate, onDelete }) {
                 <div className="flex flex-wrap gap-1 mt-2">
                   {topic.key_entity_ids.map((id, i) => (
                     <span key={i} className="px-2 py-0.5 rounded-full text-[10px] bg-[rgba(99,102,241,0.1)] text-[var(--accent-indigo)]">
-                      Entity
+                      {entityLookup[id] || 'Entity'}
                     </span>
                   ))}
                 </div>
