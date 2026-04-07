@@ -11,15 +11,24 @@ export default function WorldTab() {
   const { data: worldData, loading, error, refetch } = useVaultData('world', getWorld)
   const [selectedNode, setSelectedNode] = useState(null)
   const containerRef = useRef(null)
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
+  const [dimensions, setDimensions] = useState(null)
 
-  // Responsive sizing
+  // Responsive sizing — wait for real measurements before rendering graph
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
+
+    // Get initial size immediately
+    const rect = el.getBoundingClientRect()
+    if (rect.width > 0 && rect.height > 0) {
+      setDimensions({ width: rect.width, height: Math.max(rect.height, 500) })
+    }
+
     const observer = new ResizeObserver(entries => {
       const { width, height } = entries[0].contentRect
-      setDimensions({ width, height: Math.max(height, 500) })
+      if (width > 0) {
+        setDimensions({ width, height: Math.max(height, 500) })
+      }
     })
     observer.observe(el)
     return () => observer.disconnect()
@@ -91,13 +100,19 @@ export default function WorldTab() {
       </div>
       {/* Graph fills remaining space */}
       <div ref={containerRef} className="flex-1 min-h-0">
-        <ForceGraph
-          nodes={nodes}
-          edges={edges}
-          width={dimensions.width}
-          height={dimensions.height}
-          onNodeClick={handleNodeClick}
-        />
+        {dimensions ? (
+          <ForceGraph
+            nodes={nodes}
+            edges={edges}
+            width={dimensions.width}
+            height={dimensions.height}
+            onNodeClick={handleNodeClick}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="w-8 h-8 border-2 border-[var(--accent-indigo)] border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
       </div>
       {/* Side panel for node details */}
       <SidePanel open={!!selectedNode} onClose={() => setSelectedNode(null)} title={selectedNode?.label || 'Details'}>
