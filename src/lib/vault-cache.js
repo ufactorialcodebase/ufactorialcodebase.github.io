@@ -14,6 +14,12 @@ import { useState, useEffect, useRef } from 'react'
 // Module-level cache — shared across all components, persists across tab switches
 const cache = new Map()
 
+let _demoMode = false
+
+export function setDemoMode(enabled) {
+  _demoMode = enabled
+}
+
 /**
  * Get cached data for a key, or null if not cached.
  */
@@ -81,6 +87,13 @@ export function useVaultData(cacheKey, fetchFn, options = {}) {
   }
 
   useEffect(() => {
+    // In demo mode, only use cache — don't fetch from API
+    if (_demoMode && getCached(cacheKey)) {
+      const cached = getCached(cacheKey)
+      setData(cached)
+      setLoading(false)
+      return
+    }
     doFetch()
     return () => { fetchRef.current++ } // cancel on unmount
   }, [cacheKey])
