@@ -511,6 +511,9 @@ export default function Chat({
           disabled={isLoading || isInitializing || (isFreeUser && conversationsRemaining <= 0)}
           placeholder={(isAlexMode || isSimulatedMode) ? `Chat as ${personaName}...` : "Type a message..."}
         />
+        <p className="text-center text-[10px] text-slate-400 dark:text-slate-500 py-1">
+          HridAI may make mistakes — verify its responses
+        </p>
       </div>
       
       {/* Context panel sidebar - responsive */}
