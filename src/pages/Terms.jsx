@@ -103,19 +103,19 @@ export default function Terms() {
 
           <p className="mt-6 font-semibold text-white">HridAI is:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">+</span> A personal tool for self-reflection and organization</li>
-            <li className="flex gap-3"><span className="text-emerald-400">+</span> An AI that remembers your context across conversations</li>
-            <li className="flex gap-3"><span className="text-emerald-400">+</span> A way to visualize and explore what you've shared</li>
+            <li className="flex gap-3"><span className="text-emerald-400">+</span> <span>A personal tool for self-reflection and organization</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">+</span> <span>An AI that remembers your context across conversations</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">+</span> <span>A way to visualize and explore what you've shared</span></li>
           </ul>
 
           <p className="mt-6 font-semibold text-white">HridAI is <strong>not</strong>:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-red-400">✕</span> A therapist, counselor, or mental health provider</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> A doctor or medical advisor</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> A lawyer or legal advisor</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> A financial advisor or planner</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> A substitute for professional advice of any kind</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> An emergency service — if you are in crisis, please contact a crisis helpline or emergency services in your area</li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>A therapist, counselor, or mental health provider</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>A doctor or medical advisor</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>A lawyer or legal advisor</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>A financial advisor or planner</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>A substitute for professional advice of any kind</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>An emergency service — if you are in crisis, please contact a crisis helpline or emergency services in your area</span></li>
           </ul>
 
           <div className="mt-6 rounded-xl border border-amber-400/30 bg-amber-400/5 p-5">
@@ -134,20 +134,20 @@ export default function Terms() {
           <h2 className="text-2xl font-bold">3. Account Requirements</h2>
           <p className="mt-4 text-white/60 leading-7">To use HridAI, you must:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Be at least 18 years old.</strong> HridAI is not designed for minors. By creating an account, you represent that you are at least 18 years old (or the higher age of majority in your jurisdiction).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Provide a valid email address</strong> for account creation.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Create a secure password</strong> and keep it confidential.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Provide accurate information.</strong> Don't create accounts with false identities.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Use the Service only where lawful.</strong> You may not use HridAI in any jurisdiction where the Service is prohibited, or where you are an individual or entity barred from using such services under applicable sanctions or export control laws (including, without limitation, US OFAC-administered sanctions).</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Be at least 18 years old.</strong> HridAI is not designed for minors. By creating an account, you represent that you are at least 18 years old (or the higher age of majority in your jurisdiction).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Provide a valid email address</strong> for account creation.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Create a secure password</strong> and keep it confidential.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Provide accurate information.</strong> Don't create accounts with false identities.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Use the Service only where lawful.</strong> You may not use HridAI in any jurisdiction where the Service is prohibited, or where you are an individual or entity barred from using such services under applicable sanctions or export control laws (including, without limitation, US OFAC-administered sanctions).</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">3.1 Your Account Security Responsibilities</h3>
           <p className="mt-4 text-white/60 leading-7">You are responsible for:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Keeping your account credentials confidential and not sharing them with anyone.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> All activity that occurs under your account, whether or not authorized by you.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Notifying us immediately at <a href="mailto:security@ufactorial.com" className="text-emerald-400 hover:underline">security@ufactorial.com</a> (or <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a>) if you suspect unauthorized access to your account or any other security issue.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Ensuring that any device you use to access HridAI is reasonably secured.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Keeping your account credentials confidential and not sharing them with anyone.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>All activity that occurs under your account, whether or not authorized by you.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Notifying us immediately at <a href="mailto:security@ufactorial.com" className="text-emerald-400 hover:underline">security@ufactorial.com</a> (or <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a>) if you suspect unauthorized access to your account or any other security issue.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Ensuring that any device you use to access HridAI is reasonably secured.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             We may take steps we consider reasonably necessary to protect the integrity of our systems, including suspending an account we believe has been compromised.
@@ -224,28 +224,28 @@ export default function Terms() {
 
           <h3 className="mt-8 text-xl font-semibold">5.1 Free Tier</h3>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">5 conversations per day</strong></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">14-day memory depth</strong> — HridAI actively references your most recent 14 days of conversation when responding. Older conversations remain in your account and visible in the Vault, but are not actively used by the AI to inform responses. (For clarity: this is a product feature limit, not a data retention difference. Your data is retained the same way for free and premium users — see the Privacy Policy.)</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Access to all views and features within these limits</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">5 conversations per day</strong></span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">14-day memory depth</strong> — HridAI actively references your most recent 14 days of conversation when responding. Older conversations remain in your account and visible in the Vault, but are not actively used by the AI to inform responses. (For clarity: this is a product feature limit, not a data retention difference. Your data is retained the same way for free and premium users — see the Privacy Policy.)</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Access to all views and features within these limits</span></li>
           </ul>
           <p className="mt-3 text-white/60 leading-7">No payment required. No credit card required to start.</p>
 
           <h3 className="mt-8 text-xl font-semibold">5.2 Premium Tier</h3>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">$9.99/month (USD)</strong></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Unlimited conversations</strong></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Full memory depth</strong> — HridAI actively references your entire conversation history</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Access to all current and future premium features</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">$9.99/month (USD)</strong></span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Unlimited conversations</strong></span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Full memory depth</strong> — HridAI actively references your entire conversation history</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Access to all current and future premium features</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">5.3 Billing</h3>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Premium subscriptions are billed <strong className="text-white">monthly</strong> via Stripe.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Your subscription renews automatically at the start of each billing cycle unless you cancel.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You can cancel at any time via your account settings. Cancellation takes effect at the end of your current billing period — you keep Premium access until then.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">No refunds</strong> for partial months. If you cancel mid-cycle, you retain access through the end of that billing period.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> We may change pricing with <strong className="text-white">30 days' notice</strong> via email. Price changes apply at your next renewal — they never affect your current billing period. If you don't accept a price change, you can cancel before the new price takes effect.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Failed payments.</strong> If a renewal payment fails, we will attempt to retry. If payment is not successful, your account may be downgraded to the Free Tier; your data is preserved.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Premium subscriptions are billed <strong className="text-white">monthly</strong> via Stripe.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Your subscription renews automatically at the start of each billing cycle unless you cancel.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You can cancel at any time via your account settings. Cancellation takes effect at the end of your current billing period — you keep Premium access until then.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">No refunds</strong> for partial months. If you cancel mid-cycle, you retain access through the end of that billing period.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>We may change pricing with <strong className="text-white">30 days' notice</strong> via email. Price changes apply at your next renewal — they never affect your current billing period. If you don't accept a price change, you can cancel before the new price takes effect.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Failed payments.</strong> If a renewal payment fails, we will attempt to retry. If payment is not successful, your account may be downgraded to the Free Tier; your data is preserved.</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">5.4 Free Trial and Promotions</h3>
@@ -295,11 +295,11 @@ export default function Terms() {
             To operate HridAI for you, we need permission to handle your User Content in specific, limited ways. By submitting User Content, you grant uFactorial a <strong className="text-white">limited, worldwide, non-exclusive, royalty-free license</strong> to:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Store your User Content securely on our systems and our sub-processors' systems (as described in the Privacy Policy).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Process your User Content through AI Providers to generate Output.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Extract, structure, and store derived data from your User Content (entities, relationships, topics, episodes, self-graph entries) so HridAI can do what you're paying it to do.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Display your User Content and Output back to you within HridAI.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Generate aggregated, de-identified data that no longer identifies you, for product analytics and improvement (as described in the Privacy Policy).</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Store your User Content securely on our systems and our sub-processors' systems (as described in the Privacy Policy).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Process your User Content through AI Providers to generate Output.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Extract, structure, and store derived data from your User Content (entities, relationships, topics, episodes, self-graph entries) so HridAI can do what you're paying it to do.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Display your User Content and Output back to you within HridAI.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Generate aggregated, de-identified data that no longer identifies you, for product analytics and improvement (as described in the Privacy Policy).</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             This license is granted solely so we can provide the Service to you. It ends when you delete your User Content or your account, except for aggregated de-identified data that no longer identifies you.
@@ -310,10 +310,10 @@ export default function Terms() {
             When you submit User Content, you represent and warrant that:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You have the legal right to submit it to HridAI.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Your User Content does not violate the rights of any third party (including privacy, publicity, intellectual property, or contractual rights).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> For information you share about other people: you have a lawful basis to share it. Specifically — the information relates to your own life and personal relationship with that person; it is shared in a private context, not for publication or distribution; it is not intended to harass, stalk, defame, threaten, or harm; and where applicable law requires consent or notice to the other person, you have obtained or provided it.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Your User Content does not violate Section 7 (Acceptable Use Policy).</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You have the legal right to submit it to HridAI.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Your User Content does not violate the rights of any third party (including privacy, publicity, intellectual property, or contractual rights).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>For information you share about other people: you have a lawful basis to share it. Specifically — the information relates to your own life and personal relationship with that person; it is shared in a private context, not for publication or distribution; it is not intended to harass, stalk, defame, threaten, or harm; and where applicable law requires consent or notice to the other person, you have obtained or provided it.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Your User Content does not violate Section 7 (Acceptable Use Policy).</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">6.4 Your Use of HridAI's Output</h3>
@@ -337,9 +337,9 @@ export default function Terms() {
           <h3 className="mt-8 text-xl font-semibold">7.1 General Compliance</h3>
           <p className="mt-4 text-white/60 leading-7">You will:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Comply with all applicable laws and regulations in your use of HridAI.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Comply with the Usage Policies of the AI Providers we use, as those policies may be updated from time to time. We pass through the substance of those policies to you in this Section. You don't need to read the providers' policies separately, but you should know your use of HridAI is constrained by them.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Use HridAI in good faith and as it is reasonably intended to be used.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Comply with all applicable laws and regulations in your use of HridAI.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Comply with the Usage Policies of the AI Providers we use, as those policies may be updated from time to time. We pass through the substance of those policies to you in this Section. You don't need to read the providers' policies separately, but you should know your use of HridAI is constrained by them.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Use HridAI in good faith and as it is reasonably intended to be used.</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">7.2 Prohibited Uses</h3>
@@ -347,46 +347,46 @@ export default function Terms() {
 
           <p className="mt-6 font-semibold text-white">Harm to other people:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Harass, stalk, threaten, intimidate, defame, or otherwise harm any individual.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Plan, coordinate, or facilitate violence against any individual or group.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Surveil, profile, or build dossiers on other people without their lawful consent.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Generate content that targets individuals based on protected characteristics (race, ethnicity, religion, sexual orientation, gender identity, disability, etc.) for the purpose of harassment or discrimination.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Engage in any form of non-consensual sexual content involving real, identifiable people.</li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Harass, stalk, threaten, intimidate, defame, or otherwise harm any individual.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Plan, coordinate, or facilitate violence against any individual or group.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Surveil, profile, or build dossiers on other people without their lawful consent.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Generate content that targets individuals based on protected characteristics (race, ethnicity, religion, sexual orientation, gender identity, disability, etc.) for the purpose of harassment or discrimination.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Engage in any form of non-consensual sexual content involving real, identifiable people.</span></li>
           </ul>
 
           <p className="mt-6 font-semibold text-white">Harm to children:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Generate, request, or store child sexual abuse material (CSAM), or any content that sexualizes minors, in any form, regardless of whether AI-generated or otherwise.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Engage in any conduct that exploits, endangers, or harms minors.</li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Generate, request, or store child sexual abuse material (CSAM), or any content that sexualizes minors, in any form, regardless of whether AI-generated or otherwise.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Engage in any conduct that exploits, endangers, or harms minors.</span></li>
           </ul>
 
           <p className="mt-6 font-semibold text-white">Illegal or harmful activity:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Plan, coordinate, or facilitate any illegal activity.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Generate or seek instructions for creating weapons, including biological, chemical, nuclear, or conventional weapons, or precursors to such weapons.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Generate or seek instructions for malware, ransomware, exploits, intrusion tools, or other code intended to compromise computer systems, networks, or infrastructure.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Engage in fraud, identity theft, scams, phishing, or other deceptive practices.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Attempt to compromise the security or integrity of HridAI or any system connected to it.</li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Plan, coordinate, or facilitate any illegal activity.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Generate or seek instructions for creating weapons, including biological, chemical, nuclear, or conventional weapons, or precursors to such weapons.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Generate or seek instructions for malware, ransomware, exploits, intrusion tools, or other code intended to compromise computer systems, networks, or infrastructure.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Engage in fraud, identity theft, scams, phishing, or other deceptive practices.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Attempt to compromise the security or integrity of HridAI or any system connected to it.</span></li>
           </ul>
 
           <p className="mt-6 font-semibold text-white">Abuse of the Service:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Use bots, scrapers, automation, or any other programmatic means to interact with HridAI (API access, if offered separately, will have its own terms).</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Create multiple accounts to bypass free tier limits or evade enforcement actions.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Attempt to overload, disrupt, or interfere with HridAI's infrastructure.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Reverse-engineer, decompile, or attempt to extract HridAI's source code, models, or proprietary algorithms.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Use Output to develop, train, or improve AI models that compete with HridAI or our AI Providers.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Resell, redistribute, sublicense, or commercially exploit access to HridAI.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Misrepresent or impersonate any person or entity in your account or interactions.</li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Use bots, scrapers, automation, or any other programmatic means to interact with HridAI (API access, if offered separately, will have its own terms).</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Create multiple accounts to bypass free tier limits or evade enforcement actions.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Attempt to overload, disrupt, or interfere with HridAI's infrastructure.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Reverse-engineer, decompile, or attempt to extract HridAI's source code, models, or proprietary algorithms.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Use Output to develop, train, or improve AI models that compete with HridAI or our AI Providers.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Resell, redistribute, sublicense, or commercially exploit access to HridAI.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Misrepresent or impersonate any person or entity in your account or interactions.</span></li>
           </ul>
 
           <p className="mt-6 font-semibold text-white">Misuse of AI capabilities:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Generate content intended to deceive others about the source of the content (for example, presenting AI Output as the work of a real, identifiable person).</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Use HridAI to provide professional services to others (medical, legal, financial, psychological, or other regulated services) — HridAI is for your personal use.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Use HridAI for high-stakes automated decision-making about other people (employment, credit, housing, insurance, healthcare access, etc.).</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Use HridAI for political campaigning or election-related activities, including voter targeting or generating campaign materials at scale.</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Bypass, circumvent, or attempt to disable any safety measures, content filters, or rate limits we or our AI Providers have implemented.</li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Generate content intended to deceive others about the source of the content (for example, presenting AI Output as the work of a real, identifiable person).</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Use HridAI to provide professional services to others (medical, legal, financial, psychological, or other regulated services) — HridAI is for your personal use.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Use HridAI for high-stakes automated decision-making about other people (employment, credit, housing, insurance, healthcare access, etc.).</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Use HridAI for political campaigning or election-related activities, including voter targeting or generating campaign materials at scale.</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Bypass, circumvent, or attempt to disable any safety measures, content filters, or rate limits we or our AI Providers have implemented.</span></li>
           </ul>
 
           <p className="mt-4 text-white/60 leading-7">
@@ -398,9 +398,9 @@ export default function Terms() {
             If you believe someone is using HridAI in a way that violates this Acceptable Use Policy — including content that targets you specifically — you can contact us at <a href="mailto:abuse@ufactorial.com" className="text-emerald-400 hover:underline font-semibold">abuse@ufactorial.com</a> with:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> A description of the alleged violation.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Any evidence you can provide (e.g., a screenshot, a description of the conduct).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Your contact information so we can follow up.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>A description of the alleged violation.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Any evidence you can provide (e.g., a screenshot, a description of the conduct).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Your contact information so we can follow up.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             We will review specific reports of violations and may take action against the user's account if warranted (suspension, termination, removal of specific content, or referral to law enforcement). Our review is narrow and evidence-based — we do not search across user data based on general inquiries (see Privacy Policy Section 2.3).
@@ -414,12 +414,12 @@ export default function Terms() {
             If you violate this Acceptable Use Policy, we may, at our discretion:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Issue a warning.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Suspend your account temporarily.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Terminate your account permanently and delete your data per Section 11.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Refuse to provide future services to you.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Report the conduct to law enforcement or to our AI Providers if required by their terms or applicable law.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Take any other action we consider appropriate.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Issue a warning.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Suspend your account temporarily.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Terminate your account permanently and delete your data per Section 11.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Refuse to provide future services to you.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Report the conduct to law enforcement or to our AI Providers if required by their terms or applicable law.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Take any other action we consider appropriate.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             For serious violations (CSAM, threats of violence, illegal activity), we may act immediately and without prior warning.
@@ -446,11 +446,11 @@ export default function Terms() {
           </div>
           <p className="mt-4 text-white/60 leading-7">In particular:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-amber-400">•</span> HridAI may misremember or misextract things you've shared.</li>
-            <li className="flex gap-3"><span className="text-amber-400">•</span> HridAI may infer connections that are wrong.</li>
-            <li className="flex gap-3"><span className="text-amber-400">•</span> HridAI may generate plausible-sounding statements that have no basis in reality (sometimes called "hallucinations").</li>
-            <li className="flex gap-3"><span className="text-amber-400">•</span> HridAI may produce different responses to similar inputs.</li>
-            <li className="flex gap-3"><span className="text-amber-400">•</span> HridAI does not have real-time knowledge of current events.</li>
+            <li className="flex gap-3"><span className="text-amber-400">•</span> <span>HridAI may misremember or misextract things you've shared.</span></li>
+            <li className="flex gap-3"><span className="text-amber-400">•</span> <span>HridAI may infer connections that are wrong.</span></li>
+            <li className="flex gap-3"><span className="text-amber-400">•</span> <span>HridAI may generate plausible-sounding statements that have no basis in reality (sometimes called "hallucinations").</span></li>
+            <li className="flex gap-3"><span className="text-amber-400">•</span> <span>HridAI may produce different responses to similar inputs.</span></li>
+            <li className="flex gap-3"><span className="text-amber-400">•</span> <span>HridAI does not have real-time knowledge of current events.</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">8.3 Not a Substitute for Professional Advice</h3>
@@ -525,16 +525,16 @@ export default function Terms() {
           <h2 className="text-2xl font-bold">10. Our Intellectual Property</h2>
           <p className="mt-4 text-white/60 leading-7">While you own your User Content, we own HridAI:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> The HridAI application, its code, design, architecture, and the structure of the knowledge graph it builds are the intellectual property of uFactorial.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> The HridAI name, logo, and branding are trademarks of uFactorial.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You may not copy, modify, distribute, or reverse-engineer any part of the HridAI application beyond what is permitted by these Terms or applicable law.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>The HridAI application, its code, design, architecture, and the structure of the knowledge graph it builds are the intellectual property of uFactorial.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>The HridAI name, logo, and branding are trademarks of uFactorial.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You may not copy, modify, distribute, or reverse-engineer any part of the HridAI application beyond what is permitted by these Terms or applicable law.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">Your license to use HridAI is:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Non-exclusive</strong> — others can use it too.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Non-transferable</strong> — your account is yours alone.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Revocable</strong> — we can terminate access per Section 11.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Limited</strong> — to personal use as described in these Terms.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Non-exclusive</strong> — others can use it too.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Non-transferable</strong> — your account is yours alone.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Revocable</strong> — we can terminate access per Section 11.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Limited</strong> — to personal use as described in these Terms.</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">10.1 Feedback</h3>
@@ -552,18 +552,18 @@ export default function Terms() {
           <h3 className="mt-8 text-xl font-semibold">11.1 Termination by You</h3>
           <p className="mt-4 text-white/60 leading-7">You can stop using HridAI at any time:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Cancel your subscription</strong> via the app settings. You retain access through the end of your billing period, after which your account converts to the Free Tier.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Delete your account</strong> via the app settings. This permanently deletes all your data within 30 days. This action is irreversible. Deletion requires you to type "DELETE MY DATA" as confirmation (or equivalent).</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Cancel your subscription</strong> via the app settings. You retain access through the end of your billing period, after which your account converts to the Free Tier.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Delete your account</strong> via the app settings. This permanently deletes all your data within 30 days. This action is irreversible. Deletion requires you to type "DELETE MY DATA" as confirmation (or equivalent).</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">11.2 Termination by Us</h3>
           <p className="mt-4 text-white/60 leading-7">We may suspend or terminate your account if:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You violate these Terms (particularly the Acceptable Use Policy in Section 7).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You engage in activity that threatens the security or integrity of the Service or other users.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> AI Providers require us to suspend or terminate your access (per their terms, which we are required to enforce).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Continuing to provide the Service to you would expose us to legal risk.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> We are required to by law.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You violate these Terms (particularly the Acceptable Use Policy in Section 7).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You engage in activity that threatens the security or integrity of the Service or other users.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>AI Providers require us to suspend or terminate your access (per their terms, which we are required to enforce).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Continuing to provide the Service to you would expose us to legal risk.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>We are required to by law.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             If we terminate your account for a reason other than your violation of these Terms (for example, we are winding down the Service), we will provide reasonable notice and an opportunity to export your data.
@@ -575,10 +575,10 @@ export default function Terms() {
           <h3 className="mt-8 text-xl font-semibold">11.3 Effect of Termination</h3>
           <p className="mt-4 text-white/60 leading-7">Upon termination:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Your access to HridAI ends.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Your data is permanently deleted within 30 days, except as noted above.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Any remaining subscription period is forfeit if termination is due to your violation of these Terms. If termination is for any other reason, we will refund any unused, prepaid subscription fees on a prorated basis.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> The provisions of these Terms that by their nature should survive termination will survive (see Section 16.4).</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Your access to HridAI ends.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Your data is permanently deleted within 30 days, except as noted above.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Any remaining subscription period is forfeit if termination is due to your violation of these Terms. If termination is for any other reason, we will refund any unused, prepaid subscription fees on a prorated basis.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>The provisions of these Terms that by their nature should survive termination will survive (see Section 16.4).</span></li>
           </ul>
         </section>
 
@@ -624,12 +624,12 @@ export default function Terms() {
             You agree to indemnify, defend, and hold harmless uFactorial, its officers, employees, and agents from any claims, damages, losses, liabilities, costs, or expenses (including reasonable attorney fees) arising out of or relating to:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Your User Content</strong> — including any User Content that infringes a third party's rights, violates applicable law, or violates Section 6.3 (your content representations).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Information you share about other people</strong> — including any claim by a third party arising from information you have shared about them in HridAI.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Your use or misuse of HridAI</strong> — including any breach of these Terms or the Acceptable Use Policy.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Your sharing of Output outside HridAI</strong> — including any claim arising from how you use, present, distribute, or rely on Output once it has left the Service.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Your reliance on Output</strong> — including any claim by you or a third party arising from a decision you made or action you took based on Output (see Section 8).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Your violation of any third party's rights</strong> — privacy, publicity, intellectual property, contractual, or otherwise.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Your User Content</strong> — including any User Content that infringes a third party's rights, violates applicable law, or violates Section 6.3 (your content representations).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Information you share about other people</strong> — including any claim by a third party arising from information you have shared about them in HridAI.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Your use or misuse of HridAI</strong> — including any breach of these Terms or the Acceptable Use Policy.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Your sharing of Output outside HridAI</strong> — including any claim arising from how you use, present, distribute, or rely on Output once it has left the Service.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Your reliance on Output</strong> — including any claim by you or a third party arising from a decision you made or action you took based on Output (see Section 8).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Your violation of any third party's rights</strong> — privacy, publicity, intellectual property, contractual, or otherwise.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             We will notify you in writing of any claim for which we seek indemnification, and you agree to cooperate reasonably in the defense. We reserve the right to assume the exclusive defense and control of any matter subject to indemnification, in which case you will cooperate with us in asserting available defenses.
@@ -740,9 +740,9 @@ export default function Terms() {
           <h3 className="mt-8 text-xl font-semibold">16.8 Notice</h3>
           <p className="mt-4 text-white/60 leading-7">We may give you notice under these Terms by:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Sending an email to the address associated with your account.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Posting a notice in the Service or on our website.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Any other reasonable means.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Sending an email to the address associated with your account.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Posting a notice in the Service or on our website.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Any other reasonable means.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             You may give us notice by sending an email to the relevant address in Section 17.
@@ -765,12 +765,12 @@ export default function Terms() {
         <section>
           <h2 className="text-2xl font-bold">17. Contact Us</h2>
           <ul className="mt-4 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">General inquiries:</strong> <a href="mailto:support@ufactorial.com" className="text-emerald-400 hover:underline">support@ufactorial.com</a></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Legal inquiries and disputes:</strong> <a href="mailto:legal@ufactorial.com" className="text-emerald-400 hover:underline">legal@ufactorial.com</a></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Privacy inquiries:</strong> <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Abuse reports:</strong> <a href="mailto:abuse@ufactorial.com" className="text-emerald-400 hover:underline">abuse@ufactorial.com</a></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Security issues:</strong> <a href="mailto:security@ufactorial.com" className="text-emerald-400 hover:underline">security@ufactorial.com</a> (or <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a>)</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Website:</strong> <a href="https://ufactorial.com" className="text-emerald-400 hover:underline">ufactorial.com</a></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">General inquiries:</strong> <a href="mailto:support@ufactorial.com" className="text-emerald-400 hover:underline">support@ufactorial.com</a></span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Legal inquiries and disputes:</strong> <a href="mailto:legal@ufactorial.com" className="text-emerald-400 hover:underline">legal@ufactorial.com</a></span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Privacy inquiries:</strong> <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a></span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Abuse reports:</strong> <a href="mailto:abuse@ufactorial.com" className="text-emerald-400 hover:underline">abuse@ufactorial.com</a></span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Security issues:</strong> <a href="mailto:security@ufactorial.com" className="text-emerald-400 hover:underline">security@ufactorial.com</a> (or <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a>)</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Website:</strong> <a href="https://ufactorial.com" className="text-emerald-400 hover:underline">ufactorial.com</a></span></li>
           </ul>
           <div className="mt-6">
             <p className="font-semibold text-white">Mailing address:</p>

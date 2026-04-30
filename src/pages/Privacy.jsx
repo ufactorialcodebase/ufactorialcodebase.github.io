@@ -192,10 +192,10 @@ export default function Privacy() {
             When you share information about other people in your conversations with HridAI, you represent and warrant that you have a lawful basis to do so. Specifically:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> The information relates to your own life and your personal relationship with that person.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> It is shared in a private context, not for publication or distribution.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> It is not intended to harass, stalk, defame, threaten, or harm.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Where applicable law requires consent or notice to the other person for your particular use, you have obtained or provided it.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>The information relates to your own life and your personal relationship with that person.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>It is shared in a private context, not for publication or distribution.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>It is not intended to harass, stalk, defame, threaten, or harm.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Where applicable law requires consent or notice to the other person for your particular use, you have obtained or provided it.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             You agree to indemnify uFactorial against claims arising from information you share about third parties. Details of this obligation are set out in our <Link to="/terms" className="text-emerald-400 hover:underline">Terms of Service</Link>.
@@ -301,10 +301,10 @@ export default function Privacy() {
             We do <strong className="text-white">not</strong> use your data to:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Train AI models — ours, or any third party's</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Serve advertisements</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Build profiles for third parties</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Sell, rent, or trade your personal information</li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Train AI models — ours, or any third party's</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Serve advertisements</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Build profiles for third parties</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Sell, rent, or trade your personal information</span></li>
           </ul>
 
           {/* 3.1 */}
@@ -370,10 +370,10 @@ export default function Privacy() {
             When you send a message in HridAI, your conversation content is sent to Anthropic's Claude API for processing.
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Anthropic processes your message and returns a response.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Anthropic does not use your data to train their models</strong> (per their Commercial Terms of Service).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Anthropic may retain API inputs and outputs for <strong className="text-white">up to 30 days</strong> for the purpose of detecting abuse and ensuring trust and safety, after which they are deleted, unless Anthropic is required to retain them longer for legal reasons.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> This retention is solely for trust and safety purposes; Anthropic does not access this data for model training, advertising, or any other purpose.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Anthropic processes your message and returns a response.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Anthropic does not use your data to train their models</strong> (per their Commercial Terms of Service).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Anthropic may retain API inputs and outputs for <strong className="text-white">up to 30 days</strong> for the purpose of detecting abuse and ensuring trust and safety, after which they are deleted, unless Anthropic is required to retain them longer for legal reasons.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>This retention is solely for trust and safety purposes; Anthropic does not access this data for model training, advertising, or any other purpose.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             For more information about how Anthropic processes API data, see Anthropic's Commercial Terms of Service and their Privacy Policy at{" "}
@@ -385,10 +385,10 @@ export default function Privacy() {
             To enable semantic search within your data, we generate text embeddings using OpenAI's <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white/80">text-embedding-3-small</code> model.
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Text snippets are sent to OpenAI's API to generate numerical vector representations.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">OpenAI does not use your data to train their models</strong> (per their API data usage policy).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> OpenAI may retain inputs for <strong className="text-white">up to 30 days</strong> for abuse monitoring under their standard API terms.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> The embeddings (numerical vectors) are stored in our database for search functionality. While embeddings are not directly readable text, they are derived from your content and we treat them as personal data.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Text snippets are sent to OpenAI's API to generate numerical vector representations.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">OpenAI does not use your data to train their models</strong> (per their API data usage policy).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>OpenAI may retain inputs for <strong className="text-white">up to 30 days</strong> for abuse monitoring under their standard API terms.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>The embeddings (numerical vectors) are stored in our database for search functionality. While embeddings are not directly readable text, they are derived from your content and we treat them as personal data.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             For more information about how OpenAI processes API data, see OpenAI's API data usage policy and their Privacy Policy at{" "}
@@ -398,17 +398,17 @@ export default function Privacy() {
           <h3 className="mt-8 text-xl font-semibold">5.3 Data Storage — Supabase</h3>
           <p className="mt-4 text-white/60 leading-7">Your data is stored in a PostgreSQL database hosted by Supabase:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Data is <strong className="text-white">encrypted at rest</strong> and in transit.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Supabase infrastructure is hosted on AWS.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Database access is restricted to authenticated API calls from the HridAI application layer.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Data is <strong className="text-white">encrypted at rest</strong> and in transit.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Supabase infrastructure is hosted on AWS.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Database access is restricted to authenticated API calls from the HridAI application layer.</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">5.4 Payment Processing — Stripe</h3>
           <p className="mt-4 text-white/60 leading-7">If you subscribe to HridAI Premium:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Payment is processed by Stripe.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> We do not store your credit card number. Stripe handles all payment data.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> We receive: subscription status, billing cycle dates, and a Stripe customer ID.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Payment is processed by Stripe.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>We do not store your credit card number. Stripe handles all payment data.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>We receive: subscription status, billing cycle dates, and a Stripe customer ID.</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">5.5 No Other Third-Party Sharing</h3>
@@ -428,9 +428,9 @@ export default function Privacy() {
             If uFactorial is involved in a merger, acquisition, sale of assets, financing, reorganization, or bankruptcy, your data may be transferred to a successor entity as part of the transaction. We will:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Notify you in advance via email of any such transfer where reasonably possible.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Ensure the successor entity is bound by a privacy policy at least as protective as this one.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Give you the opportunity to delete your account before the transfer takes effect.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Notify you in advance via email of any such transfer where reasonably possible.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Ensure the successor entity is bound by a privacy policy at least as protective as this one.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Give you the opportunity to delete your account before the transfer takes effect.</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">Sub-Processor Summary</h3>
@@ -457,17 +457,17 @@ export default function Privacy() {
             uFactorial serves users globally. Your data may be processed in jurisdictions outside your home country:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Supabase</strong> infrastructure is hosted on AWS (US regions).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Anthropic</strong> and <strong className="text-white">OpenAI</strong> API processing occurs in the United States.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Stripe</strong> processes payments in the United States.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Supabase</strong> infrastructure is hosted on AWS (US regions).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Anthropic</strong> and <strong className="text-white">OpenAI</strong> API processing occurs in the United States.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Stripe</strong> processes payments in the United States.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             For transfers from the European Economic Area (EEA), United Kingdom, or Switzerland to the United States, we rely on the following mechanisms as applicable:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">EU-US Data Privacy Framework</strong> (and the UK Extension and Swiss-US Framework) where the US recipient is certified.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Standard Contractual Clauses (SCCs)</strong> as adopted by the European Commission, with the equivalent IDTA or UK Addendum for UK transfers.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> The service providers' own compliance frameworks (Anthropic, OpenAI, Supabase, and Stripe each maintain their own transfer mechanisms).</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">EU-US Data Privacy Framework</strong> (and the UK Extension and Swiss-US Framework) where the US recipient is certified.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Standard Contractual Clauses (SCCs)</strong> as adopted by the European Commission, with the equivalent IDTA or UK Addendum for UK transfers.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>The service providers' own compliance frameworks (Anthropic, OpenAI, Supabase, and Stripe each maintain their own transfer mechanisms).</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             If you are located in the EEA, UK, or Switzerland and have concerns about international transfers, contact
@@ -539,12 +539,12 @@ export default function Privacy() {
           <h3 className="mt-8 text-xl font-semibold">8.2 Rights Under CCPA / CPRA (California)</h3>
           <p className="mt-4 text-white/60 leading-7">If you are a California resident, you have the right to:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Know</strong> what personal information we collect, the categories of sources, the business purposes for collection, and the categories of third parties with whom we share it (this policy, particularly Sections 2 and 5, covers that).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Correct</strong> inaccurate personal information we hold about you.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Delete</strong> your personal information (use the account deletion feature).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Opt out of sale or sharing</strong> of personal information — <strong className="text-white">we do not sell or share your personal information</strong> (as those terms are defined in the CPRA), so there is nothing to opt out of.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Limit the use of sensitive personal information</strong> — we only use sensitive personal information to provide the service you've requested, which is one of the permitted uses under the CPRA. We do not use it for any other purpose.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Non-discrimination</strong> — we will not treat you differently for exercising your rights.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Know</strong> what personal information we collect, the categories of sources, the business purposes for collection, and the categories of third parties with whom we share it (this policy, particularly Sections 2 and 5, covers that).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Correct</strong> inaccurate personal information we hold about you.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Delete</strong> your personal information (use the account deletion feature).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Opt out of sale or sharing</strong> of personal information — <strong className="text-white">we do not sell or share your personal information</strong> (as those terms are defined in the CPRA), so there is nothing to opt out of.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Limit the use of sensitive personal information</strong> — we only use sensitive personal information to provide the service you've requested, which is one of the permitted uses under the CPRA. We do not use it for any other purpose.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Non-discrimination</strong> — we will not treat you differently for exercising your rights.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             To exercise any CCPA/CPRA right, contact us at{" "}
@@ -555,11 +555,11 @@ export default function Privacy() {
           <h3 className="mt-8 text-xl font-semibold">8.3 Rights for All Users</h3>
           <p className="mt-4 text-white/60 leading-7">Regardless of where you live:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You can <strong className="text-white">see all your data</strong> in HridAI's Vault UI at any time.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You can <strong className="text-white">export all your data</strong> in JSON format at any time.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You can <strong className="text-white">delete specific items</strong> (entities, topics, conversations, etc.) at any time.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You can <strong className="text-white">delete your entire account</strong> and all data at any time.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> You can <strong className="text-white">contact us</strong> at <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a> with any questions.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You can <strong className="text-white">see all your data</strong> in HridAI's Vault UI at any time.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You can <strong className="text-white">export all your data</strong> in JSON format at any time.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You can <strong className="text-white">delete specific items</strong> (entities, topics, conversations, etc.) at any time.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You can <strong className="text-white">delete your entire account</strong> and all data at any time.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You can <strong className="text-white">contact us</strong> at <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a> with any questions.</span></li>
           </ul>
         </section>
 
@@ -572,27 +572,27 @@ export default function Privacy() {
             We implement appropriate technical and organizational measures to protect your data:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Encryption at rest:</strong> All database data is encrypted at rest via Supabase/AWS encryption.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Encryption in transit:</strong> All data transmission uses TLS/HTTPS.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Authentication:</strong> API access requires authenticated sessions (JWT tokens).</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Access control:</strong> Database access is restricted to the HridAI application layer.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Password security:</strong> Passwords are hashed using industry-standard algorithms (bcrypt via Supabase Auth). We never store plaintext passwords.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Encryption at rest:</strong> All database data is encrypted at rest via Supabase/AWS encryption.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Encryption in transit:</strong> All data transmission uses TLS/HTTPS.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Authentication:</strong> API access requires authenticated sessions (JWT tokens).</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Access control:</strong> Database access is restricted to the HridAI application layer.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Password security:</strong> Passwords are hashed using industry-standard algorithms (bcrypt via Supabase Auth). We never store plaintext passwords.</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">9.1 Your Security Responsibilities</h3>
           <p className="mt-4 text-white/60 leading-7">You are responsible for:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Keeping your account credentials confidential.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Notifying us immediately at <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a> if you suspect unauthorized access to your account.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Ensuring that any device you use to access HridAI is reasonably secured.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Keeping your account credentials confidential.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Notifying us immediately at <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a> if you suspect unauthorized access to your account.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Ensuring that any device you use to access HridAI is reasonably secured.</span></li>
           </ul>
 
           <h3 className="mt-8 text-xl font-semibold">9.2 Data Breach Notification</h3>
           <p className="mt-4 text-white/60 leading-7">In the event of a personal data breach affecting your data:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> We will notify the relevant supervisory authority within <strong className="text-white">72 hours</strong> of becoming aware of the breach, where required by GDPR Article 33.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> We will notify affected users <strong className="text-white">without undue delay</strong> where the breach is likely to result in a high risk to their rights and freedoms (GDPR Article 34) or as otherwise required by applicable law.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> Notifications will describe the nature of the breach, likely consequences, and measures taken or proposed to address it.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>We will notify the relevant supervisory authority within <strong className="text-white">72 hours</strong> of becoming aware of the breach, where required by GDPR Article 33.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>We will notify affected users <strong className="text-white">without undue delay</strong> where the breach is likely to result in a high risk to their rights and freedoms (GDPR Article 34) or as otherwise required by applicable law.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>Notifications will describe the nature of the breach, likely consequences, and measures taken or proposed to address it.</span></li>
           </ul>
         </section>
 
@@ -603,16 +603,16 @@ export default function Privacy() {
           <h2 className="text-2xl font-bold">10. Cookies and Tracking</h2>
           <p className="mt-4 text-white/60 leading-7">HridAI uses:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Essential cookies:</strong> Session management and authentication. These are required for the app to function.</li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Analytics:</strong> We collect anonymized usage analytics (session timing, feature usage). This data does not include conversation content.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Essential cookies:</strong> Session management and authentication. These are required for the app to function.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Analytics:</strong> We collect anonymized usage analytics (session timing, feature usage). This data does not include conversation content.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">
             We do <strong className="text-white">not</strong> use:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Third-party tracking cookies</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Advertising cookies or pixels</li>
-            <li className="flex gap-3"><span className="text-red-400">✕</span> Cross-site tracking of any kind</li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Third-party tracking cookies</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Advertising cookies or pixels</span></li>
+            <li className="flex gap-3"><span className="text-red-400">✕</span> <span>Cross-site tracking of any kind</span></li>
           </ul>
         </section>
 
@@ -680,9 +680,9 @@ export default function Privacy() {
             For any privacy-related questions, data requests, or concerns:
           </p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Email:</strong> <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Website:</strong> <a href="https://ufactorial.com" className="text-emerald-400 hover:underline">ufactorial.com</a></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <strong className="text-white">Response time:</strong> We aim to respond to all data-related inquiries within 30 days, as required by GDPR.</li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Email:</strong> <a href="mailto:privacy@ufactorial.com" className="text-emerald-400 hover:underline">privacy@ufactorial.com</a></span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Website:</strong> <a href="https://ufactorial.com" className="text-emerald-400 hover:underline">ufactorial.com</a></span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span><strong className="text-white">Response time:</strong> We aim to respond to all data-related inquiries within 30 days, as required by GDPR.</span></li>
           </ul>
         </section>
 

@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
+import ScrollToTop from "./components/ScrollToTop";
 import { AuthProvider } from "./hooks/useAuth.jsx";
 import AuthGuard from "./components/AuthGuard";
 import VaultLayout from "./components/vault/VaultLayout";
@@ -616,6 +617,7 @@ function LandingPage() {
 export default function App() {
   return (
     <AuthProvider>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<LandingPageV2 />} />
         <Route path="/v1" element={<LandingPage />} />
