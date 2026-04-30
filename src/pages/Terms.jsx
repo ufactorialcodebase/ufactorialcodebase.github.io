@@ -793,9 +793,14 @@ export default function Terms() {
           <Link to="/" className="text-sm text-white/60 hover:text-white transition">
             Back to HridAI
           </Link>
-          <Link to="/privacy" className="text-sm text-white/60 hover:text-white transition">
-            Privacy Policy
-          </Link>
+          <div className="flex gap-4">
+            <Link to="/privacy" className="text-sm text-white/60 hover:text-white transition">
+              Privacy Policy
+            </Link>
+            <Link to="/contact" className="text-sm text-white/60 hover:text-white transition">
+              Contact
+            </Link>
+          </div>
         </div>
       </Container>
     </div>

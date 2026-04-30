@@ -570,16 +570,23 @@ function Footer() {
             </Link>
             <div className="mt-1 text-xs text-black/55">Demo mode: avoid sensitive personal information. Reset anytime.</div>
           </div>
-          <div className="flex items-center gap-5 text-sm">
-            <a className="text-black/70 hover:text-black" href="#trust">
-              Trust
-            </a>
-            <a className="text-black/70 hover:text-black" href="#how">
-              How it works
-            </a>
-            <a className="text-black/70 hover:text-black" href="#explore">
-              Explore
-            </a>
+          <div className="flex flex-col items-start gap-4 sm:items-end">
+            <div className="flex items-center gap-5 text-sm">
+              <a className="text-black/70 hover:text-black" href="#trust">
+                Trust
+              </a>
+              <a className="text-black/70 hover:text-black" href="#how">
+                How it works
+              </a>
+              <a className="text-black/70 hover:text-black" href="#explore">
+                Explore
+              </a>
+            </div>
+            <div className="flex items-center gap-5 text-sm">
+              <Link className="text-black/50 hover:text-black transition" to="/privacy">Privacy Policy</Link>
+              <Link className="text-black/50 hover:text-black transition" to="/terms">Terms of Service</Link>
+              <Link className="text-black/50 hover:text-black transition" to="/contact">Contact</Link>
+            </div>
           </div>
         </div>
       </Container>

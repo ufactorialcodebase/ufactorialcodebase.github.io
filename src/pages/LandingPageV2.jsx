@@ -680,9 +680,7 @@ function Footer() {
             <div className="flex items-center gap-5 text-sm">
               <Link className="text-black/50 hover:text-black transition" to="/privacy">Privacy Policy</Link>
               <Link className="text-black/50 hover:text-black transition" to="/terms">Terms of Service</Link>
-              <a href="mailto:contactus@ufactorial.com" className="text-black/50 hover:text-black transition">
-                contactus@ufactorial.com
-              </a>
+              <Link className="text-black/50 hover:text-black transition" to="/contact">Contact</Link>
             </div>
           </div>
         </div>
