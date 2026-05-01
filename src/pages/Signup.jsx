@@ -2,6 +2,20 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { signUp, signIn, signInWithMagicLink, resetPassword } from '../lib/auth'
 import { validateAccessCode } from '../lib/api/index.js'
+import { supabase } from '../lib/supabase'
+
+const ACCEPTANCE_VERSION = '2026-04-29'
+
+async function logAcceptance(userId) {
+  if (!supabase) return
+  const rows = [
+    { user_id: userId, document_type: 'tos', version_identifier: ACCEPTANCE_VERSION, version_date: ACCEPTANCE_VERSION },
+    { user_id: userId, document_type: 'privacy', version_identifier: ACCEPTANCE_VERSION, version_date: ACCEPTANCE_VERSION },
+    { user_id: userId, document_type: 'age_18_plus', version_identifier: ACCEPTANCE_VERSION, version_date: ACCEPTANCE_VERSION },
+  ]
+  const { error } = await supabase.from('acceptance_log').insert(rows)
+  if (error) console.error('Acceptance log failed:', error)
+}
 
 export default function AuthPage() {
   const navigate = useNavigate()
@@ -47,7 +61,7 @@ export default function AuthPage() {
         </div>
 
         {tab === 'signup' ? (
-          <SignupForm onSuccess={() => setTab('login')} />
+          <SignupForm />
         ) : (
           <LoginForm onSuccess={() => { window.location.href = '/vault/chat' }} />
         )}
@@ -62,14 +76,18 @@ export default function AuthPage() {
   )
 }
 
-function SignupForm({ onSuccess }) {
+function SignupForm() {
   const [accessCode, setAccessCode] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [ageConfirmed, setAgeConfirmed] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [error, setError] = useState(null)
   const [message, setMessage] = useState(null)
   const [loading, setLoading] = useState(false)
   const [codeValid, setCodeValid] = useState(null) // null = not checked, true/false
+
+  const canSubmit = ageConfirmed && termsAccepted && !loading
 
   const handleCodeBlur = async () => {
     if (!accessCode.trim()) { setCodeValid(null); return }
@@ -84,16 +102,27 @@ function SignupForm({ onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!ageConfirmed || !termsAccepted) return
     setError(null)
     setMessage(null)
     setLoading(true)
     try {
-      await signUp(email, password, accessCode.trim().toUpperCase())
-      setMessage('Account created! You can now sign in.')
-      setTimeout(() => onSuccess(), 1500)
+      // 1. Create the account via backend
+      const signupResult = await signUp(email, password, accessCode.trim().toUpperCase())
+      const userId = signupResult.user_id
+
+      // 2. Auto-sign-in to get an authenticated session
+      await signIn(email, password)
+
+      // 3. Log acceptance using the authenticated session (respects RLS)
+      if (userId) {
+        await logAcceptance(userId)
+      }
+
+      // 4. Navigate to vault
+      window.location.href = '/vault/chat'
     } catch (err) {
       setError(err.message || 'Signup failed.')
-    } finally {
       setLoading(false)
     }
   }
@@ -120,11 +149,32 @@ function SignupForm({ onSuccess }) {
           required minLength={8} className="w-full px-4 py-3 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none" placeholder="At least 8 characters" />
       </div>
 
+      {/* Acceptance checkboxes */}
+      <div className="space-y-3 pt-1">
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <input type="checkbox" checked={ageConfirmed} onChange={(e) => setAgeConfirmed(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 cursor-pointer" />
+          <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">
+            I am at least 18 years old
+          </span>
+        </label>
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 cursor-pointer" />
+          <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">
+            I agree to the{' '}
+            <a href="https://ufactorial.com/terms" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Terms of Service</a>
+            {' '}and{' '}
+            <a href="https://ufactorial.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Privacy Policy</a>
+          </span>
+        </label>
+      </div>
+
       {error && <p className="text-red-400 text-sm">{error}</p>}
       {message && <p className="text-emerald-400 text-sm">{message}</p>}
 
-      <button type="submit" disabled={loading}
-        className="w-full py-3 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-500 disabled:opacity-50 transition-colors">
+      <button type="submit" disabled={!canSubmit}
+        className="w-full py-3 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
         {loading ? 'Creating account...' : 'Create account'}
       </button>
 
