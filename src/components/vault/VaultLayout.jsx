@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import IconRail from './IconRail'
 import ChatTab from './ChatTab'
+import BetaWelcome from './BetaWelcome'
 import { useAuth } from '../../hooks/useAuth'
 
 export default function VaultLayout() {
@@ -35,6 +36,7 @@ export default function VaultLayout() {
 
   return (
     <div className="vault-theme h-screen flex bg-[var(--bg-primary)]">
+      <BetaWelcome />
       {toast && (
         <div className="fixed top-4 right-4 z-50 px-4 py-3 rounded-lg bg-emerald-600 text-white text-sm font-medium shadow-lg">
           {toast}
