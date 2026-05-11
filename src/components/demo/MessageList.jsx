@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { User, Bot, Loader2, Sparkles, Brain } from 'lucide-react';
-import ToolCallCard from './ToolCallCard';
+import ToolCallCard, { shouldShowToolCall } from './ToolCallCard';
 
 /**
  * Individual message bubble
@@ -33,10 +33,10 @@ function MessageBubble({ message, mode }) {
       
       {/* Message content */}
       <div className={`flex-1 max-w-[85%] sm:max-w-[75%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
-        {/* Tool calls (shown before AI response) */}
-        {!isUser && message.toolCalls && message.toolCalls.length > 0 && (
-          <div className="mb-3 space-y-2 w-full">
-            {message.toolCalls.map((tc, idx) => (
+        {/* Tool calls — ISS-090: only show successful write tools */}
+        {!isUser && message.toolCalls && message.toolCalls.filter(shouldShowToolCall).length > 0 && (
+          <div className="mb-3 space-y-1 w-full">
+            {message.toolCalls.filter(shouldShowToolCall).map((tc, idx) => (
               <ToolCallCard key={tc.id || idx} toolCall={tc} />
             ))}
           </div>
