@@ -12,8 +12,10 @@ export default function AuthCallback() {
       if (!session) { navigate('/signup'); return }
 
       // Password recovery flow → send to profile to set new password
-      const params = new URLSearchParams(window.location.search)
-      if (params.get('type') === 'recovery') {
+      // Supabase puts recovery params in hash fragment, not query string
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const queryParams = new URLSearchParams(window.location.search)
+      if (hashParams.get('type') === 'recovery' || queryParams.get('type') === 'recovery') {
         navigate('/profile')
       } else {
         navigate('/hridai')

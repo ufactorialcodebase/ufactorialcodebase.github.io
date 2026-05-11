@@ -70,6 +70,11 @@ export function AuthProvider({ children }) {
     if (!supabase) return
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // Password recovery: redirect to profile to set new password
+        if (event === 'PASSWORD_RECOVERY') {
+          window.location.href = '/profile'
+          return
+        }
         setSession(session)
         setUser(session?.user ?? null)
         if (session?.access_token) {
