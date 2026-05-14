@@ -111,16 +111,22 @@ function SignupForm() {
       const signupResult = await signUp(email, password, accessCode.trim().toUpperCase())
       const userId = signupResult.user_id
 
-      // 2. Auto-sign-in to get an authenticated session
-      await signIn(email, password)
+      // 2. Try auto-sign-in (works when email confirmation is disabled)
+      try {
+        await signIn(email, password)
 
-      // 3. Log acceptance using the authenticated session (respects RLS)
-      if (userId) {
-        await logAcceptance(userId)
+        // 3. Log acceptance using the authenticated session (respects RLS)
+        if (userId) {
+          await logAcceptance(userId)
+        }
+
+        // 4. Navigate to vault
+        window.location.href = '/vault/chat'
+      } catch {
+        // Sign-in failed — most likely email confirmation is required
+        setMessage('Account created! Check your email for a confirmation link, then come back and sign in.')
+        setLoading(false)
       }
-
-      // 4. Navigate to vault
-      window.location.href = '/vault/chat'
     } catch (err) {
       setError(err.message || 'Signup failed.')
       setLoading(false)
