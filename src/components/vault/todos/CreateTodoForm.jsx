@@ -1,11 +1,13 @@
 // src/components/vault/todos/CreateTodoForm.jsx
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { X, Sun } from 'lucide-react'
 
-export default function CreateTodoForm({ onSubmit, onCancel }) {
+export default function CreateTodoForm({ tags, onSubmit, onCancel }) {
   const [title, setTitle] = useState('')
   const [priority, setPriority] = useState('medium')
   const [dueDate, setDueDate] = useState('')
+  const [tag, setTag] = useState('')
+  const [addToToday, setAddToToday] = useState(false)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -14,11 +16,17 @@ export default function CreateTodoForm({ onSubmit, onCancel }) {
       title: title.trim(),
       priority,
       due_date: dueDate || null,
+      tags: tag ? [tag] : null,
+      in_today: addToToday,
     })
     setTitle('')
     setPriority('medium')
     setDueDate('')
+    setTag('')
+    setAddToToday(false)
   }
+
+  const inputCls = 'bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1 text-xs outline-none focus:border-[var(--accent-indigo)]'
 
   return (
     <form onSubmit={handleSubmit} className="bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-xl p-4 mb-4">
@@ -34,22 +42,30 @@ export default function CreateTodoForm({ onSubmit, onCancel }) {
           <X size={16} />
         </button>
       </div>
-      <div className="flex items-center gap-3">
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-          className="bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1 text-xs outline-none"
-        >
+      <div className="flex items-center gap-2 flex-wrap">
+        <select value={priority} onChange={(e) => setPriority(e.target.value)} className={inputCls}>
           <option value="low">Low</option>
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1 text-xs outline-none"
-        />
+        <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />
+        {tags.length > 0 && (
+          <select value={tag} onChange={(e) => setTag(e.target.value)} className={inputCls}>
+            <option value="">No tag</option>
+            {tags.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
+          </select>
+        )}
+        <button
+          type="button"
+          onClick={() => setAddToToday(!addToToday)}
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[11px] font-medium transition-colors ${
+            addToToday
+              ? 'border-[rgba(245,158,11,0.4)] bg-[rgba(245,158,11,0.08)] text-[var(--accent-amber)]'
+              : 'border-[var(--border-subtle)] text-[var(--text-tertiary)] hover:border-[rgba(245,158,11,0.3)] hover:text-[var(--accent-amber)]'
+          }`}
+        >
+          <Sun size={12} /> Add to today
+        </button>
         <button
           type="submit"
           disabled={!title.trim()}

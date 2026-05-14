@@ -24,3 +24,51 @@ export async function completeTodo(id) {
 export async function deleteTodo(id) {
   return apiFetch(`/vault/todos/${id}`, { method: 'DELETE' })
 }
+
+// ── Today Focus List ──
+
+export async function getTodayTodos() {
+  return apiFetch('/vault/todos/today')
+}
+
+export async function setTodoToday(id, inToday) {
+  return apiFetch(`/vault/todos/${id}/today`, {
+    method: 'PUT',
+    body: { in_today: inToday },
+  })
+}
+
+export async function reorderToday(todoIds) {
+  return apiFetch('/vault/todos/today/reorder', {
+    method: 'PUT',
+    body: { todo_ids: todoIds },
+  })
+}
+
+// ── Todo Tags ──
+
+export async function getTodoTags() {
+  return apiFetch('/vault/todo-tags')
+}
+
+export async function createTodoTag(name, color) {
+  return apiFetch('/vault/todo-tags', {
+    method: 'POST',
+    body: { name, color },
+  })
+}
+
+export async function updateTodoTag(id, data) {
+  return apiFetch(`/vault/todo-tags/${id}`, { method: 'PUT', body: data })
+}
+
+export async function deleteTodoTag(id) {
+  return apiFetch(`/vault/todo-tags/${id}`, { method: 'DELETE' })
+}
+
+export async function setTodoTags(todoId, tags) {
+  return apiFetch(`/vault/todos/${todoId}/tags`, {
+    method: 'PUT',
+    body: { tags },
+  })
+}
