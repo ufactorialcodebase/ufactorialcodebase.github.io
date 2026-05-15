@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import { signUp, signIn, signInWithMagicLink, resetPassword } from '../lib/auth'
 import { validateAccessCode } from '../lib/api/index.js'
 import { supabase } from '../lib/supabase'
@@ -86,6 +87,7 @@ function SignupForm() {
   const [message, setMessage] = useState(null)
   const [loading, setLoading] = useState(false)
   const [codeValid, setCodeValid] = useState(null) // null = not checked, true/false
+  const [showPassword, setShowPassword] = useState(false)
 
   const canSubmit = ageConfirmed && termsAccepted && !loading
 
@@ -151,8 +153,14 @@ function SignupForm() {
       </div>
       <div>
         <label htmlFor="signup-password" className="block text-sm text-white/60 mb-1">Password</label>
-        <input id="signup-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-          required minLength={8} className="w-full px-4 py-3 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none" placeholder="At least 8 characters" />
+        <div className="relative">
+          <input id="signup-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
+            required minLength={8} className="w-full px-4 py-3 pr-11 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none" placeholder="At least 8 characters" />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors">
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
       </div>
 
       {/* Acceptance checkboxes */}
@@ -198,6 +206,7 @@ function LoginForm({ onSuccess }) {
   const [error, setError] = useState(null)
   const [message, setMessage] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -253,8 +262,14 @@ function LoginForm({ onSuccess }) {
         </div>
         <div>
           <label htmlFor="login-password" className="block text-sm text-white/60 mb-1">Password</label>
-          <input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            required className="w-full px-4 py-3 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none" placeholder="Your password" />
+          <div className="relative">
+            <input id="login-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
+              required className="w-full px-4 py-3 pr-11 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none" placeholder="Your password" />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors">
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
 
         {error && <p className="text-red-400 text-sm">{error}</p>}

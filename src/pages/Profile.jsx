@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { resetPassword, updatePassword, signOut } from '../lib/auth'
 import { createCheckoutSession, createPortalSession } from '../lib/api/index.js'
@@ -11,6 +12,7 @@ export default function Profile() {
   const { user, session, userId, clear, plan, conversationsRemaining, currentPeriodEnd, cancelAt } = useAuth()
   const [displayName, setDisplayName] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -94,8 +96,14 @@ export default function Profile() {
         <div>
           <label className="block text-sm text-white/60 mb-1">Change Password</label>
           <div className="flex gap-2">
-            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-              className="flex-1 px-4 py-3 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none" placeholder="New password (8+ chars)" minLength={8} />
+            <div className="relative flex-1">
+              <input type={showPassword ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-4 py-3 pr-11 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none" placeholder="New password (8+ chars)" minLength={8} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors">
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             <button onClick={handleChangePassword} disabled={loading || newPassword.length < 8}
               className="px-4 py-3 rounded-lg bg-white/5 text-white border border-white/10 hover:border-white/20 disabled:opacity-50">Update</button>
           </div>
