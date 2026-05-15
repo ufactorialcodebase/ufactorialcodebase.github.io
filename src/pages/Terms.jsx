@@ -774,10 +774,7 @@ export default function Terms() {
           </ul>
           <div className="mt-6">
             <p className="font-semibold text-white">Mailing address:</p>
-            <p className="mt-2 text-white/60 leading-7">uFactorial LLC, New Jersey, USA.</p>
-            <p className="mt-2 text-white/40 italic leading-7">
-              Full mailing address coming soon — currently being established with our registered agent. For any correspondence requiring a physical address in the interim, please email <a href="mailto:legal@ufactorial.com" className="text-emerald-400 hover:underline">legal@ufactorial.com</a>.
-            </p>
+            <p className="mt-2 text-white/60 leading-7">uFactorial LLC, c/o Northwest Registered Agent, 971 US Highway 202N, Ste N, Branchburg, New Jersey 08876, USA.</p>
           </div>
         </section>
 
