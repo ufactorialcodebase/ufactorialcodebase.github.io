@@ -9,12 +9,6 @@ const PRIORITY_STYLES = {
   low: { bg: 'rgba(139,149,168,0.15)', text: '#8b95a8' },
 }
 
-const SOURCE_LABELS = {
-  ai_manager: 'from chat',
-  user: 'manual',
-  vault: null,
-}
-
 function formatDueDate(d) {
   if (!d) return null
   const date = new Date(d + 'T00:00:00')
@@ -23,9 +17,9 @@ function formatDueDate(d) {
   const diff = Math.floor((date - now) / 86400000)
   const label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   if (diff < 0) return { label: 'OVERDUE', overdue: true }
-  if (diff === 0) return { label: 'Today', overdue: false, today: true }
-  if (diff === 1) return { label: 'Tomorrow', overdue: false }
-  return { label, overdue: false }
+  if (diff === 0) return { label: 'Due today', overdue: false, today: true }
+  if (diff === 1) return { label: 'Due tomorrow', overdue: false }
+  return { label: `Due ${label}`, overdue: false }
 }
 
 export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, onSetToday, onSetTags, onOpenTagModal, draggable: isDraggable }) {
@@ -34,9 +28,11 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
   const isCompleted = todo.status === 'completed'
   const priority = (todo.priority || 'medium').toLowerCase()
   const pStyle = PRIORITY_STYLES[priority] || PRIORITY_STYLES.medium
-  const sourceLabel = todo.source ? (SOURCE_LABELS[todo.source] !== undefined ? SOURCE_LABELS[todo.source] : todo.source) : null
   const due = formatDueDate(todo.due_date)
   const isInToday = todo.in_today
+
+  // Only show "from chat" for AI-created todos; vault/user-created show nothing
+  const sourceLabel = todo.source === 'ai_manager' ? 'from chat' : null
 
   const todoTags = todo.tags || []
   const firstTag = todoTags.length > 0
@@ -86,11 +82,13 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
               className="text-sm"
             />
           )}
+        </div>
+        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+          {/* Source label — moved under title */}
           {sourceLabel && (
             <span className="text-[var(--text-tertiary)] text-[9px] shrink-0">{sourceLabel}</span>
           )}
-        </div>
-        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+
           {/* Tag selector — always shown for non-completed todos */}
           {!isCompleted ? (
             tags.length > 0 ? (
@@ -151,13 +149,14 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
         </div>
       </div>
 
-      {/* Right side: priority, due date, actions */}
+      {/* Right side: priority, due date, actions — fixed widths for alignment */}
       {!isCompleted && (
-        <div className="flex items-center gap-2 shrink-0 min-w-[180px] justify-end">
+        <div className="flex items-center gap-2 shrink-0 justify-end">
+          {/* Priority — fixed width */}
           <select
             value={priority}
             onChange={(e) => onUpdate({ ...todo, priority: e.target.value })}
-            className="px-2 py-0.5 rounded-full text-[10px] font-medium capitalize shrink-0 cursor-pointer outline-none appearance-none"
+            className="w-[72px] px-2 py-0.5 rounded-full text-[10px] font-medium capitalize cursor-pointer outline-none appearance-none text-center"
             style={{
               backgroundColor: pStyle.bg,
               color: pStyle.text,
@@ -172,30 +171,31 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
             <option value="low">Low</option>
           </select>
 
-          <div className="relative shrink-0">
-            <button
-              onClick={() => dateRef.current?.showPicker?.()}
-              className={`text-[10px] shrink-0 cursor-pointer hover:underline ${
-                due?.overdue ? 'text-red-400 font-medium' : due?.today ? 'text-[var(--accent-amber)] font-medium' : 'text-[var(--text-tertiary)]'
-              }`}
-            >
-              {due ? due.label : 'No due date'}
-            </button>
+          {/* Due date — fixed width, fully clickable */}
+          <div className="relative w-[90px] shrink-0">
             <input
               ref={dateRef}
               type="date"
               value={todo.due_date || ''}
               onChange={(e) => onUpdate({ ...todo, due_date: e.target.value || null })}
-              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer [color-scheme:dark]"
               tabIndex={-1}
             />
+            <span
+              onClick={() => dateRef.current?.showPicker?.()}
+              className={`block text-[10px] cursor-pointer hover:underline text-center ${
+                due?.overdue ? 'text-red-400 font-medium' : due?.today ? 'text-[var(--accent-amber)] font-medium' : 'text-[var(--text-tertiary)]'
+              }`}
+            >
+              {due ? due.label : 'No due date'}
+            </span>
           </div>
 
-          {/* Hover actions — always reserve space via visibility */}
-          <div className={`flex gap-0.5 shrink-0 ${hovered ? 'visible' : 'invisible'}`}>
+          {/* Hover actions — fixed width */}
+          <div className={`flex gap-0.5 w-[110px] justify-end shrink-0 ${hovered ? 'visible' : 'invisible'}`}>
             <button
               onClick={() => onSetToday(todo, !isInToday)}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium whitespace-nowrap transition-colors ${
                 isInToday
                   ? 'bg-[rgba(52,211,153,0.08)] text-[var(--status-resolved)] italic'
                   : 'bg-[rgba(245,158,11,0.1)] text-[var(--accent-amber)] hover:bg-[rgba(245,158,11,0.2)]'
