@@ -34,7 +34,7 @@ export default function Terms() {
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Terms of Service</h1>
         <div className="mt-4 flex flex-wrap gap-4 text-sm text-white/40">
           <span>Effective Date: April 29, 2026</span>
-          <span>Last Updated: April 29, 2026</span>
+          <span>Last Updated: May 15, 2026</span>
         </div>
         <div className="mt-2 text-sm text-white/40">
           Company: uFactorial LLC, a New Jersey limited liability company (ufactorial.com) &middot; Product: HridAI
@@ -525,9 +525,9 @@ export default function Terms() {
           <h2 className="text-2xl font-bold">10. Our Intellectual Property</h2>
           <p className="mt-4 text-white/60 leading-7">While you own your User Content, we own HridAI:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>The HridAI application, its code, design, architecture, and the structure of the knowledge graph it builds are the intellectual property of uFactorial.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>The HridAI application — including its source code, visual design, user interface, user experience flows, interaction patterns, architecture, data structures, and the structure of the knowledge graph it builds — is the intellectual property of uFactorial.</span></li>
             <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>The HridAI name, logo, and branding are trademarks of uFactorial.</span></li>
-            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You may not copy, modify, distribute, or reverse-engineer any part of the HridAI application beyond what is permitted by these Terms or applicable law.</span></li>
+            <li className="flex gap-3"><span className="text-emerald-400">•</span> <span>You may not copy, reproduce, modify, distribute, create derivative works from, or reverse-engineer any part of the HridAI application — including its look and feel — beyond what is permitted by these Terms or applicable law.</span></li>
           </ul>
           <p className="mt-4 text-white/60 leading-7">Your license to use HridAI is:</p>
           <ul className="mt-3 space-y-2 text-white/60 leading-7">
