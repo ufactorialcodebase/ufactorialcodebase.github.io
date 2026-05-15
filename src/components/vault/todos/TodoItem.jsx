@@ -9,8 +9,6 @@ const PRIORITY_STYLES = {
   low: { bg: 'rgba(139,149,168,0.15)', text: '#8b95a8' },
 }
 
-const PRIORITY_CYCLE = ['low', 'medium', 'high']
-
 const SOURCE_LABELS = {
   ai_manager: 'from chat',
   user: 'manual',
@@ -43,12 +41,6 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
   const firstTag = todoTags.length > 0
     ? tags.find((t) => t.name === todoTags[0]) || { name: todoTags[0], color: '#818cf8' }
     : null
-
-  const handlePriorityCycle = () => {
-    const idx = PRIORITY_CYCLE.indexOf(priority)
-    const next = PRIORITY_CYCLE[(idx + 1) % PRIORITY_CYCLE.length]
-    onUpdate({ ...todo, priority: next })
-  }
 
   const handleDragStart = (e) => {
     e.dataTransfer.effectAllowed = 'move'
@@ -98,24 +90,32 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
           )}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          {/* Tag pill or tag selector */}
-          {firstTag ? (
+          {/* Tag selector — always editable for non-completed todos */}
+          {!isCompleted && tags.length > 0 ? (
+            <select
+              value={todoTags[0] || ''}
+              onChange={(e) => onSetTags(todo, e.target.value ? [e.target.value] : [])}
+              className="text-[9px] font-medium rounded-lg px-1.5 py-0.5 cursor-pointer outline-none appearance-none"
+              style={{
+                paddingRight: '14px',
+                backgroundColor: firstTag ? `${firstTag.color}20` : 'transparent',
+                color: firstTag ? firstTag.color : 'var(--text-tertiary)',
+                border: firstTag ? '1px solid transparent' : '1px dashed var(--border-active)',
+                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%235a6478' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 4px center',
+              }}
+            >
+              <option value="">{firstTag ? 'Remove tag' : '+ add tag'}</option>
+              {tags.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
+            </select>
+          ) : firstTag ? (
             <span
               className="px-1.5 py-0.5 rounded-lg text-[9px] font-medium"
               style={{ backgroundColor: `${firstTag.color}20`, color: firstTag.color }}
             >
               {firstTag.name}
             </span>
-          ) : !isCompleted && tags.length > 0 ? (
-            <select
-              value=""
-              onChange={(e) => { if (e.target.value) onSetTags(todo, [e.target.value]) }}
-              className="text-[9px] font-medium border border-dashed border-[var(--border-active)] rounded-lg px-1.5 py-0.5 bg-transparent text-[var(--text-tertiary)] cursor-pointer outline-none hover:border-[var(--accent-teal)] hover:text-[var(--accent-teal)] appearance-none"
-              style={{ paddingRight: '14px', backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%235a6478' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 4px center' }}
-            >
-              <option value="">+ add tag</option>
-              {tags.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
-            </select>
           ) : null}
 
           {/* Entity name */}
@@ -144,14 +144,23 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
       {/* Right side: priority, due date, actions */}
       {!isCompleted && (
         <div className="flex items-center gap-2 shrink-0 min-w-[180px] justify-end">
-          <button
-            onClick={handlePriorityCycle}
-            className="px-2 py-0.5 rounded-full text-[10px] font-medium capitalize shrink-0"
-            style={{ backgroundColor: pStyle.bg, color: pStyle.text }}
-            title="Click to change priority"
+          <select
+            value={priority}
+            onChange={(e) => onUpdate({ ...todo, priority: e.target.value })}
+            className="px-2 py-0.5 rounded-full text-[10px] font-medium capitalize shrink-0 cursor-pointer outline-none appearance-none"
+            style={{
+              backgroundColor: pStyle.bg,
+              color: pStyle.text,
+              paddingRight: '16px',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(pStyle.text)}' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 4px center',
+            }}
           >
-            {priority}
-          </button>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
 
           {due && (
             <span className={`text-[10px] shrink-0 ${
