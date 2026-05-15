@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { X, Sun } from 'lucide-react'
 
-export default function CreateTodoForm({ tags, onSubmit, onCancel }) {
+export default function CreateTodoForm({ tags, onSubmit, onCancel, onOpenTagModal }) {
   const [title, setTitle] = useState('')
   const [priority, setPriority] = useState('medium')
   const [dueDate, setDueDate] = useState('')
@@ -48,12 +48,25 @@ export default function CreateTodoForm({ tags, onSubmit, onCancel }) {
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
-        <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputCls} />
-        {tags.length > 0 && (
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          className={`${inputCls} [color-scheme:dark]`}
+        />
+        {tags.length > 0 ? (
           <select value={tag} onChange={(e) => setTag(e.target.value)} className={inputCls}>
             <option value="">No tag</option>
             {tags.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
           </select>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onOpenTagModal?.()}
+            className={`${inputCls} border-dashed hover:border-[var(--accent-teal)] hover:text-[var(--accent-teal)] transition-colors cursor-pointer`}
+          >
+            + create tag
+          </button>
         )}
         <button
           type="button"

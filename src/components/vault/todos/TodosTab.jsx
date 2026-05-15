@@ -255,7 +255,7 @@ export default function TodosTab() {
 
         {/* Create form */}
         {showCreateForm && (
-          <CreateTodoForm tags={tags} onSubmit={handleCreate} onCancel={() => setShowCreateForm(false)} />
+          <CreateTodoForm tags={tags} onSubmit={handleCreate} onCancel={() => setShowCreateForm(false)} onOpenTagModal={() => setShowTagModal(true)} />
         )}
 
         {/* Empty state */}
@@ -295,6 +295,7 @@ export default function TodosTab() {
                     onDelete={handleDelete}
                     onSetToday={handleSetToday}
                     onSetTags={handleSetTags}
+                    onOpenTagModal={() => setShowTagModal(true)}
                     draggable
                   />
                 ))}
@@ -327,6 +328,7 @@ export default function TodosTab() {
                     onDelete={handleDelete}
                     onSetToday={handleSetToday}
                     onSetTags={handleSetTags}
+                    onOpenTagModal={() => setShowTagModal(true)}
                   />
                 ))}
               </div>
@@ -347,6 +349,8 @@ export default function TodosTab() {
         todos={todayTodos}
         tags={tags}
         onComplete={handleComplete}
+        onUpdate={handleUpdate}
+        onSetTags={handleSetTags}
         onRemoveFromToday={handleRemoveFromToday}
         onReorder={handleReorderToday}
         expanded={todayExpanded}

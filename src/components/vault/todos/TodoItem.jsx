@@ -1,5 +1,5 @@
 // src/components/vault/todos/TodoItem.jsx
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Trash2, CheckCircle, Circle, Sun, Check } from 'lucide-react'
 import InlineEdit from '../InlineEdit'
 
@@ -28,8 +28,9 @@ function formatDueDate(d) {
   return { label, overdue: false }
 }
 
-export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, onSetToday, onSetTags, draggable: isDraggable }) {
+export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, onSetToday, onSetTags, onOpenTagModal, draggable: isDraggable }) {
   const [hovered, setHovered] = useState(false)
+  const dateRef = useRef(null)
   const isCompleted = todo.status === 'completed'
   const priority = (todo.priority || 'medium').toLowerCase()
   const pStyle = PRIORITY_STYLES[priority] || PRIORITY_STYLES.medium
@@ -90,25 +91,34 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
           )}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          {/* Tag selector — always editable for non-completed todos */}
-          {!isCompleted && tags.length > 0 ? (
-            <select
-              value={todoTags[0] || ''}
-              onChange={(e) => onSetTags(todo, e.target.value ? [e.target.value] : [])}
-              className="text-[9px] font-medium rounded-lg px-1.5 py-0.5 cursor-pointer outline-none appearance-none"
-              style={{
-                paddingRight: '14px',
-                backgroundColor: firstTag ? `${firstTag.color}20` : 'transparent',
-                color: firstTag ? firstTag.color : 'var(--text-tertiary)',
-                border: firstTag ? '1px solid transparent' : '1px dashed var(--border-active)',
-                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%235a6478' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 4px center',
-              }}
-            >
-              <option value="">{firstTag ? 'Remove tag' : '+ add tag'}</option>
-              {tags.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
-            </select>
+          {/* Tag selector — always shown for non-completed todos */}
+          {!isCompleted ? (
+            tags.length > 0 ? (
+              <select
+                value={todoTags[0] || ''}
+                onChange={(e) => onSetTags(todo, e.target.value ? [e.target.value] : [])}
+                className="text-[9px] font-medium rounded-lg px-1.5 py-0.5 cursor-pointer outline-none appearance-none"
+                style={{
+                  paddingRight: '14px',
+                  backgroundColor: firstTag ? `${firstTag.color}20` : 'transparent',
+                  color: firstTag ? firstTag.color : 'var(--text-tertiary)',
+                  border: firstTag ? '1px solid transparent' : '1px dashed var(--border-active)',
+                  backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%235a6478' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 4px center',
+                }}
+              >
+                <option value="">{firstTag ? 'Remove tag' : '+ add tag'}</option>
+                {tags.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
+              </select>
+            ) : (
+              <button
+                onClick={() => onOpenTagModal?.()}
+                className="text-[9px] font-medium rounded-lg px-1.5 py-0.5 border border-dashed border-[var(--border-active)] text-[var(--text-tertiary)] hover:border-[var(--accent-teal)] hover:text-[var(--accent-teal)] transition-colors"
+              >
+                + create tag
+              </button>
+            )
           ) : firstTag ? (
             <span
               className="px-1.5 py-0.5 rounded-lg text-[9px] font-medium"
@@ -162,13 +172,24 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
             <option value="low">Low</option>
           </select>
 
-          {due && (
-            <span className={`text-[10px] shrink-0 ${
-              due.overdue ? 'text-red-400 font-medium' : due.today ? 'text-[var(--accent-amber)] font-medium' : 'text-[var(--text-tertiary)]'
-            }`}>
-              {due.label}
-            </span>
-          )}
+          <div className="relative shrink-0">
+            <button
+              onClick={() => dateRef.current?.showPicker?.()}
+              className={`text-[10px] shrink-0 cursor-pointer hover:underline ${
+                due?.overdue ? 'text-red-400 font-medium' : due?.today ? 'text-[var(--accent-amber)] font-medium' : 'text-[var(--text-tertiary)]'
+              }`}
+            >
+              {due ? due.label : 'No due date'}
+            </button>
+            <input
+              ref={dateRef}
+              type="date"
+              value={todo.due_date || ''}
+              onChange={(e) => onUpdate({ ...todo, due_date: e.target.value || null })}
+              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+              tabIndex={-1}
+            />
+          </div>
 
           {/* Hover actions — always reserve space via visibility */}
           <div className={`flex gap-0.5 shrink-0 ${hovered ? 'visible' : 'invisible'}`}>

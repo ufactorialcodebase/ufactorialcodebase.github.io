@@ -1,6 +1,6 @@
 // src/components/vault/todos/TodayPanel.jsx
 import { useState, useRef } from 'react'
-import { Sun, GripVertical, X, Check, Circle, Maximize2, Minimize2 } from 'lucide-react'
+import { Sun, GripVertical, X, Check, Circle, Maximize2, Minimize2, Calendar } from 'lucide-react'
 
 const PRIORITY_STYLES = {
   high: { bg: 'rgba(248,113,113,0.15)', text: '#f87171' },
@@ -31,7 +31,7 @@ function TagPill({ tag }) {
   )
 }
 
-export default function TodayPanel({ todos, tags, onComplete, onRemoveFromToday, onReorder, expanded, onToggleExpand }) {
+export default function TodayPanel({ todos, tags, onComplete, onUpdate, onSetTags, onRemoveFromToday, onReorder, expanded, onToggleExpand }) {
   const [dragId, setDragId] = useState(null)
   const [dragOverId, setDragOverId] = useState(null)
   const [dragPosition, setDragPosition] = useState(null)
@@ -129,6 +129,8 @@ export default function TodayPanel({ todos, tags, onComplete, onRemoveFromToday,
           const pStyle = PRIORITY_STYLES[p] || PRIORITY_STYLES.medium
           const isOver = dragOverId === todo.id
 
+          const todoTags = todo.tags || []
+
           return (
             <div
               key={todo.id}
@@ -138,7 +140,7 @@ export default function TodayPanel({ todos, tags, onComplete, onRemoveFromToday,
               onDragOver={(e) => handleDragOver(e, todo.id)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, todo.id)}
-              className={`group flex items-start gap-2.5 px-3 py-2.5 rounded-xl transition-colors relative hover:bg-[var(--bg-tertiary)]/30 ${
+              className={`group flex items-start gap-2.5 px-3 py-2.5 pr-8 rounded-xl transition-colors relative hover:bg-[var(--bg-tertiary)]/30 ${
                 isOver && dragPosition === 'above' ? 'shadow-[inset_0_2px_0_0_var(--accent-indigo)]' : ''
               } ${isOver && dragPosition === 'below' ? 'shadow-[inset_0_-2px_0_0_var(--accent-indigo)]' : ''}`}
             >
@@ -158,21 +160,56 @@ export default function TodayPanel({ todos, tags, onComplete, onRemoveFromToday,
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                  {tag && <TagPill tag={tag} />}
+                  {/* Tag selector */}
+                  {tags.length > 0 ? (
+                    <select
+                      value={todoTags[0] || ''}
+                      onChange={(e) => onSetTags(todo, e.target.value ? [e.target.value] : [])}
+                      className="text-[9px] font-medium rounded-lg px-1.5 py-0.5 cursor-pointer outline-none appearance-none"
+                      style={{
+                        paddingRight: '14px',
+                        backgroundColor: tag ? `${tag.color}20` : 'transparent',
+                        color: tag ? tag.color : 'var(--text-tertiary)',
+                        border: tag ? '1px solid transparent' : '1px dashed var(--border-active)',
+                        backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%235a6478' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 4px center',
+                      }}
+                    >
+                      <option value="">{tag ? 'Remove tag' : '+ add tag'}</option>
+                      {tags.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
+                    </select>
+                  ) : tag ? (
+                    <TagPill tag={tag} />
+                  ) : null}
                   {todo.linked_entity_name && (
                     <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-[rgba(96,165,250,0.12)] text-[#60a5fa]">
                       {todo.linked_entity_name}
                     </span>
                   )}
-                  {due && <span className={`text-[9px] ${due.cls || 'text-[var(--text-tertiary)]'}`}>{due.label}</span>}
+                  {/* Clickable due date */}
+                  <span className="relative">
+                    <span className={`text-[9px] cursor-pointer hover:underline ${due?.cls || 'text-[var(--text-tertiary)]'}`}
+                      onClick={(e) => e.currentTarget.nextElementSibling?.showPicker?.()}>
+                      {due ? due.label : 'No due date'}
+                    </span>
+                    <input
+                      type="date"
+                      value={todo.due_date || ''}
+                      onChange={(e) => onUpdate({ ...todo, due_date: e.target.value || null })}
+                      className="absolute inset-0 opacity-0 w-full h-full cursor-pointer [color-scheme:dark]"
+                      tabIndex={-1}
+                    />
+                  </span>
                 </div>
               </div>
+              {/* X button — positioned outside the content flow to avoid overlap */}
               <button
                 onClick={() => onRemoveFromToday(todo)}
-                className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 text-[var(--text-tertiary)] hover:text-red-400 transition-all"
+                className="absolute right-1.5 top-1.5 w-5 h-5 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 text-[var(--text-tertiary)] hover:text-red-400 hover:bg-[rgba(248,113,113,0.1)] transition-all"
                 title="Remove from today"
               >
-                <X size={14} />
+                <X size={12} />
               </button>
             </div>
           )
