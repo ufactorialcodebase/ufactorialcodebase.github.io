@@ -38,7 +38,7 @@ export default function VaultLayout() {
   const isChatActive = pathname === '/vault/chat'
 
   return (
-    <div className="vault-theme h-screen flex flex-col md:flex-row bg-[var(--bg-primary)]">
+    <div className="vault-theme h-dvh flex flex-col md:flex-row bg-[var(--bg-primary)]">
       <AcceptanceGate />
       <BetaWelcome />
       {toast && (

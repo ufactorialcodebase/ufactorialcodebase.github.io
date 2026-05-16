@@ -38,7 +38,7 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
   return (
     <form onSubmit={handleSubmit} className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-lg shadow-slate-200/50 dark:shadow-slate-950/50">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-end gap-3">
+        <div className="flex items-center gap-3">
           <div className="flex-1 relative">
             <textarea
               ref={textareaRef}

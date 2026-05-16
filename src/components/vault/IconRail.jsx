@@ -62,7 +62,7 @@ export default function IconRail({ basePath = '/vault' }) {
   ]
 
   return (
-    <nav className="w-12 flex-shrink-0 bg-[var(--bg-secondary)] border-r border-[var(--border-subtle)] flex flex-col items-center py-3 gap-1">
+    <nav className="w-12 flex-shrink-0 h-full bg-[var(--bg-secondary)] border-r border-[var(--border-subtle)] flex flex-col items-center py-3 gap-1">
       <span className="text-[9px] font-semibold uppercase tracking-widest text-amber-400/70 mb-2 select-none">
         Beta
       </span>
