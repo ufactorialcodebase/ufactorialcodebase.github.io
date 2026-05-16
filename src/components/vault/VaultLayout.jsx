@@ -53,7 +53,7 @@ export default function VaultLayout() {
       </div>
 
       {/* Mobile: top bar (hidden on desktop) */}
-      <div className="md:hidden">
+      <div className="md:hidden shrink-0">
         <MobileTopBar />
       </div>
 
@@ -68,7 +68,7 @@ export default function VaultLayout() {
       </main>
 
       {/* Mobile: bottom nav (hidden on desktop) */}
-      <div className="md:hidden">
+      <div className="md:hidden shrink-0">
         <BottomNav />
       </div>
     </div>

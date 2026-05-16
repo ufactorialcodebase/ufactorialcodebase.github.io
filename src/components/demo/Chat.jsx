@@ -369,11 +369,11 @@ export default function Chat({
   }, [showContextPanel]);
   
   return (
-    <div className="h-screen flex bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
+    <div className="h-full flex bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className="flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
+        {/* Header — hidden on mobile (MobileTopBar provides HridAI + gear) */}
+        <header className="hidden md:block flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl ${
@@ -441,10 +441,10 @@ export default function Chat({
                 )}
               </button>
               
-              {/* Exit / Sign off button */}
+              {/* Exit / Sign off button — hidden on mobile (use Settings > Sign Out) */}
               <button
                 onClick={handleExit}
-                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-600 dark:hover:text-red-400 transition-all duration-150"
+                className="hidden md:flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-600 dark:hover:text-red-400 transition-all duration-150"
                 title={isAuthUser ? "Sign off & exit" : "Exit demo"}
               >
                 <LogOut className="w-4 h-4" />

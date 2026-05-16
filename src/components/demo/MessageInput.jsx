@@ -81,7 +81,7 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
         </div>
         
         <div className="mt-2.5 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-          <span>Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-500 dark:text-slate-400">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-500 dark:text-slate-400">Shift+Enter</kbd> for new line</span>
+          <span className="hidden md:inline">Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-500 dark:text-slate-400">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-500 dark:text-slate-400">Shift+Enter</kbd> for new line</span>
           {message.length > 0 && (
             <span className={message.length > 2000 ? 'text-amber-500' : ''}>
               {message.length.toLocaleString()} characters
