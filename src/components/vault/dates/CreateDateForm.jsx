@@ -10,7 +10,6 @@ export default function CreateDateForm({ onSubmit, onCancel }) {
   const [day, setDay] = useState('')
   const [year, setYear] = useState('')
   const [dateType, setDateType] = useState('annual')
-  const [personName, setPersonName] = useState('')
   const [recurs, setRecurs] = useState('annual')
   const [importance, setImportance] = useState('medium')
   const [notes, setNotes] = useState('')
@@ -27,9 +26,8 @@ export default function CreateDateForm({ onSubmit, onCancel }) {
       recurs,
       importance,
       notes: notes.trim() || null,
-      person_name: personName.trim() || null,
     })
-    setName(''); setMonth(''); setDay(''); setYear(''); setDateType('annual'); setPersonName(''); setRecurs('annual'); setImportance('medium'); setNotes('')
+    setName(''); setMonth(''); setDay(''); setYear(''); setDateType('annual'); setRecurs('annual'); setImportance('medium'); setNotes('')
   }
 
   return (
@@ -52,8 +50,6 @@ export default function CreateDateForm({ onSubmit, onCancel }) {
         <span className="text-[var(--text-tertiary)] text-xs">/</span>
         <input type="number" min="1900" max="2100" placeholder="YYYY" value={year} onChange={(e) => setYear(e.target.value)}
           className="w-16 bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1 text-xs outline-none text-center" />
-        <input value={personName} onChange={(e) => setPersonName(e.target.value)} placeholder="Person (optional)"
-          className="bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1 text-xs outline-none w-28" />
       </div>
       <div className="flex items-center gap-2 flex-wrap mt-2">
         <select value={recurs} onChange={(e) => setRecurs(e.target.value)}

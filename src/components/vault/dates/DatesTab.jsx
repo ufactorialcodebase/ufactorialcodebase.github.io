@@ -5,9 +5,19 @@ import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
 import DateCard from './DateCard'
 import CreateDateForm from './CreateDateForm'
+import DateDetailSheet from './DateDetailSheet'
 import { getDates, createDate, deleteDate } from '../../../lib/api/vault-dates'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
 import { daysUntilDate } from '../../../lib/format-utils'
+
+const FILTER_TYPES = [
+  { key: 'all', label: 'All' },
+  { key: 'birthday', label: '🎂 Birthdays' },
+  { key: 'anniversary', label: '📌 Anniversaries' },
+  { key: 'deadline', label: '⏰ Deadlines' },
+  { key: 'event', label: '📅 Events' },
+  { key: 'milestone', label: '🎯 Milestones' },
+]
 
 export default function DatesTab() {
   const { data: dateData, loading, error, refetch } = useVaultData('dates', getDates, {
@@ -15,21 +25,33 @@ export default function DatesTab() {
   })
   const [dates, setDates] = useState([])
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [filter, setFilter] = useState('all')
+  const [detailDate, setDetailDate] = useState(null)
 
   useEffect(() => { if (dateData) setDates(dateData) }, [dateData])
 
   const { upcoming, past } = useMemo(() => {
-    const now = new Date()
+    let filtered = dates
+    if (filter !== 'all') filtered = dates.filter((d) => d.date_type === filter)
+
     const up = []
     const pa = []
-    for (const d of dates) {
+    for (const d of filtered) {
       const days = daysUntilDate(d.month_day)
-      if (days >= 0) up.push({ ...d, _daysUntil: days })
-      else pa.push(d)
+      // For annual dates, days is always >= 0 (next occurrence)
+      // For one-time past dates, days wraps to next year — check if year is in the past
+      const isOnetime = d.recurs === 'once'
+      const isPast = isOnetime && d.year && new Date(`${d.year}-${d.month_day}`) < new Date()
+
+      if (isPast) {
+        pa.push({ ...d, _isPast: true })
+      } else {
+        up.push({ ...d, _daysUntil: days ?? 999, _isPast: false })
+      }
     }
     up.sort((a, b) => a._daysUntil - b._daysUntil)
     return { upcoming: up, past: pa }
-  }, [dates])
+  }, [dates, filter])
 
   const handleCreate = async (data) => {
     try {
@@ -51,6 +73,22 @@ export default function DatesTab() {
       setCached('dates', updated)
     } catch (err) {
       alert('Failed to delete: ' + err.message)
+    }
+  }
+
+  // Update = delete old + create new (no PUT endpoint yet)
+  const handleUpdate = async (oldDate, newData) => {
+    try {
+      // Delete the old date by name
+      const deleteResult = await deleteDate(oldDate.name)
+      // Create with new data
+      const createResult = await createDate(newData)
+      const updated = createResult.dates || []
+      setDates(updated)
+      setCached('dates', updated)
+    } catch (err) {
+      alert('Failed to update: ' + err.message)
+      refetch()
     }
   }
 
@@ -106,18 +144,53 @@ export default function DatesTab() {
 
       {showCreateForm && <CreateDateForm onSubmit={handleCreate} onCancel={() => setShowCreateForm(false)} />}
 
+      {/* Filter chips */}
+      <div className="flex gap-2 mb-4 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {FILTER_TYPES.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`px-3 py-1 rounded-full border text-[11px] font-medium whitespace-nowrap transition-colors ${
+              filter === f.key
+                ? 'border-[rgba(99,102,241,0.3)] bg-[rgba(99,102,241,0.12)] text-[var(--accent-indigo)]'
+                : 'border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-active)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {upcoming.length > 0 && (
         <div className="mb-6">
-          <div className="text-[var(--text-secondary)] text-[10px] uppercase tracking-wide mb-2">Upcoming</div>
-          {upcoming.map((d, i) => <DateCard key={d.name + i} date={d} onDelete={handleDelete} />)}
+          <div className="text-[var(--text-tertiary)] text-[10px] uppercase tracking-wide mb-2">Upcoming ({upcoming.length})</div>
+          {upcoming.map((d, i) => (
+            <DateCard key={d.name + i} date={d} isPast={false} onDelete={handleDelete} onOpenDetail={setDetailDate} />
+          ))}
         </div>
+      )}
+
+      {upcoming.length === 0 && filter !== 'all' && (
+        <div className="text-center py-8 text-sm text-[var(--text-tertiary)]">No upcoming dates match this filter</div>
       )}
 
       {past.length > 0 && (
         <div>
-          <div className="text-[var(--text-secondary)] text-[10px] uppercase tracking-wide mb-2">Past</div>
-          {past.map((d, i) => <DateCard key={d.name + i} date={d} onDelete={handleDelete} />)}
+          <div className="text-[var(--text-tertiary)] text-[10px] uppercase tracking-wide mb-2">Past ({past.length})</div>
+          {past.map((d, i) => (
+            <DateCard key={d.name + i} date={d} isPast={true} onDelete={handleDelete} onOpenDetail={setDetailDate} />
+          ))}
         </div>
+      )}
+
+      {/* Detail sheet */}
+      {detailDate && (
+        <DateDetailSheet
+          date={detailDate}
+          onSave={handleUpdate}
+          onDelete={handleDelete}
+          onClose={() => setDetailDate(null)}
+        />
       )}
     </div>
   )
