@@ -1,6 +1,6 @@
 // src/components/vault/IconRail.jsx
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   MessageCircle, User, Users, Lightbulb,
   CheckSquare, Calendar, FileText, List, Globe, Settings,
@@ -43,6 +43,11 @@ export default function IconRail({ basePath = '/vault' }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [hoveredIndex, setHoveredIndex] = useState(null)
+  const [isTouch, setIsTouch] = useState(false)
+
+  useEffect(() => {
+    setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0)
+  }, [])
 
   const tabs = [
     { path: `${basePath}/chat`, icon: MessageCircle, label: 'Chat' },
@@ -81,7 +86,7 @@ export default function IconRail({ basePath = '/vault' }) {
             >
               <Icon size={18} />
             </button>
-            {hoveredIndex === i && (
+            {!isTouch && hoveredIndex === i && (
               <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 rounded bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-xs whitespace-nowrap z-50 pointer-events-none">
                 {tab.label}
               </div>
@@ -107,7 +112,7 @@ export default function IconRail({ basePath = '/vault' }) {
         >
           <Settings size={18} />
         </button>
-        {hoveredIndex === 'profile' && (
+        {!isTouch && hoveredIndex === 'profile' && (
           <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 rounded bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-xs whitespace-nowrap z-50 pointer-events-none">
             Account & Billing
           </div>

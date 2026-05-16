@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import IconRail from './IconRail'
+import BottomNav from './BottomNav'
+import MobileTopBar from './MobileTopBar'
 import ChatTab from './ChatTab'
 import BetaWelcome from './BetaWelcome'
 import AcceptanceGate from './AcceptanceGate'
@@ -36,7 +38,7 @@ export default function VaultLayout() {
   const isChatActive = pathname === '/vault/chat'
 
   return (
-    <div className="vault-theme h-screen flex bg-[var(--bg-primary)]">
+    <div className="vault-theme h-screen flex flex-col md:flex-row bg-[var(--bg-primary)]">
       <AcceptanceGate />
       <BetaWelcome />
       {toast && (
@@ -44,15 +46,31 @@ export default function VaultLayout() {
           {toast}
         </div>
       )}
-      <IconRail basePath="/vault" />
-      <main className="flex-1 overflow-y-auto relative">
+
+      {/* Desktop: side rail (hidden on mobile) */}
+      <div className="hidden md:block">
+        <IconRail basePath="/vault" />
+      </div>
+
+      {/* Mobile: top bar (hidden on desktop) */}
+      <div className="md:hidden">
+        <MobileTopBar />
+      </div>
+
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto relative min-h-0">
         {/* Chat is always mounted to preserve session state — hidden when other tabs are active */}
-        <div className={isChatActive ? '' : 'hidden'}>
+        <div className={isChatActive ? 'h-full' : 'hidden'}>
           <ChatTab />
         </div>
         {/* Other tabs render via Outlet and unmount on switch (fresh data each time) */}
         {!isChatActive && <Outlet />}
       </main>
+
+      {/* Mobile: bottom nav (hidden on desktop) */}
+      <div className="md:hidden">
+        <BottomNav />
+      </div>
     </div>
   )
 }
