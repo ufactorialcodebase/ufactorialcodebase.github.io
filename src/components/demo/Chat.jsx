@@ -7,6 +7,7 @@ import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSe
 import { signOut } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
+import { useMobileContextPanel } from '../vault/VaultLayout';
 
 /**
  * Generate a unique message ID
@@ -43,6 +44,12 @@ export default function Chat({
   const [isRetrieving, setIsRetrieving] = useState(false);
   const [abortFn, setAbortFn] = useState(null);
   const greetingLoaded = useRef(false); // Prevent double greeting from StrictMode
+
+  // Sync mobile context panel toggle with local state
+  const mobileCtx = useMobileContextPanel()
+  useEffect(() => {
+    if (mobileCtx) setShowContextPanel(mobileCtx.show)
+  }, [mobileCtx?.show])
   
   /**
    * Handle sending a message
@@ -511,7 +518,7 @@ export default function Chat({
           disabled={isLoading || isInitializing || (isFreeUser && conversationsRemaining <= 0)}
           placeholder={(isAlexMode || isSimulatedMode) ? `Chat as ${personaName}...` : "Type a message..."}
         />
-        <p className="text-center text-[10px] text-slate-400 dark:text-slate-500 py-1">
+        <p className="text-center text-[10px] text-slate-400 dark:text-slate-500 py-0.5 md:py-1">
           HridAI may make mistakes — verify its responses
         </p>
       </div>

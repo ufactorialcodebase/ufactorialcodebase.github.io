@@ -1,6 +1,6 @@
 // src/components/vault/todos/TodoItem.jsx
 import { useState, useRef } from 'react'
-import { Trash2, CheckCircle, Circle, Sun, Check } from 'lucide-react'
+import { Trash2, CheckCircle, Circle, Check } from 'lucide-react'
 import InlineEdit from '../InlineEdit'
 
 const PRIORITY_STYLES = {
@@ -22,7 +22,7 @@ function formatDueDate(d) {
   return { label: `Due ${label}`, overdue: false }
 }
 
-export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, onSetToday, onSetTags, onOpenTagModal, draggable: isDraggable }) {
+export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, onSetToday, onSetTags, onOpenTagModal, onOpenDetail, draggable: isDraggable }) {
   const [hovered, setHovered] = useState(false)
   const dateRef = useRef(null)
   const isCompleted = todo.status === 'completed'
@@ -31,8 +31,7 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
   const due = formatDueDate(todo.due_date)
   const isInToday = todo.in_today
 
-  // Only show "from chat" for AI-created todos; vault/user-created show nothing
-  const sourceLabel = todo.source === 'ai_manager' ? 'from chat' : null
+  const sourceLabel = todo.source === 'ai_manager' ? 'from chat' : 'from UI'
 
   const todoTags = todo.tags || []
   const firstTag = todoTags.length > 0
@@ -49,6 +48,14 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
     e.target.classList.remove('opacity-30')
   }
 
+  // Mobile: tap the todo body to open detail sheet
+  const handleMobileTap = (e) => {
+    // Don't trigger if tapping checkbox, "Do today" button, or on desktop
+    if (window.innerWidth >= 768) return
+    if (e.target.closest('button')) return
+    onOpenDetail?.(todo)
+  }
+
   return (
     <div
       className={`px-4 py-3 rounded-xl mb-0.5 transition-colors ${
@@ -56,14 +63,15 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
       }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={handleMobileTap}
       draggable={isDraggable && !isCompleted}
       onDragStart={isDraggable ? handleDragStart : undefined}
       onDragEnd={isDraggable ? handleDragEnd : undefined}
       data-todo-id={todo.id}
     >
-      {/* Row 1: checkbox + title (+ desktop right-side controls) */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => onComplete(todo)} className="shrink-0">
+      {/* Row 1: checkbox + title + "Do today" (mobile) / desktop controls */}
+      <div className="flex items-start gap-3">
+        <button onClick={() => onComplete(todo)} className="shrink-0 mt-0.5">
           {isCompleted ? (
             <CheckCircle size={18} className="text-[var(--status-resolved)]" />
           ) : (
@@ -71,17 +79,34 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
           )}
         </button>
 
+        {/* Desktop: inline edit title */}
         <div className={`flex-1 min-w-0 ${isCompleted ? 'line-through' : ''}`}>
           {isCompleted ? (
             <span className="text-[var(--text-secondary)] text-sm">{todo.title}</span>
           ) : (
-            <InlineEdit
-              value={todo.title}
-              onSave={(val) => onUpdate({ ...todo, title: val })}
-              className="text-sm"
-            />
+            <>
+              <span className="md:hidden text-sm text-[var(--text-primary)]">{todo.title}</span>
+              <div className="hidden md:block">
+                <InlineEdit
+                  value={todo.title}
+                  onSave={(val) => onUpdate({ ...todo, title: val })}
+                  className="text-sm"
+                />
+              </div>
+            </>
           )}
         </div>
+
+        {/* Mobile: "Do today" aligned with title */}
+        {!isCompleted && (
+          <button onClick={() => onSetToday(todo, !isInToday)}
+            className={`md:hidden shrink-0 px-2 py-0.5 rounded-md text-[9px] font-medium whitespace-nowrap mt-0.5 ${
+              isInToday ? 'bg-[rgba(52,211,153,0.08)] text-[var(--status-resolved)] italic'
+                : 'bg-[rgba(245,158,11,0.1)] text-[var(--accent-amber)]'
+            }`}>
+            {isInToday ? '✓ In today' : 'Do today'}
+          </button>
+        )}
 
         {/* Desktop: priority, due date, actions inline */}
         {!isCompleted && (
@@ -128,8 +153,8 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
         )}
       </div>
 
-      {/* Row 2: meta (tags, entity, source) — both mobile and desktop */}
-      <div className="flex items-center gap-1.5 mt-1 ml-[30px] flex-wrap">
+      {/* Desktop Row 2: meta (tags, entity, source) */}
+      <div className="hidden md:flex items-center gap-1.5 mt-1 ml-[30px] flex-wrap">
         {sourceLabel && (
           <span className="text-[var(--text-tertiary)] text-[9px] shrink-0">{sourceLabel}</span>
         )}
@@ -172,26 +197,41 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
             Completed {new Date(todo.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </span>
         )}
+      </div>
 
-        {/* Mobile: priority, due, action inline in meta row */}
-        {!isCompleted && (
+      {/* Mobile Row 2: priority + due date */}
+      {!isCompleted && (
+        <div className="md:hidden flex items-center gap-1.5 mt-1.5 ml-[30px]">
+          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-medium capitalize"
+            style={{ backgroundColor: pStyle.bg, color: pStyle.text }}>
+            {priority}
+          </span>
+          <span className={`text-[9px] ${
+            due?.overdue ? 'text-red-400 font-medium' : due?.today ? 'text-[var(--accent-amber)] font-medium' : 'text-[var(--text-tertiary)]'
+          }`}>
+            {due ? due.label : 'No due date'}
+          </span>
+        </div>
+      )}
+
+      {/* Mobile Row 3: tag + source */}
+      <div className="md:hidden flex items-center gap-1.5 mt-1 ml-[30px]">
+        {firstTag ? (
+          <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-medium"
+            style={{ backgroundColor: `${firstTag.color}20`, color: firstTag.color }}>
+            {firstTag.name}
+          </span>
+        ) : (
+          <span className="text-[8px] text-[var(--text-tertiary)]">No tag</span>
+        )}
+        <span className="text-[8px] text-[var(--text-tertiary)]">·</span>
+        <span className="text-[8px] text-[var(--text-tertiary)]">{sourceLabel}</span>
+        {isCompleted && todo.completed_at && (
           <>
-            <span className="md:hidden px-1.5 py-0.5 rounded-full text-[9px] font-medium capitalize"
-              style={{ backgroundColor: pStyle.bg, color: pStyle.text }}>
-              {priority}
+            <span className="text-[8px] text-[var(--text-tertiary)]">·</span>
+            <span className="text-[8px] text-[var(--text-tertiary)]">
+              Completed {new Date(todo.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
-            <span className={`md:hidden text-[9px] ${
-              due?.overdue ? 'text-red-400 font-medium' : due?.today ? 'text-[var(--accent-amber)] font-medium' : 'text-[var(--text-tertiary)]'
-            }`}>
-              {due ? due.label : 'No due date'}
-            </span>
-            <button onClick={() => onSetToday(todo, !isInToday)}
-              className={`md:hidden ml-auto px-2 py-0.5 rounded-md text-[9px] font-medium whitespace-nowrap ${
-                isInToday ? 'bg-[rgba(52,211,153,0.08)] text-[var(--status-resolved)] italic'
-                  : 'bg-[rgba(245,158,11,0.1)] text-[var(--accent-amber)]'
-              }`}>
-              {isInToday ? '✓ In today' : 'Do today'}
-            </button>
           </>
         )}
       </div>

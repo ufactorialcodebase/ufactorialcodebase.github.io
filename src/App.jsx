@@ -624,7 +624,7 @@ export default function App() {
         <Route path="/login" element={<Navigate to="/signup" replace />} />
         <Route path="/signup" element={<AuthPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
+        <Route path="/profile" element={<Navigate to="/vault/profile" replace />} />
         <Route path="/demo" element={<CodeEntry />} />
         <Route path="/hridai" element={<AuthGuard><TryItOut /></AuthGuard>} />
               <Route path="/demo/try-it-out" element={<Navigate to="/hridai" replace />} />
@@ -655,6 +655,7 @@ export default function App() {
           <Route path="artifacts" element={<ArtifactsTab />} />
           <Route path="lists" element={<ListsTab />} />
           <Route path="world" element={<WorldTab />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </AuthProvider>

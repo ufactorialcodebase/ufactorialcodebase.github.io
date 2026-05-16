@@ -101,11 +101,11 @@ export default function IconRail({ basePath = '/vault' }) {
       {/* Profile / Settings */}
       <div className="relative">
         <button
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/vault/profile')}
           onMouseEnter={() => setHoveredIndex('profile')}
           onMouseLeave={() => setHoveredIndex(null)}
           className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-            pathname === '/profile'
+            pathname === '/vault/profile'
               ? 'bg-[rgba(99,102,241,0.15)] text-[var(--accent-indigo)]'
               : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
           }`}

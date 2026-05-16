@@ -8,6 +8,7 @@ import CreateTodoForm from './CreateTodoForm'
 import FilterBar from './FilterBar'
 import TodayPanel from './TodayPanel'
 import TagModal from './TagModal'
+import TodoDetailSheet from './TodoDetailSheet'
 import {
   getTodos, createTodo, updateTodo, completeTodo, deleteTodo,
   setTodoToday, reorderToday, getTodoTags, createTodoTag, setTodoTags,
@@ -30,6 +31,7 @@ export default function TodosTab() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showCompleted, setShowCompleted] = useState(false)
   const [showTagModal, setShowTagModal] = useState(false)
+  const [detailTodo, setDetailTodo] = useState(null)
   const [filter, setFilter] = useState({ type: 'all' })
   const [mainExpanded, setMainExpanded] = useState(false)
   const [todayExpanded, setTodayExpanded] = useState(false)
@@ -296,6 +298,7 @@ export default function TodosTab() {
                     onSetToday={handleSetToday}
                     onSetTags={handleSetTags}
                     onOpenTagModal={() => setShowTagModal(true)}
+                    onOpenDetail={(t) => setDetailTodo(t)}
                     draggable
                   />
                 ))}
@@ -329,6 +332,7 @@ export default function TodosTab() {
                     onSetToday={handleSetToday}
                     onSetTags={handleSetTags}
                     onOpenTagModal={() => setShowTagModal(true)}
+                    onOpenDetail={(t) => setDetailTodo(t)}
                   />
                 ))}
               </div>
@@ -389,6 +393,17 @@ export default function TodosTab() {
 
       {/* Tag modal */}
       {showTagModal && <TagModal onClose={() => setShowTagModal(false)} onCreate={handleCreateTag} />}
+      {detailTodo && (
+        <TodoDetailSheet
+          todo={detailTodo}
+          tags={tags}
+          onUpdate={handleUpdate}
+          onSetTags={handleSetTags}
+          onSetToday={handleSetToday}
+          onDelete={handleDelete}
+          onClose={() => setDetailTodo(null)}
+        />
+      )}
     </div>
   )
 }
