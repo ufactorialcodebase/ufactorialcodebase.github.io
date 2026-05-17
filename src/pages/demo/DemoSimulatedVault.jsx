@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useNavigate, Outlet, Navigate, useLocation } from 'react-router-dom'
+import { useNavigate, Outlet, Navigate, useLocation, useParams } from 'react-router-dom'
 import { DemoProvider } from '../../components/vault/DemoContext'
 import IconRail from '../../components/vault/IconRail'
 import ChatTab from '../../components/vault/ChatTab'
@@ -14,19 +14,20 @@ export default function DemoSimulatedVault() {
   const [error, setError] = useState(null)
   const fetchStarted = useRef(false)
 
-  const personaId = sessionStorage.getItem('hrdai_persona_id')
+  const { personaId } = useParams()
+  // personaName is display-only; keep reading from sessionStorage
   const personaName = sessionStorage.getItem('hrdai_persona_name')
 
   // Redirect to chat if at root
-  if (isReady && (location.pathname === '/demo/simulated/vault' || location.pathname === '/demo/simulated/vault/')) {
-    return <Navigate to="/demo/simulated/vault/chat" replace />
+  if (isReady && (location.pathname === `/demo/simulated/${personaId}/vault` || location.pathname === `/demo/simulated/${personaId}/vault/`)) {
+    return <Navigate to={`/demo/simulated/${personaId}/vault/chat`} replace />
   }
 
   useEffect(() => {
     if (fetchStarted.current) return
     fetchStarted.current = true
 
-    if (!personaId) { navigate('/demo/simulated'); return }
+    if (!personaId) { navigate('/demo/simulated'); return } // should not happen via URL routing, but guard just in case
 
     const loadDemoData = async () => {
       try {
@@ -92,12 +93,12 @@ export default function DemoSimulatedVault() {
     )
   }
 
-  const isChatActive = location.pathname === '/demo/simulated/vault/chat'
+  const isChatActive = location.pathname === `/demo/simulated/${personaId}/vault/chat`
 
   return (
     <DemoProvider personaId={personaId} personaName={personaName}>
       <div className="vault-theme h-screen flex bg-[var(--bg-primary)]">
-        <IconRail basePath="/demo/simulated/vault" />
+        <IconRail basePath={`/demo/simulated/${personaId}/vault`} />
         <main className="flex-1 overflow-y-auto flex flex-col">
           {/* Demo banner */}
           <div className="flex-shrink-0 px-4 py-1 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 border-b border-violet-500/20 flex items-center justify-between">

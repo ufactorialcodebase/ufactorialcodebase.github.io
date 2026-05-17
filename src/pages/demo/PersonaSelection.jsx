@@ -183,9 +183,9 @@ export default function PersonaSelection() {
     // Store selected persona in session storage
     sessionStorage.setItem('hrdai_persona_id', persona.id);
     sessionStorage.setItem('hrdai_persona_name', persona.name);
-    
-    // Navigate to vault (full demo experience)
-    navigate('/demo/simulated/vault/chat');
+
+    // Navigate to chat with persona id in URL
+    navigate(`/demo/simulated/${persona.id}`);
   };
   
   const handleBack = () => {

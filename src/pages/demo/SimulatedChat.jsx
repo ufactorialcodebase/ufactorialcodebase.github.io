@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Chat from '../../components/demo/Chat';
 import { getAccessCode, startPersonaSession, endPersonaSession } from '../../lib/api/index.js';
 
@@ -9,13 +9,13 @@ import { getAccessCode, startPersonaSession, endPersonaSession } from '../../lib
  */
 export default function SimulatedChat() {
   const navigate = useNavigate();
+  const { personaId } = useParams();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(null);
   const [personaUserId, setPersonaUserId] = useState(null);
   const initStarted = useRef(false); // Prevent double init from StrictMode
-  
-  // Get persona info from session storage
-  const personaId = sessionStorage.getItem('hrdai_persona_id');
+
+  // personaName is display-only; keep reading from sessionStorage
   const personaName = sessionStorage.getItem('hrdai_persona_name');
   
   // Check for access code and persona on mount
@@ -30,13 +30,7 @@ export default function SimulatedChat() {
       navigate('/demo');
       return;
     }
-    
-    if (!personaId) {
-      // No persona selected, go back to selection
-      navigate('/demo/simulated');
-      return;
-    }
-    
+
     // Start persona session
     const initSession = async () => {
       try {
@@ -100,18 +94,16 @@ export default function SimulatedChat() {
   const getPrompts = () => {
     if (personaId === 'alex') {
       return [
-        "I should start planning that Japan trip soon...",
-        "Been slacking on my half marathon training lately",
-        "Max is getting bored at home today, what should we do?",
-        "Ugh, exhausting day at work today. Its Mike again!",
-        "I think I'll be done with work early on Friday!",
+        "Ugh, Mike is at it again with the roadmap pushback...",
+        "What should I be doing to get ready for the baby?",
+        "Plan something fun for Sarah this weekend — she's been stressed",
+        "I feel like I'm forgetting something this month...",
       ];
     }
-    // Default prompts for other personas
     return [
       "Just checking in - what's on my plate?",
-      "Been thinking about my family lately",
       "What should I focus on today?",
+      "I've been feeling off lately...",
     ];
   };
   

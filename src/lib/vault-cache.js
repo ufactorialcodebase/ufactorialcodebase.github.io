@@ -87,10 +87,10 @@ export function useVaultData(cacheKey, fetchFn, options = {}) {
   }
 
   useEffect(() => {
-    // In demo mode, only use cache — don't fetch from API
-    if (_demoMode && getCached(cacheKey)) {
+    // In demo mode, NEVER fetch from API — use cache or return empty
+    if (_demoMode) {
       const cached = getCached(cacheKey)
-      setData(cached)
+      setData(cached ?? null)
       setLoading(false)
       return
     }
@@ -99,6 +99,7 @@ export function useVaultData(cacheKey, fetchFn, options = {}) {
   }, [cacheKey])
 
   const refetch = () => {
+    if (_demoMode) return  // Never refetch in demo mode
     setLoading(!data)
     setError(null)
     doFetch()

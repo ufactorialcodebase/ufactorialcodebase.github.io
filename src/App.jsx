@@ -630,8 +630,8 @@ export default function App() {
               <Route path="/demo/try-it-out" element={<Navigate to="/hridai" replace />} />
         <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
         <Route path="/demo/simulated" element={<PersonaSelection />} />
-        <Route path="/demo/simulated/chat" element={<AuthGuard><SimulatedChat /></AuthGuard>} />
-        <Route path="/demo/simulated/vault" element={<DemoSimulatedVault />}>
+        <Route path="/demo/simulated/:personaId" element={<AuthGuard><SimulatedChat /></AuthGuard>} />
+        <Route path="/demo/simulated/:personaId/vault" element={<DemoSimulatedVault />}>
           <Route path="chat" element={null} />
           <Route path="self" element={<SelfTab />} />
           <Route path="people" element={<PeopleTab />} />
