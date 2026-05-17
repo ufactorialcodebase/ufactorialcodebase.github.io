@@ -73,10 +73,11 @@ export default function DateCard({ date, isPast, onUpdate, onDelete, onOpenDetai
     countdown = `In ${rawDays} days`
   }
 
-  // Mobile: tap opens detail sheet
+  // Mobile: tap opens detail sheet (desktop uses inline editing)
   const handleClick = (e) => {
-    if (window.innerWidth >= 768) return // desktop: inline editing
     if (e.target.closest('button') || e.target.closest('select')) return
+    // Only open detail sheet on mobile — check via matchMedia
+    if (window.matchMedia('(min-width: 768px)').matches) return
     onOpenDetail?.(date)
   }
 
@@ -94,7 +95,7 @@ export default function DateCard({ date, isPast, onUpdate, onDelete, onOpenDetai
 
   return (
     <div
-      className={`py-3 border-b border-[var(--border-subtle)] ${isPast ? 'opacity-55' : ''} ${window.innerWidth < 768 ? 'cursor-pointer' : ''}`}
+      className={`py-3 border-b border-[var(--border-subtle)] ${isPast ? 'opacity-55' : ''} md:cursor-default cursor-pointer`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
