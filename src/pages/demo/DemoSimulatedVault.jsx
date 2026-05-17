@@ -9,20 +9,16 @@ import { normalizeEntity } from '../../components/vault/people/entity-utils'
 import { getAccessCode, startPersonaSession, endPersonaSession } from '../../lib/api/index.js'
 
 export default function DemoSimulatedVault() {
+  // === ALL hooks must be called before any conditional returns ===
   const navigate = useNavigate()
   const location = useLocation()
   const [isReady, setIsReady] = useState(false)
   const [error, setError] = useState(null)
   const initStarted = useRef(false)
-
   const { personaId } = useParams()
   const personaName = sessionStorage.getItem('hrdai_persona_name')
 
-  // Redirect to chat if at root
-  if (isReady && (location.pathname === `/demo/simulated/${personaId}/vault` || location.pathname === `/demo/simulated/${personaId}/vault/`)) {
-    return <Navigate to={`/demo/simulated/${personaId}/vault/chat`} replace />
-  }
-
+  // Init: start persona session + load demo data
   useEffect(() => {
     if (initStarted.current) return
     initStarted.current = true
@@ -91,7 +87,6 @@ export default function DemoSimulatedVault() {
   }, [personaId])
 
   const handleExit = async () => {
-    // End persona session
     const accessCode = getAccessCode()
     if (accessCode && personaId) {
       try {
@@ -106,6 +101,13 @@ export default function DemoSimulatedVault() {
     sessionStorage.removeItem('hrdai_persona_id')
     sessionStorage.removeItem('hrdai_persona_name')
     navigate('/demo/simulated')
+  }
+
+  // === Conditional returns AFTER all hooks ===
+
+  // Redirect to chat if at vault root
+  if (isReady && (location.pathname === `/demo/simulated/${personaId}/vault` || location.pathname === `/demo/simulated/${personaId}/vault/`)) {
+    return <Navigate to={`/demo/simulated/${personaId}/vault/chat`} replace />
   }
 
   if (!isReady) {
