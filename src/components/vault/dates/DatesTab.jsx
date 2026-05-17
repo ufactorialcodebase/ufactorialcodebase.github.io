@@ -165,7 +165,7 @@ export default function DatesTab() {
         <div className="mb-6">
           <div className="text-[var(--text-tertiary)] text-[10px] uppercase tracking-wide mb-2">Upcoming ({upcoming.length})</div>
           {upcoming.map((d, i) => (
-            <DateCard key={d.name + i} date={d} isPast={false} onDelete={handleDelete} onOpenDetail={setDetailDate} />
+            <DateCard key={d.name + i} date={d} isPast={false} onUpdate={handleUpdate} onDelete={handleDelete} onOpenDetail={setDetailDate} />
           ))}
         </div>
       )}
@@ -178,7 +178,7 @@ export default function DatesTab() {
         <div>
           <div className="text-[var(--text-tertiary)] text-[10px] uppercase tracking-wide mb-2">Past ({past.length})</div>
           {past.map((d, i) => (
-            <DateCard key={d.name + i} date={d} isPast={true} onDelete={handleDelete} onOpenDetail={setDetailDate} />
+            <DateCard key={d.name + i} date={d} isPast={true} onUpdate={handleUpdate} onDelete={handleDelete} onOpenDetail={setDetailDate} />
           ))}
         </div>
       )}

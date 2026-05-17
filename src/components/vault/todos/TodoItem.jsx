@@ -125,12 +125,11 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
               <option value="medium">Medium</option>
               <option value="low">Low</option>
             </select>
-            <div className="relative w-[90px] shrink-0">
+            <div className="relative w-[90px] shrink-0 cursor-pointer" onClick={() => dateRef.current?.showPicker?.()}>
               <input ref={dateRef} type="date" value={todo.due_date || ''}
                 onChange={(e) => onUpdate({ ...todo, due_date: e.target.value || null })}
-                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer [color-scheme:dark]" tabIndex={-1} />
-              <span onClick={() => dateRef.current?.showPicker?.()}
-                className={`block text-[10px] cursor-pointer hover:underline text-center ${
+                className="absolute inset-0 opacity-0 w-0 h-0 overflow-hidden [color-scheme:dark]" tabIndex={-1} />
+              <span className={`block text-[10px] hover:underline text-center ${
                   due?.overdue ? 'text-red-400 font-medium' : due?.today ? 'text-[var(--accent-amber)] font-medium' : 'text-[var(--text-tertiary)]'
                 }`}>
                 {due ? due.label : 'No due date'}

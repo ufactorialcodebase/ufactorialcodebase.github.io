@@ -53,7 +53,7 @@ export default function InlineEdit({ value, onSave, placeholder = 'Empty', class
     >
       <span className="text-[var(--text-primary)]">{value || placeholder}</span>
       <Pencil
-        size={12}
+        size={16}
         className="text-[var(--text-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity"
       />
     </span>

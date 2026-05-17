@@ -1,15 +1,12 @@
 // src/components/vault/dates/DateCard.jsx
-// Redesigned: date badge, 3-row layout, priority-colored badge, tap-to-edit on mobile
-import { useState } from 'react'
+// Desktop: inline editable fields. Mobile: tap opens detail sheet.
+import { useState, useRef } from 'react'
+import { Trash2 } from 'lucide-react'
 import { daysUntilDate as daysUntil } from '../../../lib/format-utils'
 
 const TYPE_ICONS = {
-  birthday: '🎂',
-  anniversary: '📌',
-  deadline: '⏰',
-  milestone: '🎯',
-  event: '📅',
-  annual: '🔄',
+  birthday: '🎂', anniversary: '📌', deadline: '⏰',
+  milestone: '🎯', event: '📅', annual: '🔄',
 }
 
 const TYPE_COLORS = {
@@ -22,9 +19,9 @@ const TYPE_COLORS = {
 }
 
 const PRIORITY_BADGE_COLORS = {
-  high: { border: 'rgba(248,113,113,0.3)', month: '#f87171', day: '#f87171' },
-  medium: { border: 'rgba(245,158,11,0.3)', month: '#f59e0b', day: '#f59e0b' },
-  low: { border: 'var(--border-subtle)', month: 'var(--text-tertiary)', day: 'var(--text-primary)' },
+  high: { border: 'rgba(248,113,113,0.3)', color: '#f87171' },
+  medium: { border: 'rgba(245,158,11,0.3)', color: '#f59e0b' },
+  low: { border: 'var(--border-subtle)', color: 'var(--text-tertiary)' },
 }
 
 const PRIORITY_STYLES = {
@@ -33,6 +30,7 @@ const PRIORITY_STYLES = {
   low: { bg: 'rgba(139,149,168,0.15)', text: '#8b95a8' },
 }
 
+const DATE_TYPES = ['birthday', 'anniversary', 'deadline', 'milestone', 'event', 'annual']
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
 function parseMonthDay(monthDay) {
@@ -42,18 +40,17 @@ function parseMonthDay(monthDay) {
   return { month: MONTHS[parseInt(parts[0]) - 1] || '', day: parseInt(parts[1]) || '' }
 }
 
-export default function DateCard({ date, isPast, onDelete, onOpenDetail }) {
+export default function DateCard({ date, isPast, onUpdate, onDelete, onOpenDetail }) {
   const [hovered, setHovered] = useState(false)
   const { month, day } = parseMonthDay(date.month_day)
   const importance = (date.importance || 'medium').toLowerCase()
-  const pColors = PRIORITY_BADGE_COLORS[importance] || PRIORITY_BADGE_COLORS.medium
+  const pBadge = PRIORITY_BADGE_COLORS[importance] || PRIORITY_BADGE_COLORS.medium
   const pStyle = PRIORITY_STYLES[importance] || PRIORITY_STYLES.medium
   const typeKey = date.date_type || 'annual'
   const typeColor = TYPE_COLORS[typeKey] || TYPE_COLORS.annual
   const typeIcon = TYPE_ICONS[typeKey] || '📅'
   const isAnnual = date.recurs === 'annual'
 
-  // Countdown logic
   const rawDays = daysUntil(date.month_day)
   let countdown = ''
   let countdownCls = 'text-[var(--text-tertiary)]'
@@ -76,14 +73,28 @@ export default function DateCard({ date, isPast, onDelete, onOpenDetail }) {
     countdown = `In ${rawDays} days`
   }
 
+  // Mobile: tap opens detail sheet
   const handleClick = (e) => {
-    if (e.target.closest('button')) return
+    if (window.innerWidth >= 768) return // desktop: inline editing
+    if (e.target.closest('button') || e.target.closest('select')) return
     onOpenDetail?.(date)
   }
 
+  // Desktop: inline field change → update
+  const handleFieldChange = (field, value) => {
+    onUpdate?.(date, { ...date, [field]: value })
+  }
+
+  const handleTypeChange = (newType) => handleFieldChange('date_type', newType)
+  const handleImportanceChange = (newImp) => handleFieldChange('importance', newImp)
+  const handleRecursChange = (newRecurs) => handleFieldChange('recurs', newRecurs)
+
+  const selectCls = 'text-[9px] font-medium rounded-lg px-1.5 py-0.5 cursor-pointer outline-none appearance-none'
+  const chevronBg = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%235a6478' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")"
+
   return (
     <div
-      className={`py-3 border-b border-[var(--border-subtle)] cursor-pointer ${isPast ? 'opacity-55' : ''}`}
+      className={`py-3 border-b border-[var(--border-subtle)] ${isPast ? 'opacity-55' : ''} ${window.innerWidth < 768 ? 'cursor-pointer' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
@@ -94,35 +105,72 @@ export default function DateCard({ date, isPast, onDelete, onOpenDetail }) {
           className="w-[42px] h-[46px] rounded-[10px] flex flex-col items-center justify-center shrink-0"
           style={{
             background: 'var(--bg-tertiary)',
-            borderWidth: '1px',
-            borderStyle: 'solid',
-            borderColor: isPast ? 'var(--border-subtle)' : pColors.border,
+            border: `1px solid ${isPast ? 'var(--border-subtle)' : pBadge.border}`,
           }}
         >
-          <span className="text-[7px] font-bold tracking-wide leading-none" style={{ color: isPast ? 'var(--text-tertiary)' : pColors.month }}>{month}</span>
-          <span className="text-[16px] font-bold leading-tight" style={{ color: isPast ? 'var(--text-tertiary)' : pColors.day }}>{day}</span>
-          {date.year && <span className="text-[7px] font-medium leading-none mt-px" style={{ color: 'var(--text-tertiary)' }}>{date.year}</span>}
+          <span className="text-[7px] font-bold tracking-wide leading-none" style={{ color: isPast ? 'var(--text-tertiary)' : pBadge.color }}>{month}</span>
+          <span className="text-[16px] font-bold leading-tight" style={{ color: isPast ? 'var(--text-tertiary)' : pBadge.color }}>{day}</span>
+          {date.year && <span className="text-[7px] font-medium leading-none mt-px text-[var(--text-tertiary)]">{date.year}</span>}
         </div>
         <div className="flex-1 min-w-0">
           <span className="text-sm font-medium text-[var(--text-primary)]">{date.name}</span>
         </div>
         <span className={`text-[11px] shrink-0 ${countdownCls}`}>{countdown}</span>
+        {/* Desktop delete */}
+        {hovered && (
+          <button
+            onClick={(e) => { e.stopPropagation(); if (confirm(`Delete "${date.name}"?`)) onDelete(date) }}
+            className="hidden md:block text-[var(--text-tertiary)] hover:text-red-400 transition-colors shrink-0"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
       </div>
 
       {/* Row 2: priority + type + recurrence */}
       <div className="flex items-center gap-1.5 mt-1.5 ml-[54px]">
-        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-medium capitalize"
+        {/* Mobile: static badges. Desktop: dropdowns */}
+        <span className="md:hidden px-1.5 py-0.5 rounded-full text-[9px] font-medium capitalize"
           style={{ backgroundColor: pStyle.bg, color: pStyle.text }}>
           {importance}
         </span>
-        <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-medium capitalize"
+        <select
+          value={importance}
+          onChange={(e) => { e.stopPropagation(); handleImportanceChange(e.target.value) }}
+          className={`hidden md:inline-block ${selectCls}`}
+          style={{ backgroundColor: pStyle.bg, color: pStyle.text, paddingRight: '14px', backgroundImage: chevronBg, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 3px center' }}
+        >
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+
+        <span className="md:hidden px-1.5 py-0.5 rounded-lg text-[9px] font-medium capitalize"
           style={{ backgroundColor: typeColor.bg, color: typeColor.text }}>
           {typeIcon} {typeKey}
         </span>
-        <span className="text-[9px] text-[var(--text-tertiary)]">{isAnnual ? 'Annual' : 'One-time'}</span>
+        <select
+          value={typeKey}
+          onChange={(e) => { e.stopPropagation(); handleTypeChange(e.target.value) }}
+          className={`hidden md:inline-block ${selectCls}`}
+          style={{ backgroundColor: typeColor.bg, color: typeColor.text, paddingRight: '14px', backgroundImage: chevronBg, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 3px center' }}
+        >
+          {DATE_TYPES.map((t) => <option key={t} value={t}>{TYPE_ICONS[t]} {t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+        </select>
+
+        <span className="md:hidden text-[9px] text-[var(--text-tertiary)]">{isAnnual ? 'Annual' : 'One-time'}</span>
+        <select
+          value={date.recurs || 'annual'}
+          onChange={(e) => { e.stopPropagation(); handleRecursChange(e.target.value) }}
+          className={`hidden md:inline-block ${selectCls} text-[var(--text-tertiary)]`}
+          style={{ paddingRight: '14px', backgroundImage: chevronBg, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 3px center' }}
+        >
+          <option value="annual">Annual</option>
+          <option value="once">One-time</option>
+        </select>
       </div>
 
-      {/* Row 3: person + notes (only if present) */}
+      {/* Row 3: person + notes (if present) */}
       {(date.person_name || date.notes) && (
         <div className="flex items-center gap-1.5 mt-1 ml-[54px]">
           {date.person_name && (
@@ -133,18 +181,6 @@ export default function DateCard({ date, isPast, onDelete, onOpenDetail }) {
           {date.notes && (
             <span className="text-[9px] text-[var(--text-tertiary)] italic truncate max-w-[200px]">{date.notes}</span>
           )}
-        </div>
-      )}
-
-      {/* Desktop delete on hover */}
-      {hovered && (
-        <div className="hidden md:flex justify-end -mt-4 mr-1">
-          <button
-            onClick={() => { if (confirm(`Delete "${date.name}"?`)) onDelete(date) }}
-            className="text-[var(--text-tertiary)] hover:text-red-400 transition-colors text-xs"
-          >
-            ✕
-          </button>
         </div>
       )}
     </div>
