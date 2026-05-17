@@ -1,43 +1,46 @@
 // src/components/vault/shared/SheetWrapper.jsx
 // Slide-up sheet with swipe-down dismiss and dirty-check prompt
-import { useRef, useState } from 'react'
+import { useRef, useState, useCallback } from 'react'
 
 export default function SheetWrapper({ isDirty, onSave, onClose, children }) {
   const sheetRef = useRef(null)
   const [showPrompt, setShowPrompt] = useState(false)
-  const touchStartY = useRef(0)
-  const touchDeltaY = useRef(0)
+  const startY = useRef(null)
+  const deltaY = useRef(0)
+  const isDragging = useRef(false)
 
-  const tryClose = () => {
+  const tryClose = useCallback(() => {
     if (isDirty) {
       setShowPrompt(true)
     } else {
       onClose()
     }
+  }, [isDirty, onClose])
+
+  // Unified start (touch + mouse)
+  const handleStart = (clientY, e) => {
+    // Don't start drag if interacting with form elements
+    const tag = e.target.tagName?.toLowerCase()
+    if (['input', 'select', 'textarea', 'button'].includes(tag)) return
+    startY.current = clientY
+    isDragging.current = false
   }
 
-  const handleTouchStart = (e) => {
-    const handle = e.target.closest('[data-sheet-handle]')
-    if (handle) {
-      touchStartY.current = e.touches[0].clientY
+  const handleMove = (clientY) => {
+    if (startY.current === null) return
+    deltaY.current = clientY - startY.current
+    if (deltaY.current > 5) {
+      isDragging.current = true
+      if (sheetRef.current) sheetRef.current.style.transform = `translateY(${deltaY.current}px)`
     }
   }
 
-  const handleTouchMove = (e) => {
-    if (touchStartY.current === 0) return
-    touchDeltaY.current = e.touches[0].clientY - touchStartY.current
-    if (touchDeltaY.current > 0 && sheetRef.current) {
-      sheetRef.current.style.transform = `translateY(${touchDeltaY.current}px)`
-    }
-  }
-
-  const handleTouchEnd = () => {
-    if (touchDeltaY.current > 80) {
-      tryClose()
-    }
+  const handleEnd = () => {
+    if (deltaY.current > 80) tryClose()
     if (sheetRef.current) sheetRef.current.style.transform = ''
-    touchStartY.current = 0
-    touchDeltaY.current = 0
+    startY.current = null
+    deltaY.current = 0
+    isDragging.current = false
   }
 
   return (
@@ -46,17 +49,21 @@ export default function SheetWrapper({ isDirty, onSave, onClose, children }) {
       <div
         ref={sheetRef}
         className="relative bg-[var(--bg-secondary)] rounded-t-2xl px-5 pb-6 pt-0 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto transition-transform"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={(e) => handleStart(e.touches[0].clientY, e)}
+        onTouchMove={(e) => handleMove(e.touches[0].clientY)}
+        onTouchEnd={handleEnd}
+        onMouseDown={(e) => handleStart(e.clientY, e)}
+        onMouseMove={(e) => { if (startY.current !== null) handleMove(e.clientY) }}
+        onMouseUp={handleEnd}
+        onMouseLeave={() => { if (startY.current !== null) handleEnd() }}
       >
-        <div data-sheet-handle className="w-9 h-1 rounded-full bg-[var(--border-active)] mx-auto mt-3 mb-5 cursor-grab" />
+        <div className="w-9 h-1 rounded-full bg-[var(--border-active)] mx-auto mt-3 mb-5 cursor-grab" />
 
         {children}
 
         {/* Dirty prompt */}
         {showPrompt && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40" onClick={(e) => e.stopPropagation()}>
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-active)] rounded-2xl p-5 w-[280px] shadow-2xl text-center">
               <div className="text-sm font-medium text-[var(--text-primary)] mb-1">Save changes?</div>
               <div className="text-xs text-[var(--text-tertiary)] mb-4">You have unsaved changes.</div>
