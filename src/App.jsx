@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Sparkles, Network, Wand2, Eye, Trash2, UserRound } from "lucide-react";
 
 // Import demo pages
-import { CodeEntry, TryItOut, SeeItInAction, PersonaSelection, SimulatedChat } from "./pages/demo";
+import { CodeEntry, TryItOut, SeeItInAction, PersonaSelection } from "./pages/demo";
 import DemoSimulatedVault from "./pages/demo/DemoSimulatedVault";
 import LandingPageV2 from "./pages/LandingPageV2";
 import AuthPage from "./pages/Signup";
@@ -630,8 +630,8 @@ export default function App() {
               <Route path="/demo/try-it-out" element={<Navigate to="/hridai" replace />} />
         <Route path="/demo/see-it-in-action" element={<SeeItInAction />} />
         <Route path="/demo/simulated" element={<PersonaSelection />} />
-        <Route path="/demo/simulated/:personaId" element={<AuthGuard><SimulatedChat /></AuthGuard>} />
-        <Route path="/demo/simulated/:personaId/vault" element={<DemoSimulatedVault />}>
+        <Route path="/demo/simulated/:personaId" element={<Navigate to="vault" replace />} />
+        <Route path="/demo/simulated/:personaId/vault" element={<AuthGuard><DemoSimulatedVault /></AuthGuard>}>
           <Route path="chat" element={null} />
           <Route path="self" element={<SelfTab />} />
           <Route path="people" element={<PeopleTab />} />

@@ -6,16 +6,16 @@ import ChatTab from '../../components/vault/ChatTab'
 import { apiFetch } from '../../lib/api-client'
 import { setCached, clearCache, setDemoMode } from '../../lib/vault-cache'
 import { normalizeEntity } from '../../components/vault/people/entity-utils'
+import { getAccessCode, startPersonaSession, endPersonaSession } from '../../lib/api/index.js'
 
 export default function DemoSimulatedVault() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isReady, setIsReady] = useState(false)
   const [error, setError] = useState(null)
-  const fetchStarted = useRef(false)
+  const initStarted = useRef(false)
 
   const { personaId } = useParams()
-  // personaName is display-only; keep reading from sessionStorage
   const personaName = sessionStorage.getItem('hrdai_persona_name')
 
   // Redirect to chat if at root
@@ -24,13 +24,24 @@ export default function DemoSimulatedVault() {
   }
 
   useEffect(() => {
-    if (fetchStarted.current) return
-    fetchStarted.current = true
+    if (initStarted.current) return
+    initStarted.current = true
 
-    if (!personaId) { navigate('/demo/simulated'); return } // should not happen via URL routing, but guard just in case
+    if (!personaId) { navigate('/demo/simulated'); return }
 
-    const loadDemoData = async () => {
+    const init = async () => {
       try {
+        // Step 1: Start persona session (clones data to visitor's space for chat)
+        const accessCode = getAccessCode()
+        if (accessCode) {
+          const sessionResult = await startPersonaSession(accessCode, personaId)
+          if (!sessionResult.success) {
+            setError(sessionResult.error || 'Failed to start persona session')
+            return
+          }
+        }
+
+        // Step 2: Load demo vault data (baseline for vault tabs)
         const data = await apiFetch(`/vault/demo/${personaId}`)
 
         // Pre-populate vault cache with all persona data
@@ -47,12 +58,12 @@ export default function DemoSimulatedVault() {
         setDemoMode(true)
         setIsReady(true)
       } catch (err) {
-        console.error('Failed to load demo data:', err)
+        console.error('Failed to initialize demo:', err)
         setError(err.message || 'Failed to load demo data')
       }
     }
 
-    loadDemoData()
+    init()
 
     // Cleanup on unmount
     return () => {
@@ -61,7 +72,35 @@ export default function DemoSimulatedVault() {
     }
   }, [navigate, personaId])
 
-  const handleExit = () => {
+  // Handle browser close — end persona session
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const accessCode = getAccessCode()
+      if (accessCode && personaId) {
+        const url = `${import.meta.env.VITE_API_URL || 'https://aimanagerv2-production.up.railway.app'}/api/personas/end-session`
+        const data = JSON.stringify({
+          access_code: accessCode,
+          persona_id: personaId
+        })
+        navigator.sendBeacon(url, data)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [personaId])
+
+  const handleExit = async () => {
+    // End persona session
+    const accessCode = getAccessCode()
+    if (accessCode && personaId) {
+      try {
+        await endPersonaSession(accessCode, personaId)
+      } catch (e) {
+        console.warn('Failed to end persona session:', e)
+      }
+    }
+
     setDemoMode(false)
     clearCache()
     sessionStorage.removeItem('hrdai_persona_id')
@@ -75,7 +114,7 @@ export default function DemoSimulatedVault() {
         <div className="text-center">
           {error ? (
             <div className="max-w-md mx-auto p-6">
-              <h2 className="text-lg font-semibold text-white mb-2">Demo Error</h2>
+              <h2 className="text-lg font-semibold text-white mb-2">Session Error</h2>
               <p className="text-sm text-white/60 mb-4">{error}</p>
               <button onClick={() => navigate('/demo/simulated')}
                 className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700">
@@ -105,7 +144,7 @@ export default function DemoSimulatedVault() {
             <div className="flex items-center gap-2">
               <span className="text-violet-400 text-[10px] font-semibold uppercase tracking-wider">Demo</span>
               <span className="text-[var(--text-tertiary)] text-[10px]">
-                Exploring as {personaName || personaId} — read only
+                Exploring as {personaName || personaId}
               </span>
             </div>
             <button onClick={handleExit}
