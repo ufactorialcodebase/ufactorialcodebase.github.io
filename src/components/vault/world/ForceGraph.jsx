@@ -17,8 +17,8 @@ const TYPE_COLORS = {
 
 const TOPIC_STATUS_COLORS = {
   active: '#6366f1',
-  dormant: '#8b95a8',
-  resolved: '#34d399',
+  dormant: '#94a3b8',
+  resolved: '#a5b4fc',
 }
 
 function getNodeColor(node) {
