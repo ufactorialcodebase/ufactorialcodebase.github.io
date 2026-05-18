@@ -465,7 +465,7 @@ export default function Chat({
               
               {/* Exit / Sign off button — hidden on mobile (use Settings > Sign Out) */}
               <button
-                onClick={handleExit}
+                onClick={onExit ? onExit : handleExit}
                 className="hidden md:flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-600 dark:hover:text-red-400 transition-all duration-150"
                 title={isAuthUser ? "Sign off & exit" : "Exit demo"}
               >
