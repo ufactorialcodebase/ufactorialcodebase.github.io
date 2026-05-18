@@ -41,62 +41,60 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f1729', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-      <div style={{
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0f1729', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <div className="w-full max-w-[800px] overflow-hidden" style={{
         background: '#1a2238',
         borderRadius: 20,
-        maxWidth: 800,
-        width: '90%',
         border: '1px solid rgba(255,255,255,0.06)',
         boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
-        overflow: 'hidden',
       }}>
 
         {slide === 0 && (
           <div>
-            <div style={{ display: 'flex' }}>
-              <div style={{
-                flex: '0 0 240px',
+            {/* Desktop: side by side. Mobile: stacked */}
+            <div className="flex flex-col md:flex-row">
+              {/* Alex illustration — centered on mobile, sidebar on desktop */}
+              <div className="flex flex-row md:flex-col items-center justify-center gap-4 md:gap-0 p-6 md:p-10 md:w-[240px] md:flex-shrink-0 md:border-r" style={{
                 background: 'linear-gradient(180deg, #243049 0%, #1a2238 100%)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: '40px 24px',
-                borderRight: '1px solid rgba(255,255,255,0.06)',
+                borderColor: 'rgba(255,255,255,0.06)',
               }}>
                 <img
                   src="/images/alex-persona.png"
                   alt="Alex Chen"
-                  style={{ width: 160, height: 'auto', marginBottom: 16 }}
+                  className="w-20 md:w-40 h-auto md:mb-4"
                   onError={(e) => {
                     e.target.style.display = 'none'
                     if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'
                   }}
                 />
-                <div style={{
+                <div className="hidden items-center justify-center mb-4" style={{
                   width: 120, height: 120, borderRadius: '50%',
                   background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                  display: 'none', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 56, marginBottom: 16,
+                  fontSize: 56,
                   boxShadow: '0 8px 24px rgba(99,102,241,0.25)',
                 }}>👨‍💼</div>
-                <div style={{ color: '#6366f1', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-                  Persona Demo
+                <div className="text-center">
+                  <div style={{ color: '#6366f1', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                    Persona Demo
+                  </div>
                 </div>
               </div>
 
-              <div style={{ flex: 1, padding: '36px 32px' }}>
-                <h1 style={{ color: '#e8edf5', fontSize: 22, fontWeight: 700, margin: '0 0 6px', lineHeight: 1.3, fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
+              {/* Story + context cards */}
+              <div className="flex-1 p-5 md:p-8">
+                <h1 className="text-lg md:text-[22px] font-bold mb-1" style={{ color: '#e8edf5', lineHeight: 1.3, fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
                   You are {ctx.name}
                 </h1>
-                <p style={{ color: '#8b95a8', fontSize: 13, margin: '0 0 20px', lineHeight: 1.6 }}>
+                <p className="text-xs md:text-[13px] mb-4 md:mb-5" style={{ color: '#8b95a8', lineHeight: 1.6 }}>
                   {ctx.subtitle}
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-[10px]">
                   {ctx.cards.map((card, i) => (
-                    <div key={i} style={{ background: '#243049', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div style={{ color: card.color, fontSize: 10, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>
+                    <div key={i} className="rounded-[10px] p-3" style={{ background: '#243049', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: card.color, letterSpacing: 1 }}>
                         {card.emoji} {card.label}
                       </div>
-                      <div style={{ color: '#c5cdd8', fontSize: 12, lineHeight: 1.5 }}>{card.text}</div>
+                      <div className="text-xs" style={{ color: '#c5cdd8', lineHeight: 1.5 }}>{card.text}</div>
                     </div>
                   ))}
                 </div>
@@ -118,38 +116,36 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
 
         {slide === 1 && (
           <div>
-            <div style={{ padding: '28px 32px 0' }}>
+            <div className="p-5 pb-0 md:px-8 md:pt-7">
               <div style={{ color: '#6366f1', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
                 Simulated Persona Demo
               </div>
-              <h1 style={{ color: '#e8edf5', fontSize: 20, fontWeight: 700, margin: '0 0 6px', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
+              <h1 className="text-lg md:text-xl font-bold mb-1" style={{ color: '#e8edf5', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
                 What's inside {ctx.name.split(' ')[0]}'s Vault
               </h1>
-              <p style={{ color: '#5a6478', fontSize: 12, margin: '0 0 22px', lineHeight: 1.6 }}>
+              <p className="text-xs mb-4 md:mb-5" style={{ color: '#5a6478', lineHeight: 1.6 }}>
                 This demo was created by simulating {ctx.name.split(' ')[0]}'s conversations with his HridAI, turn by turn — the same way a real user would. Here's what his HridAI built from 6 months of talking.
               </p>
             </div>
 
-            <div style={{ padding: '0 32px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-[10px] px-5 md:px-8 pb-4">
               {ctx.vault.map((item, i) => (
-                <div key={i} style={{ background: '#243049', borderRadius: 12, padding: 16, border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-                  <div style={{ fontSize: 26, marginBottom: 8 }}>{item.emoji}</div>
-                  <div style={{ color: '#e8edf5', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{item.stat}</div>
-                  <div style={{ color: '#5a6478', fontSize: 11, lineHeight: 1.4 }}>{item.text}</div>
+                <div key={i} className="rounded-xl p-3 md:p-4 text-center" style={{ background: '#243049', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="text-xl md:text-[26px] mb-1 md:mb-2">{item.emoji}</div>
+                  <div className="text-xs md:text-[13px] font-semibold mb-1" style={{ color: '#e8edf5' }}>{item.stat}</div>
+                  <div className="text-[10px] md:text-[11px] hidden sm:block" style={{ color: '#5a6478', lineHeight: 1.4 }}>{item.text}</div>
                 </div>
               ))}
             </div>
 
-            <div style={{
-              margin: '0 32px 24px',
+            <div className="mx-5 md:mx-8 mb-4 md:mb-6 rounded-xl p-4 md:p-5" style={{
               background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(79,70,229,0.05) 100%)',
-              borderRadius: 12, padding: '20px 24px',
               border: '1px solid rgba(99,102,241,0.15)',
             }}>
-              <div style={{ color: '#e8edf5', fontSize: 14, fontWeight: 600, lineHeight: 1.6, marginBottom: 6 }}>
+              <div className="text-xs md:text-sm font-semibold mb-1" style={{ color: '#e8edf5', lineHeight: 1.6 }}>
                 {ctx.name.split(' ')[0]}'s HridAI self-organized, structured, and connected his life — so he doesn't have to.
               </div>
-              <div style={{ color: '#8b95a8', fontSize: 12, lineHeight: 1.6 }}>
+              <div className="text-[11px] md:text-xs" style={{ color: '#8b95a8', lineHeight: 1.6 }}>
                 It supports his mental load with personal intelligence, organizes and structures his data so he can see, control, and adjust it when he needs to, and proactively surfaces what matters when it matters.
               </div>
             </div>
@@ -173,18 +169,15 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
 
 function BottomBar({ slide, total, isLoading, onPrev, onNext, onEnter, prevLabel, nextLabel, enterLabel }) {
   return (
-    <div style={{
+    <div className="flex flex-col sm:flex-row items-center gap-3 sm:justify-between px-5 md:px-8 py-4" style={{
       borderTop: '1px solid rgba(255,255,255,0.06)',
-      padding: '18px 32px',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       background: 'rgba(15,23,41,0.5)',
     }}>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      {/* Pagination dots */}
+      <div className="flex gap-2 items-center">
         {Array.from({ length: total }, (_, i) => (
-          <div key={i} style={{
-            width: 8, height: 8, borderRadius: '50%',
+          <div key={i} className="w-2 h-2 rounded-full cursor-pointer" style={{
             background: i === slide ? '#6366f1' : 'rgba(255,255,255,0.1)',
-            cursor: 'pointer',
           }}
             onClick={() => {
               if (i === 0 && onPrev) onPrev()
@@ -192,25 +185,25 @@ function BottomBar({ slide, total, isLoading, onPrev, onNext, onEnter, prevLabel
             }}
           />
         ))}
-        <span style={{ color: '#5a6478', fontSize: 11, marginLeft: 8 }}>{slide + 1} of {total}</span>
+        <span className="text-[11px] ml-2" style={{ color: '#5a6478' }}>{slide + 1} of {total}</span>
       </div>
-      <div style={{ display: 'flex', gap: 12 }}>
+
+      {/* Buttons */}
+      <div className="flex gap-2 md:gap-3 w-full sm:w-auto">
         {onPrev && (
-          <button onClick={onPrev} style={{
-            padding: '10px 20px', borderRadius: 10,
+          <button onClick={onPrev} className="flex-1 sm:flex-none px-4 py-2.5 rounded-[10px] text-xs md:text-[13px] cursor-pointer" style={{
             border: '1px solid rgba(255,255,255,0.1)',
-            background: 'transparent', color: '#8b95a8', fontSize: 13,
-            cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif",
+            background: 'transparent', color: '#8b95a8',
+            fontFamily: "'DM Sans', system-ui, sans-serif",
           }}>
             {prevLabel}
           </button>
         )}
         {onNext && (
-          <button onClick={onNext} style={{
-            padding: '10px 20px', borderRadius: 10,
+          <button onClick={onNext} className="flex-1 sm:flex-none px-4 py-2.5 rounded-[10px] text-xs md:text-[13px] cursor-pointer" style={{
             border: '1px solid rgba(255,255,255,0.1)',
-            background: 'transparent', color: '#8b95a8', fontSize: 13,
-            cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif",
+            background: 'transparent', color: '#8b95a8',
+            fontFamily: "'DM Sans', system-ui, sans-serif",
           }}>
             {nextLabel}
           </button>
@@ -218,29 +211,26 @@ function BottomBar({ slide, total, isLoading, onPrev, onNext, onEnter, prevLabel
         <button
           onClick={onEnter}
           disabled={isLoading}
+          className="flex-1 sm:flex-none px-4 md:px-6 py-2.5 rounded-[10px] text-xs md:text-[13px] font-semibold flex items-center justify-center gap-2"
           style={{
-            padding: '10px 24px', borderRadius: 10, border: 'none',
+            border: 'none',
             background: isLoading ? '#3730a3' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-            color: 'white', fontSize: 13, fontWeight: 600,
+            color: 'white',
             cursor: isLoading ? 'default' : 'pointer',
             boxShadow: isLoading ? 'none' : '0 4px 12px rgba(99,102,241,0.3)',
             fontFamily: "'DM Sans', system-ui, sans-serif",
             opacity: isLoading ? 0.7 : 1,
-            display: 'flex', alignItems: 'center', gap: 8,
           }}
         >
           {isLoading && (
-            <div style={{
-              width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)',
-              borderTopColor: 'white', borderRadius: '50%',
-              animation: 'spin 0.8s linear infinite',
+            <div className="w-3.5 h-3.5 border-2 rounded-full animate-spin" style={{
+              borderColor: 'rgba(255,255,255,0.3)',
+              borderTopColor: 'white',
             }} />
           )}
-          {isLoading ? 'Preparing Alex...' : enterLabel}
+          {isLoading ? 'Preparing...' : enterLabel}
         </button>
       </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
