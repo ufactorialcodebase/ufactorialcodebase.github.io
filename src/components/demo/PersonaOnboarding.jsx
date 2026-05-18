@@ -51,51 +51,51 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
 
         {slide === 0 && (
           <div>
-            {/* Desktop: side by side. Mobile: stacked */}
-            <div className="flex flex-col md:flex-row">
-              {/* Alex illustration — centered on mobile, sidebar on desktop */}
-              <div className="flex flex-row md:flex-col items-center justify-center gap-4 md:gap-0 p-6 md:p-10 md:w-[240px] md:flex-shrink-0 md:border-r" style={{
-                background: 'linear-gradient(180deg, #243049 0%, #1a2238 100%)',
-                borderColor: 'rgba(255,255,255,0.06)',
-              }}>
-                <div style={{ color: '#6366f1', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase' }} className="mb-2 md:mb-3">
-                  Persona Demo
-                </div>
-                <img
-                  src="/images/alex-persona.png"
-                  alt="Alex Chen"
-                  className="w-20 md:w-40 h-auto"
-                  onError={(e) => {
-                    e.target.style.display = 'none'
-                    if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'
-                  }}
-                />
-                <div className="hidden items-center justify-center" style={{
-                  width: 120, height: 120, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                  fontSize: 56,
-                  boxShadow: '0 8px 24px rgba(99,102,241,0.25)',
-                }}>👨‍💼</div>
+            <div className="p-5 md:px-8 md:pt-7">
+              {/* Kicker — same position as slide 2 */}
+              <div style={{ color: '#6366f1', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
+                Simulated Demo
               </div>
 
-              {/* Story + context cards */}
-              <div className="flex-1 p-5 md:p-8">
-                <h1 className="text-lg md:text-[22px] font-bold mb-1" style={{ color: '#e8edf5', lineHeight: 1.3, fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
-                  You are {ctx.name}
-                </h1>
-                <p className="text-xs md:text-[13px] mb-4 md:mb-5" style={{ color: '#8b95a8', lineHeight: 1.6 }}>
+              {/* Title */}
+              <h1 className="text-lg md:text-[22px] font-bold mb-3" style={{ color: '#e8edf5', lineHeight: 1.3, fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
+                You are {ctx.name}
+              </h1>
+
+              {/* Subtitle (left ~70%) + Alex image (right ~30%) */}
+              <div className="flex gap-4 md:gap-6 mb-4 md:mb-5">
+                <p className="flex-[7] text-xs md:text-[13px]" style={{ color: '#8b95a8', lineHeight: 1.6 }}>
                   {ctx.subtitle}
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-[10px]">
-                  {ctx.cards.map((card, i) => (
-                    <div key={i} className="rounded-[10px] p-3" style={{ background: '#243049', border: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: card.color, letterSpacing: 1 }}>
-                        {card.emoji} {card.label}
-                      </div>
-                      <div className="text-xs" style={{ color: '#c5cdd8', lineHeight: 1.5 }}>{card.text}</div>
-                    </div>
-                  ))}
+                <div className="flex-[3] flex items-center justify-center">
+                  <img
+                    src="/images/alex-persona.png"
+                    alt="Alex Chen"
+                    className="w-24 md:w-36 h-auto"
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                      if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'
+                    }}
+                  />
+                  <div className="hidden items-center justify-center" style={{
+                    width: 80, height: 80, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                    fontSize: 40,
+                    boxShadow: '0 8px 24px rgba(99,102,241,0.25)',
+                  }}>👨‍💼</div>
                 </div>
+              </div>
+
+              {/* Context cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-[10px]">
+                {ctx.cards.map((card, i) => (
+                  <div key={i} className="rounded-[10px] p-3" style={{ background: '#243049', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: card.color, letterSpacing: 1 }}>
+                      {card.emoji} {card.label}
+                    </div>
+                    <div className="text-xs" style={{ color: '#c5cdd8', lineHeight: 1.5 }}>{card.text}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -116,7 +116,7 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
           <div>
             <div className="p-5 pb-0 md:px-8 md:pt-7">
               <div style={{ color: '#6366f1', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>
-                Simulated Persona Demo
+                Simulated Demo
               </div>
               <h1 className="text-lg md:text-xl font-bold mb-1" style={{ color: '#e8edf5', fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
                 What's inside {ctx.name.split(' ')[0]}'s Vault
