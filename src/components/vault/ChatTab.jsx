@@ -23,16 +23,29 @@ const DEFAULT_DEMO_PROMPTS = [
   "I've been feeling off lately...",
 ]
 
+const ALEX_GREETINGS = [
+  "Hey Alex! I was looking at your upcoming dates — Sarah's birthday is coming up soon, and you've got the half marathon in October. Also, I noticed you haven't updated the baby prep checklist in a while. Want to go through it?",
+  "Hey Alex! Busy week ahead — the Q2 roadmap review is coming up, and I noticed a few open todos around the move. How are you feeling about everything?",
+  "Hey Alex! I see Max's school orientation is next week. Also, your mom mentioned wanting to video call — it's been a couple weeks. What's on your mind today?",
+  "Hey Alex! Quick heads up — you've got a few things converging this month. The baby prep list has some pending items, and I noticed the half marathon training plan could use an update. What would you like to tackle first?",
+]
+
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
 export default function ChatTab() {
   const demo = useDemo()
 
   if (demo?.isDemo) {
     const prompts = demo.personaId === 'alex' ? ALEX_PROMPTS : DEFAULT_DEMO_PROMPTS
+    const greeting = demo.personaId === 'alex' ? pickRandom(ALEX_GREETINGS) : null
     return (
       <Chat
         mode="simulated"
         personaName={demo.personaName?.split(' ')[0] || demo.personaId}
         suggestedPrompts={prompts}
+        initialGreeting={greeting}
       />
     )
   }

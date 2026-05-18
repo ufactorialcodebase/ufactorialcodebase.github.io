@@ -19,8 +19,8 @@ function generateId() {
 /**
  * Main chat container component
  */
-export default function Chat({ 
-  mode = 'try_it_out', 
+export default function Chat({
+  mode = 'try_it_out',
   onExit,
   personaName = 'Alex',
   suggestedPrompts = [
@@ -28,6 +28,7 @@ export default function Chat({
     "I'm planning a dinner party next Saturday",
     "I need to call mom about the holiday plans",
   ],
+  initialGreeting = null,
 }) {
   const { session, plan, conversationsRemaining, initialized: authInitialized } = useAuth();
   const isAuthUser = !!session;
@@ -346,8 +347,21 @@ export default function Chat({
     if (greetingLoaded.current) return;
     greetingLoaded.current = true;
 
+    // Use pre-generated greeting if provided (demo mode — skip LLM call)
+    if (initialGreeting) {
+      setMessages([{
+        id: generateId(),
+        role: 'assistant',
+        content: initialGreeting,
+        toolCalls: [],
+        timestamp: new Date().toISOString(),
+      }]);
+      setIsInitializing(false);
+      return;
+    }
+
     loadGreeting();
-  }, [authInitialized, loadGreeting]);
+  }, [authInitialized, loadGreeting, initialGreeting]);
   
   // Handle browser close/refresh - persist session using sendBeacon
   useEffect(() => {
