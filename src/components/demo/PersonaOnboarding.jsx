@@ -57,21 +57,21 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
                 Simulated Demo
               </div>
 
-              {/* Title */}
-              <h1 className="text-lg md:text-[22px] font-bold mb-3" style={{ color: '#e8edf5', lineHeight: 1.3, fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
-                You are {ctx.name}
-              </h1>
-
-              {/* Subtitle (left ~70%) + Alex image (right ~30%) */}
+              {/* Title + subtitle (left 70%) with Alex image (right 30%) */}
               <div className="flex gap-4 md:gap-6 mb-4 md:mb-5">
-                <p className="flex-[7] text-xs md:text-[13px]" style={{ color: '#8b95a8', lineHeight: 1.6 }}>
-                  {ctx.subtitle}
-                </p>
-                <div className="flex-[3] flex items-center justify-center">
+                <div className="flex-[7]">
+                  <h1 className="text-lg md:text-[22px] font-bold mb-2 md:mb-3" style={{ color: '#e8edf5', lineHeight: 1.3, fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
+                    You are {ctx.name}
+                  </h1>
+                  <p className="text-xs md:text-[13px]" style={{ color: '#8b95a8', lineHeight: 1.6 }}>
+                    {ctx.subtitle}
+                  </p>
+                </div>
+                <div className="flex-[3] flex items-start justify-center">
                   <img
                     src="/images/alex-persona.png"
                     alt="Alex Chen"
-                    className="w-24 md:w-36 h-auto"
+                    className="w-28 md:w-44 h-auto"
                     onError={(e) => {
                       e.target.style.display = 'none'
                       if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'
