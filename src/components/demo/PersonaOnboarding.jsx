@@ -67,11 +67,11 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
                     {ctx.subtitle}
                   </p>
                 </div>
-                <div className="flex-[3] flex items-start justify-center">
+                <div className="flex-[3] flex items-start justify-center self-stretch">
                   <img
                     src="/images/alex-persona.png"
                     alt="Alex Chen"
-                    className="w-28 md:w-44 h-auto"
+                    className="h-full w-auto max-w-full object-contain"
                     onError={(e) => {
                       e.target.style.display = 'none'
                       if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'
