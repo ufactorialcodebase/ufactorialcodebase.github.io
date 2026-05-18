@@ -58,26 +58,24 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
                 background: 'linear-gradient(180deg, #243049 0%, #1a2238 100%)',
                 borderColor: 'rgba(255,255,255,0.06)',
               }}>
+                <div style={{ color: '#6366f1', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase' }} className="mb-2 md:mb-3">
+                  Persona Demo
+                </div>
                 <img
                   src="/images/alex-persona.png"
                   alt="Alex Chen"
-                  className="w-20 md:w-40 h-auto md:mb-4"
+                  className="w-20 md:w-40 h-auto"
                   onError={(e) => {
                     e.target.style.display = 'none'
                     if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'
                   }}
                 />
-                <div className="hidden items-center justify-center mb-4" style={{
+                <div className="hidden items-center justify-center" style={{
                   width: 120, height: 120, borderRadius: '50%',
                   background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                   fontSize: 56,
                   boxShadow: '0 8px 24px rgba(99,102,241,0.25)',
                 }}>👨‍💼</div>
-                <div className="text-center">
-                  <div style={{ color: '#6366f1', fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-                    Persona Demo
-                  </div>
-                </div>
               </div>
 
               {/* Story + context cards */}
