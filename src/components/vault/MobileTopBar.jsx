@@ -4,11 +4,11 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Settings, Brain, Sun, Moon } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
 
-export default function MobileTopBar({ showContext, onToggleContext }) {
+export default function MobileTopBar({ showContext, onToggleContext, basePath = '/vault', onExit }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { isDark, toggle: toggleTheme } = useTheme()
-  const isChat = pathname === '/vault/chat'
+  const isChat = pathname === `${basePath}/chat`
 
   return (
     <div className="flex items-center gap-2 px-4 py-2.5 bg-[var(--bg-secondary)] border-b border-[var(--border-subtle)] shrink-0 sticky top-0 z-30">
@@ -35,13 +35,22 @@ export default function MobileTopBar({ showContext, onToggleContext }) {
           <Brain size={14} />
         </button>
       )}
-      {/* Settings */}
-      <button
-        onClick={() => navigate('/vault/profile')}
-        className="w-8 h-8 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
-      >
-        <Settings size={14} />
-      </button>
+      {/* Settings or Exit (demo mode) */}
+      {onExit ? (
+        <button
+          onClick={onExit}
+          className="px-2.5 py-1 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors text-[10px] font-medium"
+        >
+          Exit
+        </button>
+      ) : (
+        <button
+          onClick={() => navigate('/vault/profile')}
+          className="w-8 h-8 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+        >
+          <Settings size={14} />
+        </button>
+      )}
     </div>
   )
 }

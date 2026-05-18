@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate, Outlet, Navigate, useLocation, useParams } from 'react-router-dom'
 import { DemoProvider } from '../../components/vault/DemoContext'
 import IconRail from '../../components/vault/IconRail'
+import BottomNav from '../../components/vault/BottomNav'
+import MobileTopBar from '../../components/vault/MobileTopBar'
 import ChatTab from '../../components/vault/ChatTab'
 import PersonaOnboarding from '../../components/demo/PersonaOnboarding'
 import { apiFetch } from '../../lib/api-client'
@@ -126,14 +128,27 @@ export default function DemoSimulatedVault() {
     return <Navigate to={`/demo/simulated/${personaId}/vault/chat`} replace />
   }
 
-  const isChatActive = location.pathname === `/demo/simulated/${personaId}/vault/chat`
+  const basePath = `/demo/simulated/${personaId}/vault`
+  const isChatActive = location.pathname === `${basePath}/chat`
 
   return (
     <DemoProvider personaId={personaId} personaName={personaName}>
-      <div className="vault-theme h-screen flex bg-[var(--bg-primary)]">
-        <IconRail basePath={`/demo/simulated/${personaId}/vault`} />
-        <main className="flex-1 overflow-y-auto flex flex-col">
-          <div className="flex-shrink-0 px-4 py-1 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 border-b border-violet-500/20 flex items-center justify-between">
+      {/* Mirrors VaultLayout structure exactly: flex-col on mobile, flex-row on desktop */}
+      <div className="vault-theme h-dvh flex flex-col md:flex-row bg-[var(--bg-primary)]">
+
+        {/* Desktop: side rail (hidden on mobile) — same as VaultLayout */}
+        <div className="hidden md:block">
+          <IconRail basePath={basePath} />
+        </div>
+
+        {/* Mobile: top bar (hidden on desktop) — same component as VaultLayout */}
+        <div className="md:hidden shrink-0">
+          <MobileTopBar basePath={basePath} onExit={handleExit} />
+        </div>
+
+        {/* Demo banner — desktop only (mobile has Exit in MobileTopBar) */}
+        <main className="flex-1 overflow-y-auto relative min-h-0 flex flex-col">
+          <div className="hidden md:flex flex-shrink-0 px-4 py-1 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 border-b border-violet-500/20 items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-violet-400 text-[10px] font-semibold uppercase tracking-wider">Demo</span>
               <span className="text-[var(--text-tertiary)] text-[10px]">
@@ -145,15 +160,19 @@ export default function DemoSimulatedVault() {
               Exit Demo
             </button>
           </div>
-          <div className={`flex-1 overflow-y-auto ${isChatActive ? '' : 'hidden'}`}>
+
+          {/* Chat always mounted — hidden when other tabs active (same as VaultLayout) */}
+          <div className={isChatActive ? 'flex-1 min-h-0' : 'hidden'}>
             <ChatTab />
           </div>
-          {!isChatActive && (
-            <div className="flex-1 overflow-y-auto">
-              <Outlet />
-            </div>
-          )}
+          {/* Other tabs via Outlet */}
+          {!isChatActive && <Outlet />}
         </main>
+
+        {/* Mobile: bottom nav (hidden on desktop) — same component as VaultLayout */}
+        <div className="md:hidden shrink-0">
+          <BottomNav basePath={basePath} />
+        </div>
       </div>
     </DemoProvider>
   )

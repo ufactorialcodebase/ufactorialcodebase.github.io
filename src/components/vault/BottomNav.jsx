@@ -5,27 +5,32 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { MessageCircle, Users, CheckSquare, Globe, MoreHorizontal } from 'lucide-react'
 import MoreSheet from './MoreSheet'
 
-const TABS = [
-  { path: '/vault/chat', icon: MessageCircle, label: 'Chat' },
-  { path: '/vault/people', icon: Users, label: 'Entities' },
-  { path: '/vault/todos', icon: CheckSquare, label: 'Todos' },
-  { path: '/vault/world', icon: Globe, label: 'World' },
-]
+function buildTabs(base) {
+  return [
+    { path: `${base}/chat`, icon: MessageCircle, label: 'Chat' },
+    { path: `${base}/people`, icon: Users, label: 'Entities' },
+    { path: `${base}/todos`, icon: CheckSquare, label: 'Todos' },
+    { path: `${base}/world`, icon: Globe, label: 'World' },
+  ]
+}
 
-// Pages accessible via "More"
-const MORE_PAGES = [
-  { path: '/vault/self', icon: '👤', label: 'Self', sub: 'Identity & goals' },
-  { path: '/vault/dates', icon: '📅', label: 'Dates', sub: 'Key dates' },
-  { path: '/vault/lists', icon: '📋', label: 'Lists', sub: 'Collections' },
-  { path: '/vault/topics', icon: '💡', label: 'Topics', sub: 'Conversations' },
-  { path: '/vault/artifacts', icon: '📄', label: 'Artifacts', sub: 'Documents' },
-]
+function buildMorePages(base) {
+  return [
+    { path: `${base}/self`, icon: '👤', label: 'Self', sub: 'Identity & goals' },
+    { path: `${base}/dates`, icon: '📅', label: 'Dates', sub: 'Key dates' },
+    { path: `${base}/lists`, icon: '📋', label: 'Lists', sub: 'Collections' },
+    { path: `${base}/topics`, icon: '💡', label: 'Topics', sub: 'Conversations' },
+    { path: `${base}/artifacts`, icon: '📄', label: 'Artifacts', sub: 'Documents' },
+  ]
+}
 
-export default function BottomNav() {
+export default function BottomNav({ basePath = '/vault' }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [showMore, setShowMore] = useState(false)
 
+  const TABS = buildTabs(basePath)
+  const MORE_PAGES = buildMorePages(basePath)
   const isMorePageActive = MORE_PAGES.some((p) => pathname.startsWith(p.path))
 
   return (
