@@ -8,6 +8,8 @@ import ChatTab from './ChatTab'
 import BetaWelcome from './BetaWelcome'
 import AcceptanceGate from './AcceptanceGate'
 import { useAuth } from '../../hooks/useAuth'
+import { getCached, setCached } from '../../lib/vault-cache'
+import { getWorld } from '../../lib/api/vault-world'
 
 // Context to let Chat component communicate context panel state to MobileTopBar
 const MobileContextPanelCtx = createContext(null)
@@ -19,6 +21,13 @@ export default function VaultLayout() {
   const { refreshSubscription } = useAuth()
   const [toast, setToast] = useState(null)
   const [mobileContextOpen, setMobileContextOpen] = useState(false)
+
+  // Eagerly preload world graph data on layout mount (heaviest dataset)
+  useEffect(() => {
+    if (!getCached('world')) {
+      getWorld().then(d => setCached('world', d)).catch(() => {})
+    }
+  }, [])
 
   // Handle Stripe checkout return
   useEffect(() => {

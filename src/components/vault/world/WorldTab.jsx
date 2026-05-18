@@ -39,68 +39,56 @@ export default function WorldTab() {
     setSelectedNode(node)
   }, [])
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <PageHeader title="Your World" subtitle="Your life, visualized" />
-        <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-2 border-[var(--accent-indigo)] border-t-transparent rounded-full animate-spin" />
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <PageHeader title="Your World" subtitle="Your life, visualized" />
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-[var(--text-secondary)] text-sm mb-3">Failed to load your world graph.</p>
-          <button
-            onClick={refetch}
-            className="px-4 py-2 rounded-lg bg-[var(--accent-indigo)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   const nodes = worldData?.nodes || []
   const edges = worldData?.edges || []
+  const hasGraph = !loading && !error && nodes.length > 1
 
-  if (nodes.length <= 1) {
-    return (
-      <div className="p-6">
-        <PageHeader title="Your World" subtitle="Your life, visualized" />
-        <EmptyState
-          icon="🌐"
-          message="Your world graph is empty."
-          submessage="Start chatting to build your network of people, places, and topics."
-          ctaLabel="Go to Chat"
-          ctaPath="/vault/chat"
-        />
-      </div>
-    )
-  }
+  // Overlay content shown inside the always-mounted container
+  const overlay = loading ? (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-[var(--accent-indigo)] border-t-transparent rounded-full animate-spin" />
+    </div>
+  ) : error ? (
+    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+      <p className="text-[var(--text-secondary)] text-sm mb-3">Failed to load your world graph.</p>
+      <button
+        onClick={refetch}
+        className="px-4 py-2 rounded-lg bg-[var(--accent-indigo)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+      >
+        Retry
+      </button>
+    </div>
+  ) : nodes.length <= 1 ? (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <EmptyState
+        icon="🌐"
+        message="Your world graph is empty."
+        submessage="Start chatting to build your network of people, places, and topics."
+        ctaLabel="Go to Chat"
+        ctaPath="/vault/chat"
+      />
+    </div>
+  ) : null
 
   return (
     <div className="h-full flex flex-col">
       <div className="p-6 pb-0">
         <PageHeader title="Your World" subtitle="Your life, visualized" />
       </div>
-      {/* Legend */}
-      <div className="px-6 flex gap-4 text-[10px] text-[var(--text-secondary)]">
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#fbbf24]" /> You</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#60a5fa]" /> Person</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#34d399]" /> Organization</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#fb923c]" /> Place</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#6366f1]" /> Topic</span>
-      </div>
-      {/* Graph fills remaining space */}
-      <div ref={containerRef} className="flex-1 min-h-0">
-        {dimensions ? (
+      {/* Legend — only visible when graph is shown */}
+      {hasGraph && (
+        <div className="px-6 flex gap-4 text-[10px] text-[var(--text-secondary)]">
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#fbbf24]" /> You</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#60a5fa]" /> Person</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#34d399]" /> Organization</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#fb923c]" /> Place</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#6366f1]" /> Topic</span>
+        </div>
+      )}
+      {/* Container is ALWAYS mounted so ResizeObserver can measure it */}
+      <div ref={containerRef} className="flex-1 min-h-0 relative">
+        {overlay}
+        {hasGraph && dimensions && (
           <ForceGraph
             nodes={nodes}
             edges={edges}
@@ -108,10 +96,6 @@ export default function WorldTab() {
             height={dimensions.height}
             onNodeClick={handleNodeClick}
           />
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="w-8 h-8 border-2 border-[var(--accent-indigo)] border-t-transparent rounded-full animate-spin" />
-          </div>
         )}
       </div>
       {/* Side panel for node details */}
