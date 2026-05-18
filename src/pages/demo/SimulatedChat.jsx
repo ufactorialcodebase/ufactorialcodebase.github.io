@@ -94,10 +94,10 @@ export default function SimulatedChat() {
   const getPrompts = () => {
     if (personaId === 'alex') {
       return [
-        "Ugh, Mike is at it again with the roadmap pushback...",
+        "Ugh.. I'm exhausted",
         "What should I be doing to get ready for the baby?",
         "Plan something fun for Sarah this weekend — she's been stressed",
-        "I feel like I'm forgetting something this month...",
+        "I wonder how Max is going to handle all these changes",
       ];
     }
     return [

@@ -43,6 +43,7 @@ export default function Chat({
   const [currentRetrievalTrace, setCurrentRetrievalTrace] = useState(null);
   const [isRetrieving, setIsRetrieving] = useState(false);
   const [abortFn, setAbortFn] = useState(null);
+  const [usedPrompts, setUsedPrompts] = useState(new Set());
   const greetingLoaded = useRef(false); // Prevent double greeting from StrictMode
 
   // Sync mobile context panel toggle with local state
@@ -484,15 +485,28 @@ export default function Chat({
           <div className="px-4 sm:px-6 pb-4 sm:pb-6">
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">{personaName} might say:</div>
             <div className="flex flex-wrap gap-2">
-              {suggestedPrompts.map((prompt, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSend(prompt)}
-                  className="px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 hover:shadow-sm transition-all duration-150"
-                >
-                  "{prompt}"
-                </button>
-              ))}
+              {suggestedPrompts.map((prompt, i) => {
+                const isUsed = usedPrompts.has(prompt)
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      if (!isUsed) {
+                        setUsedPrompts(prev => new Set(prev).add(prompt))
+                        handleSend(prompt)
+                      }
+                    }}
+                    disabled={isUsed}
+                    className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm border transition-all duration-150 ${
+                      isUsed
+                        ? 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 text-slate-400 dark:text-slate-600 cursor-default'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 hover:shadow-sm'
+                    }`}
+                  >
+                    "{prompt}"
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
