@@ -21,7 +21,15 @@ export function AuthProvider({ children }) {
   const isAuthenticated = !!session || !!getAccessCode()
 
   const getAuthHeader = useCallback(() => {
-    // Access code takes priority over JWT to prevent data leak in demo tabs
+    const path = window.location.pathname
+    // Production vault — always JWT, never access code
+    if (path.startsWith('/vault')) {
+      if (session?.access_token) {
+        return { Authorization: `Bearer ${session.access_token}` }
+      }
+      return {}
+    }
+    // Demo/try-it-out — access code first, JWT fallback
     const code = getAccessCode()
     if (code) {
       return { 'X-Access-Code': code }
