@@ -7,15 +7,17 @@ export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/a
  * Get auth headers. JWT takes priority over access code.
  */
 export async function getAuthHeaders() {
+  // Access code takes priority — prevents JWT from leaking real user data
+  // into demo sessions (JWT is shared across tabs via localStorage)
+  const code = sessionStorage.getItem('hrdai_access_code')
+  if (code) {
+    return { 'X-Access-Code': code }
+  }
   if (supabase) {
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.access_token) {
       return { 'Authorization': `Bearer ${session.access_token}` }
     }
-  }
-  const code = sessionStorage.getItem('hrdai_access_code')
-  if (code) {
-    return { 'X-Access-Code': code }
   }
   return {}
 }

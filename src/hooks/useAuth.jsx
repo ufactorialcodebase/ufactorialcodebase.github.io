@@ -21,12 +21,13 @@ export function AuthProvider({ children }) {
   const isAuthenticated = !!session || !!getAccessCode()
 
   const getAuthHeader = useCallback(() => {
-    if (session?.access_token) {
-      return { Authorization: `Bearer ${session.access_token}` }
-    }
+    // Access code takes priority over JWT to prevent data leak in demo tabs
     const code = getAccessCode()
     if (code) {
       return { 'X-Access-Code': code }
+    }
+    if (session?.access_token) {
+      return { Authorization: `Bearer ${session.access_token}` }
     }
     return {}
   }, [session])
