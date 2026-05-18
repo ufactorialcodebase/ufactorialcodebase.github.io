@@ -71,7 +71,8 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
                   <img
                     src="/images/alex-persona.png"
                     alt="Alex Chen"
-                    className="h-full w-auto max-w-full object-contain"
+                    className="w-auto max-w-full object-contain"
+                    style={{ height: '115%' }}
                     onError={(e) => {
                       e.target.style.display = 'none'
                       if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'
