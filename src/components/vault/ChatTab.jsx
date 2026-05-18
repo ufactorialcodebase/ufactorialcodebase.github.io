@@ -1,6 +1,8 @@
 // src/components/vault/ChatTab.jsx
+import { useNavigate } from 'react-router-dom'
 import Chat from '../demo/Chat'
 import { useDemo } from './DemoContext'
+import { clearCache, setDemoMode } from '../../lib/vault-cache'
 
 const DEFAULT_PROMPTS = [
   "My brother Jack lives in Boston",
@@ -36,16 +38,25 @@ function pickRandom(arr) {
 
 export default function ChatTab() {
   const demo = useDemo()
+  const navigate = useNavigate()
 
   if (demo?.isDemo) {
     const prompts = demo.personaId === 'alex' ? ALEX_PROMPTS : DEFAULT_DEMO_PROMPTS
     const greeting = demo.personaId === 'alex' ? pickRandom(ALEX_GREETINGS) : null
+    const handleDemoExit = () => {
+      setDemoMode(false)
+      clearCache()
+      sessionStorage.removeItem('hrdai_persona_id')
+      sessionStorage.removeItem('hrdai_persona_name')
+      navigate('/demo/simulated')
+    }
     return (
       <Chat
         mode="simulated"
         personaName={demo.personaName?.split(' ')[0] || demo.personaId}
         suggestedPrompts={prompts}
         initialGreeting={greeting}
+        onExit={handleDemoExit}
       />
     )
   }
