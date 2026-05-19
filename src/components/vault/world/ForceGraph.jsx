@@ -15,15 +15,9 @@ const TYPE_COLORS = {
   other: '#c084fc',
 }
 
-const TOPIC_STATUS_COLORS = {
-  active: '#6366f1',
-  dormant: '#94a3b8',
-  resolved: '#a5b4fc',
-}
-
 function getNodeColor(node) {
   if (node.id === 'you') return TYPE_COLORS.you
-  if (node.type === 'topic') return TOPIC_STATUS_COLORS[node.status] || '#6366f1'
+  if (node.type === 'topic') return '#c084fc'
   return TYPE_COLORS[node.type] || TYPE_COLORS.other
 }
 

@@ -82,7 +82,7 @@ export default function WorldTab() {
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#60a5fa]" /> Person</span>
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#34d399]" /> Organization</span>
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#fb923c]" /> Place</span>
-          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#6366f1]" /> Topic</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#c084fc]" /> Topic</span>
         </div>
       )}
       {/* Container is ALWAYS mounted so ResizeObserver can measure it */}
