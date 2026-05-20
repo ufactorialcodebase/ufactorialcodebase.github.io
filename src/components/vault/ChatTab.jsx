@@ -57,6 +57,7 @@ export default function ChatTab() {
         suggestedPrompts={prompts}
         initialGreeting={greeting}
         onExit={handleDemoExit}
+        showThemeToggle={false}
       />
     )
   }

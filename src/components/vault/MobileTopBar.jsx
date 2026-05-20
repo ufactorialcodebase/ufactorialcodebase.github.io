@@ -1,13 +1,11 @@
 // src/components/vault/MobileTopBar.jsx
-// Mobile-only: "HridAI BETA" bar with theme toggle, context panel, and gear
+// Mobile-only: "HridAI BETA" bar with context panel and gear
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Settings, Brain, Sun, Moon } from 'lucide-react'
-import { useTheme } from '../../hooks/useTheme'
+import { Settings, Brain } from 'lucide-react'
 
 export default function MobileTopBar({ showContext, onToggleContext, basePath = '/vault', onExit }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const { isDark, toggle: toggleTheme } = useTheme()
   const isChat = pathname === `${basePath}/chat`
 
   return (
@@ -15,15 +13,6 @@ export default function MobileTopBar({ showContext, onToggleContext, basePath = 
       <span className="text-[17px] font-bold tracking-tight text-[var(--text-primary)]">HridAI</span>
       <span className="px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider bg-[rgba(245,158,11,0.15)] text-[var(--accent-amber)]">BETA</span>
       <div className="flex-1" />
-      {/* Theme toggle — kept only in demo vaults (no Settings page there); real vault moved it to Settings */}
-      {onExit && (
-        <button
-          onClick={toggleTheme}
-          className="w-8 h-8 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
-        >
-          {isDark ? <Sun size={14} /> : <Moon size={14} />}
-        </button>
-      )}
       {/* Context panel toggle — only on chat page */}
       {isChat && onToggleContext && (
         <button
