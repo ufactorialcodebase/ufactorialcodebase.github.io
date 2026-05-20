@@ -31,8 +31,8 @@ export default function SettingsHome({ s, onNavigate, onBack }) {
           className="relative flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/50"
         >
           <div>
-            <div className="text-[15px] font-medium text-slate-900 dark:text-slate-100">Profile settings</div>
-            <div className="mt-0.5 text-[13px] text-slate-500 dark:text-slate-400">Name, email &amp; password</div>
+            <div className="text-[15px] font-medium text-slate-900 dark:text-slate-100">Account settings</div>
+            <div className="mt-0.5 text-[13px] text-slate-500 dark:text-slate-400">Email &amp; password</div>
           </div>
           <span className="text-[14px] font-semibold text-indigo-500">Edit</span>
         </button>

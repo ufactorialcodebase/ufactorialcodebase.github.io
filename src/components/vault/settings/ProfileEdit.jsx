@@ -13,23 +13,11 @@ export default function ProfileEdit({ s, onBack }) {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h2 className="text-[24px] font-bold tracking-tight text-slate-900 dark:text-slate-100" style={{ fontFamily: 'Space Grotesk, system-ui, sans-serif' }}>
-          Profile settings
+          Account settings
         </h2>
       </div>
 
       <div className="mt-3.5 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
-        {/* Display name */}
-        <div className={fieldWrap}>
-          <label className={labelCls}>Display name</label>
-          <div className="flex gap-2">
-            <input className={inputCls} value={s.displayName} onChange={(e) => s.setDisplayName(e.target.value)} placeholder="Your name" />
-            <button onClick={s.handleUpdateName} disabled={s.loading}
-              className="rounded-[10px] bg-indigo-500 px-4 py-2.5 text-[14px] font-semibold text-white hover:bg-indigo-600 disabled:opacity-50">
-              Save
-            </button>
-          </div>
-        </div>
-
         {/* Email */}
         <div className={fieldWrap}>
           <label className={labelCls}>Email</label>

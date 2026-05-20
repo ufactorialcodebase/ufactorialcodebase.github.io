@@ -10,15 +10,12 @@ import ProfileEdit from '../components/vault/settings/ProfileEdit'
 import ManageSubscription from '../components/vault/settings/ManageSubscription'
 import PrivacySettings from '../components/vault/settings/PrivacySettings'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
-
 export default function Profile() {
   const navigate = useNavigate()
   const { user, session, userId, clear, plan } = useAuth()
   const { isDark, toggle: toggleTheme } = useTheme()
 
   const [view, setView] = useState('home') // 'home' | 'edit' | 'subscription' | 'privacy'
-  const [displayName, setDisplayName] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState(null)
@@ -26,30 +23,13 @@ export default function Profile() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!session) { navigate('/login'); return }
-    fetch(`${API_BASE}/user/profile`, { headers: { Authorization: `Bearer ${session.access_token}` } })
-      .then((r) => r.json())
-      .then((data) => { if (data.display_name) setDisplayName(data.display_name) })
-      .catch(() => {})
+    if (!session) navigate('/login')
   }, [session, navigate])
 
   const flash = useCallback((msg, isError = false) => {
     if (isError) { setError(msg); setMessage(null) } else { setMessage(msg); setError(null) }
     setTimeout(() => { setMessage(null); setError(null) }, 4000)
   }, [])
-
-  const handleUpdateName = async () => {
-    if (!session || !displayName.trim()) return
-    setLoading(true)
-    try {
-      await fetch(`${API_BASE}/user/profile`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ display_name: displayName }),
-      })
-      flash('Display name updated.')
-    } catch { flash('Failed to update.', true) } finally { setLoading(false) }
-  }
 
   const handlePasswordReset = async () => {
     if (!user?.email) return
@@ -83,9 +63,9 @@ export default function Profile() {
 
   const shared = {
     user, userId, plan, isDark, toggleTheme,
-    displayName, setDisplayName, newPassword, setNewPassword,
+    newPassword, setNewPassword,
     showPassword, setShowPassword, message, error, loading,
-    handleUpdateName, handlePasswordReset, handleChangePassword,
+    handlePasswordReset, handleChangePassword,
     handleCopyUserId, handleLogout, handleUpgrade,
     goHome: () => setView('home'),
   }
