@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HridAI — Settings page mockup (v2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ───────── Vault theme (mirrors src/styles/vault-theme.css) ───────── */
+  :root{
+    --bg-primary:#0f1729; --bg-secondary:#1a2238; --bg-tertiary:#243049;
+    --text-primary:#e8edf5; --text-secondary:#8b95a8; --text-tertiary:#5a6478;
+    --border-subtle:rgba(255,255,255,.06); --border-active:rgba(255,255,255,.14);
+    --accent-indigo:#6366f1; --accent-amber:#f59e0b; --accent-teal:#14b8a6;
+    --accent-rose:#ec4899; --status-resolved:#34d399;
+    --danger:#f4a4a4;
+  }
+  /* Light theme — slate palette matching the chat (bg-white / slate-50 / slate-100 ...) */
+  body.light{
+    --bg-primary:#ffffff;
+    --bg-secondary:#f8fafc;
+    --bg-tertiary:#eef2f7;
+    --text-primary:#0f172a;
+    --text-secondary:#475569;
+    --text-tertiary:#94a3b8;
+    --border-subtle:rgba(15,23,42,.10);
+    --border-active:rgba(15,23,42,.18);
+    --danger:#dc2626;
+    background:#e9edf2;
+  }
+  body.light .screen::before{opacity:.45}
+  .theme-switch{position:fixed;top:16px;right:18px;z-index:99;display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border-active);box-shadow:0 6px 20px -8px rgba(0,0,0,.5)}
+  .theme-switch:hover{color:var(--text-primary)}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:#070b14;color:var(--text-primary);
+    -webkit-font-smoothing:antialiased;padding:48px 24px 90px}
+  h1,h2,h3,.font-display{font-family:'Space Grotesk',system-ui,sans-serif}
+
+  .page-title{max-width:1180px;margin:0 auto 8px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-tertiary)}
+  .page-sub{max-width:1180px;margin:0 auto 14px;color:var(--text-secondary);font-size:14px;line-height:1.6}
+  .page-sub b{color:var(--text-primary);font-weight:600}
+  .rowlabel{max-width:1180px;margin:40px auto 18px;font-family:'Space Grotesk';font-size:15px;font-weight:600;
+    color:var(--text-primary);border-left:3px solid var(--accent-indigo);padding-left:12px}
+
+  .stage{max-width:1180px;margin:0 auto;display:flex;gap:48px;flex-wrap:wrap;align-items:flex-start;justify-content:center}
+  .device-wrap{display:flex;flex-direction:column;align-items:center;gap:13px}
+  .device-cap{font-size:12px;color:var(--text-tertiary);letter-spacing:.04em;text-align:center;max-width:392px}
+
+  /* ───────── Phone frame ───────── */
+  .phone{width:392px;height:812px;border-radius:46px;background:#000;padding:10px;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.8),0 0 0 2px #15151c,inset 0 0 0 1px rgba(255,255,255,.04);position:relative}
+  .screen{position:relative;width:100%;height:100%;border-radius:38px;overflow:hidden;background:var(--bg-primary);display:flex;flex-direction:column}
+  .screen::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 55% at 50% -10%,rgba(99,102,241,.15),transparent 60%)}
+  .statusbar{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:14px 26px 6px;font-size:13px;font-weight:600}
+  .statusbar .dots{display:flex;gap:6px;align-items:center;color:var(--text-secondary)}
+  .battery{width:22px;height:11px;border:1px solid var(--text-secondary);border-radius:3px;position:relative;opacity:.8}
+  .battery::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:5px;background:var(--text-secondary);border-radius:0 1px 1px 0}
+  .battery span{position:absolute;inset:1px;width:78%;background:var(--status-resolved);border-radius:1px}
+  .scroll{position:relative;z-index:1;flex:1;overflow-y:auto;padding:6px 18px 26px}
+  .scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+
+  /* header */
+  .head{display:flex;align-items:center;justify-content:space-between;padding:12px 4px 8px}
+  .head h1{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .back{display:inline-flex;align-items:center;gap:5px;color:var(--text-secondary);font-size:13px;background:none;border:0;cursor:pointer;font-family:inherit}
+  .back:hover{color:var(--text-primary)}
+
+  /* sub-page header */
+  .subhead{display:flex;align-items:center;gap:12px;padding:14px 2px 4px}
+  .subhead h2{font-size:24px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .intro{font-size:13.5px;color:var(--text-secondary);line-height:1.6;padding:12px 6px 20px}
+
+  /* sections / cards / rows */
+  .section{margin-top:22px;animation:rise .5s both}
+  .section.tight{margin-top:14px}
+  .section-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);padding:0 6px 9px}
+  .card{background:var(--bg-secondary);border:1px solid var(--border-subtle);border-radius:18px;overflow:hidden}
+  .row{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;
+    padding:0 16px;cursor:default;background:none;border:0;width:100%;font-family:inherit;color:inherit;text-align:left}
+  button.row{cursor:pointer}
+  button.row:hover{background:rgba(255,255,255,.025)}
+  .row:not(:last-child)::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:1px;background:var(--border-subtle)}
+  .row.stack{align-items:flex-start;padding-top:15px;padding-bottom:15px}
+  .row-label{font-size:15px;color:var(--text-primary);font-weight:500}
+  .row-right{display:flex;align-items:center;gap:9px;min-width:0}
+  .val{font-size:14px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:185px}
+  .val.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--text-tertiary)}
+  .sub2{font-size:13px;color:var(--text-secondary);margin-top:3px;font-weight:400}
+  .desc{font-size:12.5px;color:var(--text-secondary);line-height:1.5;margin-top:5px;max-width:228px}
+  .link{font-size:14px;color:var(--accent-indigo);font-weight:600;white-space:nowrap}
+  button.row:hover .chev{transform:translateX(2px);color:var(--text-secondary)}
+  .chev{color:var(--text-tertiary);transition:transform .15s ease;flex:none}
+  .iconbtn{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;color:var(--text-tertiary);background:none;border:0;cursor:pointer}
+  .iconbtn:hover{color:var(--text-secondary);background:rgba(255,255,255,.04)}
+  .danger .row-label{color:var(--danger)}
+  .pill{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .pill.soon{color:var(--accent-teal);background:rgba(20,184,166,.13);border:1px solid rgba(20,184,166,.22)}
+
+  /* toggle */
+  .toggle{width:46px;height:27px;border-radius:999px;border:0;cursor:pointer;position:relative;background:var(--bg-tertiary);transition:background .2s ease;flex:none}
+  .toggle .knob{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:left .2s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+  .toggle.on{background:var(--accent-indigo)}.toggle.on .knob{left:22px}
+
+  /* CTA / buttons */
+  .cta{margin-top:16px;width:100%;border:0;cursor:pointer;border-radius:14px;padding:15px;font-family:inherit;font-weight:700;font-size:15px;
+    color:#1a1206;background:linear-gradient(90deg,#f59e0b,#f97316);box-shadow:0 10px 26px -10px rgba(249,115,22,.6)}
+  .cta:hover{filter:brightness(1.05)}
+  .cta.disabled{background:var(--bg-tertiary);color:var(--text-tertiary);box-shadow:none;cursor:not-allowed}
+  .cta-note{text-align:center;font-size:12px;color:var(--text-tertiary);margin-top:10px}
+
+  /* edit form fields */
+  .field{padding:15px 16px;position:relative}
+  .field:not(:last-child)::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:1px;background:var(--border-subtle)}
+  .field label{display:block;font-size:11px;color:var(--text-tertiary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em}
+  .fieldrow{display:flex;gap:8px}
+  .input{flex:1;background:var(--bg-tertiary);border:1px solid var(--border-subtle);border-radius:10px;padding:11px 13px;color:var(--text-primary);font-family:inherit;font-size:14px;outline:none;width:100%}
+  .input:focus{border-color:var(--accent-indigo)}
+  .input.ro{color:var(--text-tertiary)}
+  .input-wrap{position:relative;flex:1}
+  .input-wrap .input{width:100%;padding-right:40px}
+  .eye{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;color:var(--text-tertiary);display:grid;place-items:center;padding:4px}
+  .eye:hover{color:var(--text-secondary)}
+  .btn{padding:11px 16px;border-radius:10px;border:0;cursor:pointer;font-family:inherit;font-weight:600;font-size:14px;white-space:nowrap}
+  .btn.primary{background:var(--accent-indigo);color:#fff}
+  .btn.ghost{background:var(--bg-tertiary);color:var(--text-secondary);border:1px solid var(--border-subtle)}
+  .reset{margin-top:9px;font-size:13px;color:var(--text-tertiary);text-decoration:underline;background:none;border:0;cursor:pointer;font-family:inherit}
+
+  /* footer */
+  .foot{text-align:center;padding:34px 8px 10px}
+  .logo{font-family:'Space Grotesk';font-weight:700;font-size:20px;letter-spacing:-.02em;color:var(--text-secondary)}
+  .logo b{color:var(--text-primary)}
+  .tagline{font-size:12.5px;color:var(--text-tertiary);margin-top:6px}
+  .signout{margin-top:20px;width:100%;padding:14px;border-radius:14px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;color:var(--danger);background:none;border:1px solid color-mix(in srgb,var(--danger) 28%,transparent)}
+  .signout:hover{background:color-mix(in srgb,var(--danger) 9%,transparent);border-color:color-mix(in srgb,var(--danger) 45%,transparent)}
+
+  /* bottom nav */
+  .bottomnav{position:relative;z-index:2;display:flex;justify-content:space-around;align-items:center;padding:10px 8px 22px;background:var(--bg-secondary);border-top:1px solid var(--border-subtle)}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:var(--text-tertiary)}
+  .nav-item.active{color:var(--accent-indigo)}
+
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .s1{animation-delay:.04s}.s2{animation-delay:.10s}.s3{animation-delay:.16s}.s4{animation-delay:.22s}.s5{animation-delay:.28s}.s6{animation-delay:.34s}
+
+  /* desktop frame */
+  .win{width:680px;max-width:92vw;height:812px;border-radius:16px;overflow:hidden;display:flex;background:var(--bg-primary);border:1px solid var(--border-active);box-shadow:0 40px 90px -30px rgba(0,0,0,.8)}
+  .rail{width:56px;flex:none;background:var(--bg-secondary);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:12px}
+  .rail .mark{width:30px;height:30px;border-radius:9px;background:radial-gradient(120% 120% at 30% 20%,#818cf8,#4f46e5);margin-bottom:6px}
+  .rail .dot{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--text-tertiary)}
+  .rail .dot.active{background:rgba(99,102,241,.15);color:var(--accent-indigo)}
+  .rail .spacer{flex:1}
+  .win .main{flex:1;overflow-y:auto;padding:28px 0}
+  .win .col{max-width:480px;margin:0 auto;padding:0 28px}
+  .win .main::-webkit-scrollbar{width:8px}.win .main::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px}
+
+  .note{max-width:1180px;margin:48px auto 0;padding:18px 20px;border:1px solid var(--border-subtle);border-radius:14px;background:var(--bg-secondary);color:var(--text-secondary);font-size:13px;line-height:1.75}
+  .note b{color:var(--text-primary)}.note .k{color:var(--accent-teal);font-weight:600}
+</style>
+</head>
+<body>
+  <button class="theme-switch" onclick="document.body.classList.toggle('light')">◐&nbsp;&nbsp;Toggle light / dark</button>
+  <div class="page-title">HridAI · Settings — mockup v2</div>
+  <div class="page-sub">
+    Redesign of <b>/vault/profile</b> into a grouped, row-list <b>Settings</b> home (HridAI dark theme). Profile details now live behind a collapsed
+    <b>Profile settings</b> entry; <b>Manage subscription</b> and <b>Privacy settings</b> are drill-in sub-pages. Toggles are clickable.
+  </div>
+
+  <!-- ════════════════ MAIN — phone + desktop ════════════════ -->
+  <div class="rowlabel">Main Settings — phone &amp; desktop</div>
+  <div class="stage">
+
+    <!-- PHONE: MAIN -->
+    <div class="device-wrap">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots">
+          <svg width="16" height="11" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1" opacity=".4"/></svg>
+          <span class="battery"><span></span></span></span></div>
+        <div class="scroll">
+          <div class="head"><h1>Settings</h1>
+            <button class="back"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to chat</button></div>
+
+          <!-- Profile settings (collapsed) -->
+          <div class="section tight s1"><div class="card">
+            <button class="row"><div><div class="row-label">Profile settings</div><div class="sub2">Name, email &amp; password</div></div>
+              <span class="link">Edit</span></button>
+          </div></div>
+
+          <!-- Preferences -->
+          <div class="section s2"><div class="section-label">Preferences</div><div class="card">
+            <div class="row"><span class="row-label">Dark mode</span><button class="toggle on" onclick="this.classList.toggle('on')"><span class="knob"></span></button></div>
+            <button class="row"><span class="row-label">Language</span><div class="row-right"><span class="val">English</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+          </div></div>
+
+          <!-- Subscription -->
+          <div class="section s3"><div class="section-label">Subscription</div><div class="card">
+            <div class="row"><span class="row-label">Current plan</span><div class="row-right"><span class="val" style="color:var(--text-primary);font-weight:600;max-width:none">Closed beta</span></div></div>
+            <button class="row"><span class="row-label">Manage subscription</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+          </div></div>
+
+          <!-- Data & Privacy -->
+          <div class="section s4"><div class="section-label">Data &amp; Privacy</div><div class="card">
+            <button class="row"><span class="row-label">Privacy settings</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+            <button class="row"><span class="row-label">Export my data</span><div class="row-right"><span class="pill soon">Coming soon</span></div></button>
+            <button class="row danger"><span class="row-label">Delete my data</span><div class="row-right"><span class="pill soon">Coming soon</span></div></button>
+            <button class="row danger"><span class="row-label">Delete my account</span><div class="row-right"><span class="pill soon">Coming soon</span></div></button>
+          </div></div>
+
+          <!-- About -->
+          <div class="section s5"><div class="section-label">About</div><div class="card">
+            <div class="row"><span class="row-label">Version</span><div class="row-right"><span class="val">2.0</span></div></div>
+            <button class="row"><span class="row-label">Terms of Service</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+            <button class="row"><span class="row-label">Privacy Policy</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+            <button class="row"><span class="row-label">Contact</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+          </div></div>
+
+          <div class="foot section s6"><div class="logo"><b>Hrid</b>AI</div><div class="tagline">Your personal AI manager</div>
+            <button class="signout"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</button></div>
+        </div>
+        <div class="bottomnav">
+          <div class="nav-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat</div>
+          <div class="nav-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>People</div>
+          <div class="nav-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Todos</div>
+          <div class="nav-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>World</div>
+          <div class="nav-item active"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</div>
+        </div>
+      </div></div>
+      <div class="device-cap">Phone · main Settings (opened via gear icon)</div>
+    </div>
+
+    <!-- DESKTOP: MAIN -->
+    <div class="device-wrap">
+      <div class="win">
+        <div class="rail">
+          <div class="mark"></div>
+          <div class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg></div>
+          <div class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg></div>
+          <div class="spacer"></div>
+          <div class="dot active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+        </div>
+        <div class="main"><div class="col">
+          <div class="head"><h1>Settings</h1>
+            <button class="back"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to chat</button></div>
+
+          <div class="section tight"><div class="card">
+            <button class="row"><div><div class="row-label">Profile settings</div><div class="sub2">Name, email &amp; password</div></div><span class="link">Edit</span></button>
+          </div></div>
+
+          <div class="section"><div class="section-label">Preferences</div><div class="card">
+            <div class="row"><span class="row-label">Dark mode</span><button class="toggle on" onclick="this.classList.toggle('on')"><span class="knob"></span></button></div>
+            <button class="row"><span class="row-label">Language</span><div class="row-right"><span class="val">English</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+          </div></div>
+
+          <div class="section"><div class="section-label">Subscription</div><div class="card">
+            <div class="row"><span class="row-label">Current plan</span><div class="row-right"><span class="val" style="color:var(--text-primary);font-weight:600;max-width:none">Closed beta</span></div></div>
+            <button class="row"><span class="row-label">Manage subscription</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+          </div></div>
+
+          <div class="section"><div class="section-label">Data &amp; Privacy</div><div class="card">
+            <button class="row"><span class="row-label">Privacy settings</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+            <button class="row"><span class="row-label">Export my data</span><div class="row-right"><span class="pill soon">Coming soon</span></div></button>
+            <button class="row danger"><span class="row-label">Delete my data</span><div class="row-right"><span class="pill soon">Coming soon</span></div></button>
+            <button class="row danger"><span class="row-label">Delete my account</span><div class="row-right"><span class="pill soon">Coming soon</span></div></button>
+          </div></div>
+
+          <div class="section"><div class="section-label">About</div><div class="card">
+            <div class="row"><span class="row-label">Version</span><div class="row-right"><span class="val">2.0</span></div></div>
+            <button class="row"><span class="row-label">Terms of Service</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+            <button class="row"><span class="row-label">Privacy Policy</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+            <button class="row"><span class="row-label">Contact</span><div class="row-right"><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div></button>
+          </div></div>
+
+          <div class="foot"><div class="logo"><b>Hrid</b>AI</div><div class="tagline">Your personal AI manager</div>
+            <button class="signout"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</button></div>
+        </div></div>
+      </div>
+      <div class="device-cap">Desktop · settings column inside the vault icon-rail shell</div>
+    </div>
+  </div>
+
+  <!-- ════════════════ SUB-SCREENS (phone) ════════════════ -->
+  <div class="rowlabel">Drill-in sub-screens (phone — desktop reuses the same centered column)</div>
+  <div class="stage">
+
+    <!-- EDIT PROFILE SETTINGS -->
+    <div class="device-wrap">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots"><svg width="16" height="11" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1" opacity=".4"/></svg><span class="battery"><span></span></span></span></div>
+        <div class="scroll">
+          <div class="subhead"><button class="iconbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><h2>Profile settings</h2></div>
+          <div class="section tight"><div class="card">
+            <div class="field"><label>Display name</label><div class="fieldrow"><input class="input" value="Pratik"><button class="btn primary">Save</button></div></div>
+            <div class="field"><label>Email</label><input class="input ro" value="pratikcpednekar@gmail.com" readonly></div>
+            <div class="field"><label>Change password</label><div class="fieldrow"><div class="input-wrap"><input class="input" type="password" value="************" placeholder="New password (8+ chars)"><button class="eye" onclick="togglePw(this)"><svg class="ic-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-eyeoff" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-7-10-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div><button class="btn ghost">Update</button></div>
+              <button class="reset">Send reset email instead</button></div>
+            <div class="field"><label>User ID</label><div class="fieldrow" style="align-items:center"><span class="val mono" style="flex:1;max-width:none">demo_demo_try_001</span>
+              <button class="iconbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div></div>
+          </div></div>
+        </div>
+      </div></div>
+      <div class="device-cap">Profile settings → opened from "Edit"</div>
+    </div>
+
+    <!-- MANAGE SUBSCRIPTION -->
+    <div class="device-wrap">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots"><svg width="16" height="11" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1" opacity=".4"/></svg><span class="battery"><span></span></span></span></div>
+        <div class="scroll">
+          <div class="subhead"><button class="iconbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><h2>Manage subscription</h2></div>
+          <div class="section tight"><div class="card">
+            <div class="row"><span class="row-label">Current plan</span><div class="row-right"><span class="val" style="color:var(--text-primary);font-weight:600;max-width:none">Closed beta</span></div></div>
+            <div class="row stack"><div><div class="row-label">What you get</div><div class="desc">Free full access to all HridAI features until Beta launch.</div></div></div>
+          </div></div>
+          <button class="cta disabled" disabled>Upgrade to Premium</button>
+          <div class="cta-note">Premium unlocks at launch — you'll keep beta access until then.</div>
+        </div>
+      </div></div>
+      <div class="device-cap">Manage subscription → Upgrade greyed until launch</div>
+    </div>
+
+    <!-- PRIVACY SETTINGS -->
+    <div class="device-wrap">
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>9:41</span><span class="dots"><svg width="16" height="11" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1" opacity=".4"/></svg><span class="battery"><span></span></span></span></div>
+        <div class="scroll">
+          <div class="subhead"><button class="iconbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><h2>Privacy settings</h2></div>
+          <div class="intro">Control how your data is used. These settings don't affect the core functionality of HridAI — your memory and insights always remain private to you.</div>
+          <div class="section tight"><div class="section-label">Data sharing</div><div class="card">
+            <div class="row stack"><div><div class="row-label">Usage analytics</div><div class="desc">Help us improve HridAI by sharing anonymous usage data (e.g. which features you use). No personal memory content is included.</div></div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"><span class="knob"></span></button></div>
+            <div class="row stack"><div><div class="row-label">Crash reports</div><div class="desc">Automatically send crash reports when something goes wrong. Helps us fix bugs faster.</div></div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"><span class="knob"></span></button></div>
+            <div class="row stack"><div><div class="row-label">AI improvement</div><div class="desc">Allow anonymized, aggregated patterns to help improve HridAI's models. Your individual data is never shared.</div></div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"><span class="knob"></span></button></div>
+          </div></div>
+        </div>
+      </div></div>
+      <div class="device-cap">Privacy settings (Community insights excluded)</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Changes in v2</b><br>
+    • Top is now a collapsed <b>Profile settings</b> row with <b>Edit</b> → opens the <span class="k">Profile settings</span> page (display name, email, change password, user ID). The big avatar + name are gone.<br>
+    • <b>Subscription</b>: <span class="k">Current plan = "Closed beta"</span>; usage row removed; two rows only (Current plan, Manage subscription). <b>Upgrade to Premium</b> moved into Manage subscription and <span class="k">greyed out, no price</span> until launch — logged in <span class="k">docs/project/launch_checklist.md</span>.<br>
+    • <b>Data &amp; Privacy</b>: new <span class="k">Privacy settings</span> page (Data sharing: Usage analytics, Crash reports, AI improvement — Community insights excluded). Export / Delete remain "Coming soon".<br>
+    • <b>About</b>: Version = <span class="k">2.0</span>.<br>
+    • <b>Preferences</b> = Dark mode (relocated from the mobile top bar, wired to existing <span class="k">useTheme</span>) + Language (English; structure ready for more locales).<br>
+    • Privacy toggles aren't persisted yet — they need a small backend store before they do anything (tracked in the launch checklist).
+  </div>
+<script>
+function togglePw(btn){var inp=btn.parentElement.querySelector('input');var e=btn.querySelector('.ic-eye');var o=btn.querySelector('.ic-eyeoff');if(inp.type==='password'){inp.type='text';e.style.display='none';o.style.display='';}else{inp.type='password';e.style.display='';o.style.display='none';}}
+</script>
+</body>
+</html>
