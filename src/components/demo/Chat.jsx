@@ -29,6 +29,7 @@ export default function Chat({
     "I need to call mom about the holiday plans",
   ],
   initialGreeting = null,
+  showThemeToggle = true,
 }) {
   const { session, plan, conversationsRemaining, initialized: authInitialized } = useAuth();
   const isAuthUser = !!session;
@@ -427,14 +428,16 @@ export default function Chat({
             </div>
             
             <div className="flex items-center gap-2">
-              {/* Theme toggle */}
-              <button
-                onClick={toggleTheme}
-                className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-150"
-                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
+              {/* Theme toggle — hidden in the real vault (moved to Settings); shown in demos */}
+              {showThemeToggle && (
+                <button
+                  onClick={toggleTheme}
+                  className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-150"
+                  title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                </button>
+              )}
 
               {/* Reset button */}
               <button

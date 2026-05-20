@@ -65,6 +65,7 @@ export default function ChatTab() {
     <Chat
       mode="try_it_out"
       suggestedPrompts={DEFAULT_PROMPTS}
+      showThemeToggle={false}
     />
   )
 }
