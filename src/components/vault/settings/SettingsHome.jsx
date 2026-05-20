@@ -41,7 +41,7 @@ export default function SettingsHome({ s, onNavigate, onBack }) {
       {/* Preferences */}
       <SettingsSection label="Preferences">
         <SettingsRow label="Dark mode" right={<Toggle checked={s.isDark} onChange={s.toggleTheme} label="Dark mode" />} />
-        <SettingsRow label="Language" value="English" chevron />
+        <SettingsRow label="Language" value="English" />
       </SettingsSection>
 
       {/* Subscription */}
