@@ -4,6 +4,22 @@ import { supabase } from './supabase'
 export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 /**
+ * Browser timezone header (ISS-103) so the backend computes "today" in the
+ * user's local timezone instead of server UTC. Sent on chat-turn requests.
+ * Kept separate from auth headers — getAuthHeaders() callers detect
+ * "not authenticated" via an empty object, which this must not disturb.
+ * @returns {Object} { 'X-Timezone': '<IANA zone>' } or {} if unavailable.
+ */
+export function getTimezoneHeader() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return tz ? { 'X-Timezone': tz } : {}
+  } catch {
+    return {}
+  }
+}
+
+/**
  * Get auth headers. JWT takes priority over access code.
  */
 export async function getAuthHeaders() {

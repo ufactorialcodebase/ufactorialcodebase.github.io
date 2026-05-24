@@ -1,5 +1,5 @@
 // src/lib/api/chat.js
-import { BASE_URL, getAuthHeaders } from '../api-client.js'
+import { BASE_URL, getAuthHeaders, getTimezoneHeader } from '../api-client.js'
 import { getSessionId, setSessionId } from './auth.js'
 
 export async function getGreeting() {
@@ -11,7 +11,7 @@ export async function getGreeting() {
   try {
     const response = await fetch(`${BASE_URL}/chat/greeting`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders },
+      headers: { 'Content-Type': 'application/json', ...authHeaders, ...getTimezoneHeader() },
     })
 
     if (!response.ok) {
@@ -56,7 +56,7 @@ export function sendMessageStream(message, callbacks) {
     try {
       const response = await fetch(`${BASE_URL}/chat/stream`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers: { 'Content-Type': 'application/json', ...authHeaders, ...getTimezoneHeader() },
         body: JSON.stringify({ message, session_id: getSessionId() }),
         signal: controller.signal,
       })
@@ -129,7 +129,7 @@ export async function sendMessage(message, sessionId = null) {
   try {
     const response = await fetch(`${BASE_URL}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders },
+      headers: { 'Content-Type': 'application/json', ...authHeaders, ...getTimezoneHeader() },
       body: JSON.stringify({ message, session_id: sessionId || getSessionId() }),
     })
     if (!response.ok) {
