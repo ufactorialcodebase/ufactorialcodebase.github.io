@@ -2,7 +2,7 @@
 import { useRef, useEffect } from 'react'
 import { select } from 'd3-selection'
 import { zoom as d3Zoom, zoomIdentity } from 'd3-zoom'
-import { forceSimulation, forceManyBody, forceCenter, forceCollide, forceLink } from 'd3-force'
+import { forceSimulation, forceManyBody, forceCenter, forceCollide, forceLink, forceX, forceY } from 'd3-force'
 import { drag as d3Drag } from 'd3-drag'
 
 const TYPE_COLORS = {
@@ -74,6 +74,12 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
     const simulation = forceSimulation(nodeData)
       .force('charge', forceManyBody().strength(d => d.id === 'you' ? -300 : -100))
       .force('center', forceCenter(width / 2, height / 2).strength(0.03))
+      // ISS-102: forceCenter only re-centers the centroid; it does not hold individual
+      // nodes. Without forceX/forceY, disconnected ("orphan") topics with no edges get
+      // pushed off-canvas by charge repulsion. These positional forces gently pull every
+      // node toward center so nothing escapes the viewport.
+      .force('x', forceX(width / 2).strength(0.06))
+      .force('y', forceY(height / 2).strength(0.06))
       .force('collision', forceCollide().radius(d => d.radius + 6))
       .force('link', forceLink(edgeData)
         .id(d => d.id)
