@@ -46,6 +46,11 @@ export default function Chat({
   const [isRetrieving, setIsRetrieving] = useState(false);
   const [abortFn, setAbortFn] = useState(null);
   const [usedPrompts, setUsedPrompts] = useState(new Set());
+  // session-carryover (ISS-113) — resumption hints surfaced by the backend greeting
+  const [sessionMeta, setSessionMeta] = useState({
+    isResumed: false,
+    relativeTimePhrase: null,
+  });
   const greetingLoaded = useRef(false); // Prevent double greeting from StrictMode
 
   // Sync mobile context panel toggle with local state
@@ -249,12 +254,19 @@ export default function Chat({
             timestamp: now,
           }))
         );
-        
+
         // Set retrieval trace for context panel
         if (result.retrievalTrace) {
           setCurrentRetrievalTrace(result.retrievalTrace);
         }
       }
+
+      // session-carryover (ISS-113) — only the FETCHED greeting path surfaces
+      // resumption hints. Pre-generated demo greetings never count as a resumption.
+      setSessionMeta({
+        isResumed: Boolean(result.isResumed),
+        relativeTimePhrase: result.relativeTimePhrase || null,
+      });
     } catch (e) {
       console.error('Failed to load greeting:', e);
     } finally {
@@ -287,6 +299,7 @@ export default function Chat({
     setCurrentRetrievalTrace(null);
     setIsLoading(false);
     setIsRetrieving(false);
+    setSessionMeta({ isResumed: false, relativeTimePhrase: null });
     clearSessionId();
     
     // Load new greeting for fresh session (all modes use backend)
@@ -479,9 +492,23 @@ export default function Chat({
           </div>
         </header>
         
+        {/* session-carryover (ISS-113) — subtle badge shown when the backend
+            resumed a recent session. Renders above the messages list so it sits
+            near the greeting bubble. */}
+        {sessionMeta.isResumed && sessionMeta.relativeTimePhrase && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="inline-flex items-center gap-1.5 self-start mx-4 sm:mx-6 mt-3 px-2.5 py-1 rounded-full text-xs text-slate-500 dark:text-slate-400 bg-slate-200/60 dark:bg-slate-800/60"
+          >
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-violet-500" />
+            Continuing from {sessionMeta.relativeTimePhrase}
+          </div>
+        )}
+
         {/* Messages area */}
-        <MessageList 
-          messages={messages} 
+        <MessageList
+          messages={messages}
           isLoading={isLoading && messages.length > 0}
           mode={mode}
         />

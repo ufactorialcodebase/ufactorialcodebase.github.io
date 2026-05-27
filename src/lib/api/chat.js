@@ -36,6 +36,9 @@ export async function getGreeting() {
       toolCalls: data.tool_calls || [],
       retrievalTrace: data.retrieval_trace,
       responseTimeMs: data.response_time_ms,
+      // session-carryover (ISS-113) — surface backend resumption hints to the UI
+      isResumed: Boolean(data.is_resumed),
+      relativeTimePhrase: data.relative_time_phrase || null,
     }
   } catch (error) {
     console.error('Greeting error:', error)
