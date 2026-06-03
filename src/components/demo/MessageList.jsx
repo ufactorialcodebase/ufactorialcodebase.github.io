@@ -79,23 +79,34 @@ function MessageBubble({ message, mode }) {
 /**
  * Message list component with auto-scroll
  */
-export default function MessageList({ messages, isLoading, mode = 'try_it_out' }) {
+export default function MessageList({ messages, isLoading, isInitializing = false, mode = 'try_it_out' }) {
   const bottomRef = useRef(null);
   const isAlexMode = mode === 'alex';
-  
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
-  
+
+  if (isInitializing) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-slate-400 dark:text-slate-500 mx-auto mb-3" />
+          <p className="text-sm text-slate-500 dark:text-slate-400">Preparing your assistant...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (messages.length === 0 && !isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div className="text-center max-w-sm">
           <div className={`
             w-20 h-20 mx-auto mb-5 rounded-2xl flex items-center justify-center shadow-lg
-            ${isAlexMode 
-              ? 'bg-gradient-to-br from-violet-500 to-indigo-600 shadow-violet-500/25' 
+            ${isAlexMode
+              ? 'bg-gradient-to-br from-violet-500 to-indigo-600 shadow-violet-500/25'
               : 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/25'
             }
           `}>
@@ -109,7 +120,7 @@ export default function MessageList({ messages, isLoading, mode = 'try_it_out' }
             {isAlexMode ? "Welcome back, Alex!" : "Start a Conversation"}
           </h3>
           <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-            {isAlexMode 
+            {isAlexMode
               ? "Ask about your schedule, family, or ongoing projects. Watch how HridAI remembers everything."
               : "Share something about yourself and watch HridAI build memory in real-time."
             }

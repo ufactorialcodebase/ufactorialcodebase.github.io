@@ -221,27 +221,27 @@ export default function Chat({
   /**
    * Load greeting from API (all modes)
    * Backend returns `messages` array - each becomes a separate chat bubble.
-   * New users: [static intro, LLM opener]  
+   * New users: [static intro, LLM opener]
    * Returning users: [personalized greeting]
    */
   const loadGreeting = useCallback(async () => {
     setIsInitializing(true);
-    
+
     try {
       const result = await getGreeting();
-      
+
       if (result.error) {
         console.error('Greeting error:', result.error);
         // Fall back to empty chat - user can still interact
         setIsInitializing(false);
         return;
       }
-      
+
       // Use messages array for multi-bubble display, fall back to single greeting
       const greetingMessages = result.messages && result.messages.length > 0
         ? result.messages
         : result.greeting ? [result.greeting] : [];
-      
+
       if (greetingMessages.length > 0) {
         const now = new Date().toISOString();
         setMessages(
@@ -506,22 +506,16 @@ export default function Chat({
           </div>
         )}
 
-        {/* Messages area */}
+        {/* Messages area — isInitializing renders the spinner INSIDE
+            MessageList's flex-1 space instead of a sibling flex-1, preventing
+            the layout thrash that caused the second greeting bubble to paint
+            empty on first render. */}
         <MessageList
           messages={messages}
           isLoading={isLoading && messages.length > 0}
+          isInitializing={isInitializing}
           mode={mode}
         />
-        
-        {/* Loading indicator while greeting loads */}
-        {isInitializing && (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-500 mx-auto mb-3"></div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Preparing your assistant...</p>
-            </div>
-          </div>
-        )}
         
         {/* Suggested prompts - for Alex and Simulated modes to guide users through memory demo */}
         {/* ISS-032: Try It Out should be blank slate, Alex/Simulated modes need prompts */}
