@@ -1,11 +1,37 @@
 /* src/styles/vault-theme-warm.css
  *
  * Warm palette applied when the vault_redesign feature flag is on.
- * Filled in by Task 7 (F1). For now this is a scaffolding stub
- * containing only the class definition — values will be populated
- * with the real palette in F1.
+ * Mirrors the var names from vault-theme.css so existing components
+ * pick this up automatically.
  */
 
 .vault-theme-warm {
-  /* Filled in Task 7. */
+  /* Backgrounds — warm neutrals */
+  --bg-primary: #FBF8F3;
+  --bg-secondary: #F2EDE4;
+  --bg-tertiary: #E8E0D0;
+
+  /* Text — deep ink */
+  --text-primary: #1f1a14;
+  --text-secondary: #5b4c39;
+  --text-tertiary: #8a7a64;
+
+  /* Borders */
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-active: rgba(0, 0, 0, 0.15);
+
+  /* Accent — one warm primary; muted secondaries */
+  --accent-indigo: #2b211a;            /* repurposed as "ink-on-warm" primary action */
+  --accent-warm:   #c97f3a;            /* new — for the welcome strip accent + key highlights */
+  --accent-rose:   #884444;
+  --accent-teal:   #4f6b4f;
+  --accent-amber:  #a0773b;
+  --accent-violet: #5a3e8a;
+  --accent-cyan:   #336669;
+
+  /* Entity type colors — one muted family per role */
+  --entity-person: #4d6688;            /* soft slate-blue */
+  --entity-org:    #6e4d1e;            /* warm brown */
+  --entity-place:  #4f6b4f;            /* soft sage */
+  --entity-other:  #5b4c39;            /* warm neutral */
 }
