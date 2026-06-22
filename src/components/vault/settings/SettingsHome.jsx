@@ -61,6 +61,11 @@ export default function SettingsHome({ s, onNavigate, onBack }) {
         <SettingsRow label="Delete my account" danger right={<ComingSoon />} />
       </SettingsSection>
 
+      {/* Experiments */}
+      <SettingsSection label="Experiments">
+        <SettingsRow label="🧪 Experiments" description="Try features in beta" chevron onClick={() => onNavigate('features')} />
+      </SettingsSection>
+
       {/* About */}
       <SettingsSection label="About">
         <SettingsRow label="Version" value="2.0" />
