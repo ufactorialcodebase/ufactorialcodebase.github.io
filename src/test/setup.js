@@ -5,7 +5,5 @@ import { cleanup } from '@testing-library/react'
 
 afterEach(() => {
   cleanup()
-  if (typeof localStorage.clear === 'function') {
-    localStorage.clear()
-  }
+  localStorage.clear()
 })
