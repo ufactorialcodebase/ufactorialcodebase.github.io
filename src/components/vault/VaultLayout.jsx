@@ -10,6 +10,7 @@ import AcceptanceGate from './AcceptanceGate'
 import { useAuth } from '../../hooks/useAuth'
 import { getCached, setCached } from '../../lib/vault-cache'
 import { getWorld } from '../../lib/api/vault-world'
+import { useFeatureFlag } from '../../hooks/useFeatureFlag'
 
 // Context to let Chat component communicate context panel state to MobileTopBar
 const MobileContextPanelCtx = createContext(null)
@@ -21,6 +22,7 @@ export default function VaultLayout() {
   const { refreshSubscription } = useAuth()
   const [toast, setToast] = useState(null)
   const [mobileContextOpen, setMobileContextOpen] = useState(false)
+  const themeClass = useFeatureFlag('vault_redesign') ? 'vault-theme-warm' : 'vault-theme'
 
   // Eagerly preload world graph data on layout mount (heaviest dataset)
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function VaultLayout() {
 
   return (
     <MobileContextPanelCtx.Provider value={{ show: mobileContextOpen, toggle: () => setMobileContextOpen(v => !v) }}>
-      <div className="vault-theme h-dvh flex flex-col md:flex-row bg-[var(--bg-primary)]">
+      <div className={`${themeClass} h-dvh flex flex-col md:flex-row bg-[var(--bg-primary)]`}>
         <AcceptanceGate />
         <BetaWelcome />
         {toast && (
