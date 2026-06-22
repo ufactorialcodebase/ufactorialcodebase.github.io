@@ -962,6 +962,43 @@ git commit -m "feat(welcome): mount WelcomeStrip in ChatTab behind vault_redesig
 git push
 ```
 
+### F2-B follow-up: migrate Chat outer wrapper to CSS vars (remove transitional overrides)
+
+After Task 9 lands and you're already in `Chat.jsx`, do a small architecture cleanup. Today (post-F1) `src/styles/vault-theme-warm.css` contains transitional overrides that target Tailwind utility classes in `Chat.jsx` (`bg-gradient-to-br.from-slate-50.to-white` and `header.bg-white.border-b.shadow-sm`) to warm the chat surface. They were added in commit `<F1-B>` so the warm theme felt cohesive immediately, but they're brittle — they pin Chat's styling to specific Tailwind class strings.
+
+**Files:**
+- Modify: `src/components/demo/Chat.jsx`
+- Modify: `src/styles/vault-theme-warm.css` (remove the override block)
+
+**Steps:**
+
+- [ ] In `src/components/demo/Chat.jsx` line ~408, change:
+  ```jsx
+  <div className="h-full flex bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
+  ```
+  to read the primary background from CSS vars (preserving the dark-mode gradient for the non-flagged dark path):
+  ```jsx
+  <div className="h-full flex bg-[var(--bg-primary)] dark:bg-gradient-to-br dark:from-slate-900 dark:to-slate-950">
+  ```
+
+- [ ] In `Chat.jsx` line ~412, change the chat header from `bg-white dark:bg-slate-900` to `bg-[var(--bg-secondary)] dark:bg-slate-900`. Update its `border-slate-200` to `border-[var(--border-subtle)]`.
+
+- [ ] Delete the "Chat surface warm-up (transitional)" CSS block at the bottom of `src/styles/vault-theme-warm.css`.
+
+- [ ] Manual smoke test (flag ON and OFF):
+  - Flag ON: chat surface is still warm cream, header is still soft sand. Identical to the transitional state.
+  - Flag OFF: chat surface is still the existing light gradient. No regression.
+
+- [ ] Commit:
+  ```
+  refactor(chat): use --bg-primary / --bg-secondary for chat outer surface
+  
+  Removes the transitional Tailwind-class-targeting overrides in
+  vault-theme-warm.css; Chat now participates in the theme system properly.
+  ```
+
+This is small enough (~6 lines touched) to do alongside the Task 9 work without a separate review cycle, but keep it as its own commit for clean history.
+
 ---
 
 ## Task 10: F2 phase-close
