@@ -16,9 +16,9 @@
 //   OUT_DIR      default /tmp/hridai-e2e
 //   FLAG         on | off  (default on)
 
-const { chromium } = require('playwright')
-const fs = require('fs')
-const path = require('path')
+import { chromium } from 'playwright'
+import fs from 'fs'
+import path from 'path'
 
 const APP_URL = process.env.APP_URL || 'http://localhost:5174'
 const STATE_FILE = process.env.STATE_FILE || '/tmp/hridai-e2e-state.json'

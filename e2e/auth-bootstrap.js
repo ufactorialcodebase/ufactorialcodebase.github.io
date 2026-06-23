@@ -17,7 +17,7 @@
 //   APP_URL          default http://localhost:5174
 //   STATE_FILE       default /tmp/hridai-e2e-state.json
 
-const { chromium } = require('playwright')
+import { chromium } from 'playwright'
 
 const APP_URL = process.env.APP_URL || 'http://localhost:5174'
 const STATE_FILE = process.env.STATE_FILE || '/tmp/hridai-e2e-state.json'
