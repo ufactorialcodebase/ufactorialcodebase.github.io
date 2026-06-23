@@ -336,7 +336,7 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
     );
   }
   
-  const { signals, strategies_used, entities_retrieved, topics_retrieved, episodes_retrieved, timing_ms } = 
+  const { signals, entities_retrieved, topics_retrieved, episodes_retrieved } =
     retrievalTrace || {};
   
   return (
@@ -347,9 +347,18 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
           <div className="p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-white">
             <Network className="w-4 h-4" />
           </div>
-          <div>
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">Context Retrieved</span>
-            <p className="text-xs text-slate-400 dark:text-slate-500">What HridAI knows about this</p>
+          <div className="min-w-0">
+            <span className="text-sm font-semibold text-[var(--text-primary)]">Context</span>
+            {signals?.entities?.length || signals?.topics?.length ? (
+              <p className="text-xs text-[var(--text-tertiary)] truncate">
+                pulled context for: {[
+                  ...(signals.entities || []).map(e => typeof e === 'string' ? e : e.name || ''),
+                  ...(signals.topics || []).map(t => typeof t === 'string' ? t : t.name || ''),
+                ].filter(Boolean).slice(0, 4).join(' · ')}
+              </p>
+            ) : (
+              <p className="text-xs text-[var(--text-tertiary)]">Recent threads, people, and moments — switches as you talk.</p>
+            )}
           </div>
         </div>
       </div>
@@ -363,52 +372,6 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
           <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Retrieving context...</p>
           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Analyzing your message</p>
         </div>
-      )}
-      
-      {/* Signals detected */}
-      {signals && (
-        <Section title="Signals Detected" icon={Sparkles} defaultOpen={true}>
-          <div className="space-y-3">
-            {/* Entities */}
-            {signals.entities?.length > 0 && (
-              <div>
-                <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
-                  <User className="w-3 h-3" />
-                  Entities Mentioned
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {signals.entities.map((e, i) => (
-                    <SignalBadge key={i} type="entity" icon={User}>
-                      {typeof e === 'string' ? e : e.name || 'Unknown'}
-                    </SignalBadge>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Topics */}
-            {signals.topics?.length > 0 && (
-              <div>
-                <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
-                  <Tag className="w-3 h-3" />
-                  Topics Detected
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {signals.topics.map((t, i) => (
-                    <SignalBadge key={i} type="topic" icon={Tag}>
-                      {typeof t === 'string' ? t : t.name || 'Unknown'}
-                    </SignalBadge>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Empty signals state */}
-            {!signals.entities?.length && !signals.topics?.length && (
-              <p className="text-xs text-slate-400 dark:text-slate-500 italic">No specific signals detected</p>
-            )}
-          </div>
-        </Section>
       )}
       
       {/* Retrieved entities */}
