@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Moon, Sun, Zap } from 'lucide-react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import ContextPanel from './ContextPanel';
+import ContextPanel from './ContextPanelContainer';
 import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting, createCheckoutSession } from '../../lib/api/index.js';
 import { signOut } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
