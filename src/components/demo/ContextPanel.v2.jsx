@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { 
-  ChevronRight, 
+import {
+  ChevronRight,
   ChevronDown,
-  User, 
+  User,
   Users,
   Building2,
   MapPin,
-  MessageSquare, 
-  Tag, 
-  Clock, 
+  MessageSquare,
+  Tag,
+  Clock,
   Sparkles,
   Brain,
   Network,
@@ -18,6 +18,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from 'lucide-react';
+import TopicCardV2 from './TopicCard.v2';
 
 /**
  * Entity type configuration - colors and icons
@@ -197,46 +198,6 @@ function EntityCard({ entity }) {
 }
 
 /**
- * Topic card in context panel
- */
-function TopicCard({ topic }) {
-  const config = getTopicConfig(topic.status);
-  const StatusIcon = config.icon;
-  
-  return (
-    <div className={`rounded-lg p-3 mb-2 last:mb-0 border ${config.bgClass} transition-all duration-150 hover:shadow-sm`}>
-      <div className="flex items-center gap-2">
-        <div className="p-1.5 rounded-md bg-white/60 dark:bg-white/10 text-slate-500 dark:text-slate-400">
-          <Tag className="w-4 h-4" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold ${config.textClass} truncate`}>
-              {topic.name}
-            </span>
-            <span className={`text-xs px-1.5 py-0.5 rounded bg-white/60 dark:bg-white/10 ${config.textClass} font-medium flex items-center gap-1`}>
-              <StatusIcon className="w-3 h-3" />
-              {topic.status || 'active'}
-            </span>
-          </div>
-        </div>
-      </div>
-      {topic.context && (
-        <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 line-clamp-2 pl-9">
-          {topic.context}
-        </p>
-      )}
-      {topic.last_mentioned && (
-        <div className="mt-2 text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 pl-9">
-          <Clock className="w-3 h-3" />
-          Last mentioned: {new Date(topic.last_mentioned).toLocaleDateString()}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
  * Episode card in context panel
  */
 function EpisodeCard({ episode }) {
@@ -333,7 +294,7 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
       {topics_retrieved?.length > 0 && (
         <Section title="Topics" icon={Tag} defaultOpen={true} count={topics_retrieved.length}>
           {topics_retrieved.map((topic, i) => (
-            <TopicCard key={topic.id || i} topic={topic} />
+            <TopicCardV2 key={topic.id || i} topic={topic} />
           ))}
         </Section>
       )}
