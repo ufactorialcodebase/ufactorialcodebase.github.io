@@ -88,13 +88,21 @@ export default function ChatTab() {
   }
 
   if (flagOn) {
-    const displayName = user?.user_metadata?.name || user?.email?.split('@')[0]
+    // Pull a real display name from Supabase user_metadata. Skip the
+    // email-prefix fallback — exposing "pratikcpednekar" instead of "Pratik"
+    // is awkward and arguably leaks identifier into the UI. If no name is
+    // set on the account, WelcomeStrip falls back to "there".
+    const displayName =
+      user?.user_metadata?.name ||
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.first_name ||
+      undefined
+    // Pass counts straight through (no zero-fallback). WelcomeStrip now
+    // distinguishes "loading/failed" (null) from "real zero" (threads === 0)
+    // and renders nothing in either case — see WelcomeStrip header comment.
     return (
       <>
-        <WelcomeStrip
-          name={displayName}
-          counts={counts || { people: 0, threads: 0, decisions: 0, openQuestions: 0 }}
-        />
+        <WelcomeStrip name={displayName} counts={counts} />
         {chatElement}
       </>
     )

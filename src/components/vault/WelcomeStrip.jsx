@@ -2,28 +2,20 @@
 /**
  * Warm welcome strip at the top of /vault/chat for opted-in users.
  *
- * Three variants:
- *   - brand-new: no counts, gentle prompt
- *   - totals (pre-F7): "I'm holding N threads…"
- *   - diff   (post-F7): "It's been N days… X new people, Y new threads."
- *
- * The diff variant is wired in F7 (Task 28). For now this file ships the
- * brand-new + totals variants.
+ * Render rules:
+ *   - counts is null (still loading OR fetch failed) → render nothing
+ *   - counts.threads === 0 (genuinely brand-new user) → render nothing
+ *       (the chat's own proactive greeting carries the welcome; a second
+ *       "Hi/Welcome" strip would be redundant — and showing it during
+ *       a silent fetch failure would mislead a returning user into
+ *       seeing a brand-new welcome over their real data)
+ *   - counts present + threads > 0 → totals variant ("I'm holding N…")
+ *   - counts present + daysSince + deltas → diff variant (wired in F7)
  */
 export default function WelcomeStrip({ name, counts, daysSince = null, deltas = null }) {
+  if (!counts || counts.threads === 0) return null
+
   const displayName = name || 'there'
-  const isBrandNew = !counts || (counts.people === 0 && counts.threads === 0)
-
-  if (isBrandNew) {
-    return (
-      <section aria-label="Welcome" className="px-8 pt-6 pb-5 border-b border-[var(--border-subtle)]">
-        <h2 className="font-serif text-2xl text-[var(--text-primary)] leading-tight">
-          Hi {displayName}. <em className="text-[var(--text-secondary)]">Let's start with whatever's on your mind.</em>
-        </h2>
-      </section>
-    )
-  }
-
   const { people, threads, decisions, openQuestions } = counts
   const hasDiff = daysSince != null && deltas
 

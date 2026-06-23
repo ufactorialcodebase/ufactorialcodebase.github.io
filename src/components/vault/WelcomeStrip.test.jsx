@@ -18,10 +18,14 @@ describe('WelcomeStrip — totals variant', () => {
     expect(screen.getByText(/118 people/)).toBeInTheDocument()
   })
 
-  it('renders the brand-new-user variant when counts are all zero', () => {
-    render(<WelcomeStrip name="Pratik" counts={{ people: 0, threads: 0, decisions: 0, openQuestions: 0 }} />)
-    expect(screen.getByText(/Let's start with whatever's on your mind/i)).toBeInTheDocument()
-    expect(screen.queryByText(/threads/)).not.toBeInTheDocument()
+  it('renders nothing when counts are all zero (chat greeting carries the welcome)', () => {
+    const { container } = render(<WelcomeStrip name="Pratik" counts={{ people: 0, threads: 0, decisions: 0, openQuestions: 0 }} />)
+    expect(container.firstChild).toBeNull()
+  })
+
+  it('renders nothing when counts is null (still loading or fetch failed)', () => {
+    const { container } = render(<WelcomeStrip name="Pratik" counts={null} />)
+    expect(container.firstChild).toBeNull()
   })
 
   it('uses "there" fallback when name is missing', () => {
