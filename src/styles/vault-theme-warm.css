@@ -35,3 +35,20 @@
   --entity-place:  #4f6b4f;            /* soft sage */
   --entity-other:  #5b4c39;            /* warm neutral */
 }
+
+/* === User-message bubble: warm-up the cool slate gradient ===
+ *
+ * MessageList.jsx hardcodes 'bg-gradient-to-br from-slate-700 to-slate-900'
+ * for user messages. Against the warm cream surface, that cool-black blob
+ * reads as alien — out of palette. Override to warm ink (--accent-indigo,
+ * which we repurposed as the warm primary) so the bubble belongs.
+ * text-white stays intact at high contrast.
+ *
+ * Selector targets the unique Tailwind class combo used only by user
+ * message bubbles in chat; scoped to .vault-theme-warm so non-flagged
+ * users see the original cool gradient.
+ */
+.vault-theme-warm .bg-gradient-to-br.from-slate-700.to-slate-900 {
+  background-image: none;
+  background-color: var(--accent-indigo);
+}
