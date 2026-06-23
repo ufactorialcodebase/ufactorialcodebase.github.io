@@ -55,13 +55,17 @@ function safeText(el) {
     viewport: { width: 1440, height: 900 },
   })
 
-  // Inject flag state BEFORE any page navigation, on every new page.
+  // Inject flag state + dismiss any one-shot modals BEFORE any page navigation,
+  // on every new page. Dismissing BetaWelcome (key 'hridai_beta_acknowledged')
+  // is necessary or it overlays every Vault surface and our probes just read
+  // the modal text.
   await ctx.addInitScript((flagOn) => {
     if (flagOn) {
       localStorage.setItem('hridai_features', JSON.stringify({ vault_redesign: true }))
     } else {
       localStorage.removeItem('hridai_features')
     }
+    localStorage.setItem('hridai_beta_acknowledged', 'true')
   }, FLAG_ON)
 
   const page = await ctx.newPage()
