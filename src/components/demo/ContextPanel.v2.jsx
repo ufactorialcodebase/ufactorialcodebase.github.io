@@ -301,7 +301,7 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
       
       {/* Retrieved episodes */}
       {episodes_retrieved?.length > 0 && (
-        <Section title="Past Conversations" icon={MessageSquare} defaultOpen={true} count={episodes_retrieved.length}>
+        <Section title="Recent moments" icon={MessageSquare} defaultOpen={true} count={episodes_retrieved.length}>
           {episodes_retrieved.map((episode, i) => (
             <EpisodeCard key={episode.id || i} episode={episode} />
           ))}
