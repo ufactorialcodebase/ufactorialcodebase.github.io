@@ -1,8 +1,13 @@
 // src/components/vault/ChatTab.jsx
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Chat from '../demo/Chat'
 import { useDemo } from './DemoContext'
 import { clearCache, setDemoMode } from '../../lib/vault-cache'
+import { useFeatureFlag } from '../../hooks/useFeatureFlag'
+import { useAuth } from '../../hooks/useAuth'
+import WelcomeStrip from './WelcomeStrip'
+import { getWelcomeCounts } from '../../lib/api/vault-counts'
 
 const DEFAULT_PROMPTS = [
   "My brother Jack lives in Boston",
@@ -40,6 +45,18 @@ export default function ChatTab() {
   const demo = useDemo()
   const navigate = useNavigate()
 
+  const flagOn = useFeatureFlag('vault_redesign')
+  const { user } = useAuth()
+  const [counts, setCounts] = useState(null)
+
+  useEffect(() => {
+    if (!flagOn) return
+    let cancelled = false
+    getWelcomeCounts().then(c => { if (!cancelled) setCounts(c) }).catch(() => {})
+    return () => { cancelled = true }
+  }, [flagOn])
+
+  let chatElement
   if (demo?.isDemo) {
     const prompts = demo.personaId === 'alex' ? ALEX_PROMPTS : DEFAULT_DEMO_PROMPTS
     const greeting = demo.personaId === 'alex' ? pickRandom(ALEX_GREETINGS) : null
@@ -50,7 +67,7 @@ export default function ChatTab() {
       sessionStorage.removeItem('hrdai_persona_name')
       navigate('/demo/simulated')
     }
-    return (
+    chatElement = (
       <Chat
         mode="simulated"
         personaName={demo.personaName?.split(' ')[0] || demo.personaId}
@@ -60,13 +77,28 @@ export default function ChatTab() {
         showThemeToggle={false}
       />
     )
+  } else {
+    chatElement = (
+      <Chat
+        mode="try_it_out"
+        suggestedPrompts={DEFAULT_PROMPTS}
+        showThemeToggle={false}
+      />
+    )
   }
 
-  return (
-    <Chat
-      mode="try_it_out"
-      suggestedPrompts={DEFAULT_PROMPTS}
-      showThemeToggle={false}
-    />
-  )
+  if (flagOn) {
+    const displayName = user?.user_metadata?.name || user?.email?.split('@')[0]
+    return (
+      <>
+        <WelcomeStrip
+          name={displayName}
+          counts={counts || { people: 0, threads: 0, decisions: 0, openQuestions: 0 }}
+        />
+        {chatElement}
+      </>
+    )
+  }
+
+  return chatElement
 }
