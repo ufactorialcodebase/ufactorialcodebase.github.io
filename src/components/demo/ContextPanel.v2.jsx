@@ -6,7 +6,6 @@ import {
   Users,
   Building2,
   MapPin,
-  Stethoscope,
   MessageSquare, 
   Tag, 
   Clock, 
@@ -24,74 +23,21 @@ import {
  * Entity type configuration - colors and icons
  */
 const ENTITY_TYPE_CONFIG = {
-  person: { 
-    color: 'blue', 
-    icon: User, 
-    bgClass: 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800',
-    textClass: 'text-blue-700 dark:text-blue-400',
-    iconClass: 'text-blue-500',
-  },
-  organization: {
-    color: 'purple',
-    icon: Building2,
-    bgClass: 'bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800',
-    textClass: 'text-purple-700 dark:text-purple-400',
-    iconClass: 'text-purple-500',
-  },
-  place: {
-    color: 'emerald',
-    icon: MapPin,
-    bgClass: 'bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800',
-    textClass: 'text-emerald-700 dark:text-emerald-400',
-    iconClass: 'text-emerald-500',
-  },
-  location: {
-    color: 'emerald',
-    icon: MapPin,
-    bgClass: 'bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800',
-    textClass: 'text-emerald-700 dark:text-emerald-400',
-    iconClass: 'text-emerald-500',
-  },
-  doctor: {
-    color: 'rose',
-    icon: Stethoscope,
-    bgClass: 'bg-rose-50 dark:bg-rose-950 border-rose-200 dark:border-rose-800',
-    textClass: 'text-rose-700 dark:text-rose-400',
-    iconClass: 'text-rose-500',
-  },
-  default: {
-    color: 'slate',
-    icon: Users,
-    bgClass: 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
-    textClass: 'text-slate-700 dark:text-slate-300',
-    iconClass: 'text-slate-500 dark:text-slate-400',
-  },
+  person:       { icon: User,      bgClass: 'bg-[color:rgba(77,102,136,0.08)] border-[color:rgba(77,102,136,0.18)]', textClass: 'text-[color:#4d6688]', iconClass: 'text-[color:#4d6688]' },
+  organization: { icon: Building2, bgClass: 'bg-[color:rgba(110,77,30,0.08)] border-[color:rgba(110,77,30,0.18)]', textClass: 'text-[color:#6e4d1e]', iconClass: 'text-[color:#6e4d1e]' },
+  place:        { icon: MapPin,    bgClass: 'bg-[color:rgba(79,107,79,0.08)] border-[color:rgba(79,107,79,0.18)]',  textClass: 'text-[color:#4f6b4f]', iconClass: 'text-[color:#4f6b4f]' },
+  location:     { icon: MapPin,    bgClass: 'bg-[color:rgba(79,107,79,0.08)] border-[color:rgba(79,107,79,0.18)]',  textClass: 'text-[color:#4f6b4f]', iconClass: 'text-[color:#4f6b4f]' },
+  default:      { icon: Users,     bgClass: 'bg-[color:rgba(91,76,57,0.06)] border-[color:rgba(91,76,57,0.15)]',    textClass: 'text-[color:#5b4c39]', iconClass: 'text-[color:#5b4c39]' },
 };
 
 /**
  * Topic status configuration
  */
 const TOPIC_STATUS_CONFIG = {
-  active: {
-    bgClass: 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800',
-    textClass: 'text-green-700 dark:text-green-400',
-    icon: TrendingUp,
-  },
-  resolved: {
-    bgClass: 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
-    textClass: 'text-slate-600 dark:text-slate-300',
-    icon: CheckCircle,
-  },
-  pending: {
-    bgClass: 'bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800',
-    textClass: 'text-amber-700 dark:text-amber-400',
-    icon: AlertCircle,
-  },
-  default: {
-    bgClass: 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
-    textClass: 'text-slate-600 dark:text-slate-300',
-    icon: Tag,
-  },
+  active:   { bgClass: 'bg-[color:rgba(79,107,79,0.08)] border-[color:rgba(79,107,79,0.18)]', textClass: 'text-[color:#4f6b4f]', icon: TrendingUp },
+  resolved: { bgClass: 'bg-[color:rgba(91,76,57,0.06)] border-[color:rgba(91,76,57,0.15)]', textClass: 'text-[color:#5b4c39]', icon: CheckCircle },
+  pending:  { bgClass: 'bg-[color:rgba(160,119,59,0.08)] border-[color:rgba(160,119,59,0.18)]', textClass: 'text-[color:#a0773b]', icon: AlertCircle },
+  default:  { bgClass: 'bg-[color:rgba(91,76,57,0.06)] border-[color:rgba(91,76,57,0.15)]', textClass: 'text-[color:#5b4c39]', icon: Tag },
 };
 
 /**
