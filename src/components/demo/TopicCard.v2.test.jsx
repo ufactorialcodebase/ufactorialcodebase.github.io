@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import TopicCardV2 from './TopicCard.v2'
 
 const baseTopic = {
@@ -54,5 +55,30 @@ describe('TopicCardV2', () => {
     const t = { ...baseTopic, current_summary: undefined, context: 'fallback narrative' }
     render(<TopicCardV2 topic={t} />)
     expect(screen.getByText('fallback narrative')).toBeInTheDocument()
+  })
+})
+
+describe('TopicCardV2 — pin affordance', () => {
+  it('renders pin button when onTogglePin is provided', () => {
+    render(<TopicCardV2 topic={baseTopic} onTogglePin={() => {}} pinned={false} />)
+    expect(screen.getByLabelText(/pin/i)).toBeInTheDocument()
+  })
+
+  it('does NOT render pin button when onTogglePin is missing', () => {
+    render(<TopicCardV2 topic={baseTopic} />)
+    expect(screen.queryByLabelText(/pin/i)).not.toBeInTheDocument()
+  })
+
+  it('clicking pin calls onTogglePin with topic.id', async () => {
+    const user = userEvent.setup()
+    let calledWith = null
+    render(<TopicCardV2 topic={baseTopic} onTogglePin={(id) => { calledWith = id }} pinned={false} />)
+    await user.click(screen.getByLabelText(/^pin$/i))
+    expect(calledWith).toBe('t1')
+  })
+
+  it('renders "Unpin" label when pinned', () => {
+    render(<TopicCardV2 topic={baseTopic} onTogglePin={() => {}} pinned />)
+    expect(screen.getByLabelText(/unpin/i)).toBeInTheDocument()
   })
 })

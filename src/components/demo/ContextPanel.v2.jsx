@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import TopicCardV2 from './TopicCard.v2';
 import { getRecentContext } from '../../lib/api/vault-recent';
+import { usePinnedItems } from '../../hooks/usePinnedItems';
 
 /**
  * Entity type configuration - colors and icons
@@ -229,6 +230,7 @@ function EpisodeCard({ episode }) {
  */
 export default function ContextPanel({ retrievalTrace, isLoading }) {
   const [recent, setRecent] = useState(null)
+  const { pin, unpin, isPinned } = usePinnedItems('context-topics')
   useEffect(() => {
     let cancelled = false
     if (!retrievalTrace && !isLoading) {
@@ -253,7 +255,18 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
         </div>
         {recent.topics.length > 0 && (
           <Section title="Recent threads" icon={Tag} defaultOpen count={recent.topics.length}>
-            {recent.topics.map((t, i) => <TopicCardV2 key={t.id || i} topic={t} />)}
+            {[...recent.topics].sort((a, b) => {
+              const ap = isPinned(a.id) ? 0 : 1
+              const bp = isPinned(b.id) ? 0 : 1
+              return ap - bp
+            }).map((t, i) => (
+              <TopicCardV2
+                key={t.id || i}
+                topic={t}
+                pinned={isPinned(t.id)}
+                onTogglePin={(id) => (isPinned(id) ? unpin(id) : pin(id))}
+              />
+            ))}
           </Section>
         )}
         {recent.entities.length > 0 && (
@@ -320,8 +333,17 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
       {/* Retrieved topics */}
       {topics_retrieved?.length > 0 && (
         <Section title="Topics" icon={Tag} defaultOpen={true} count={topics_retrieved.length}>
-          {topics_retrieved.map((topic, i) => (
-            <TopicCardV2 key={topic.id || i} topic={topic} />
+          {[...topics_retrieved].sort((a, b) => {
+            const ap = isPinned(a.id) ? 0 : 1
+            const bp = isPinned(b.id) ? 0 : 1
+            return ap - bp
+          }).map((topic, i) => (
+            <TopicCardV2
+              key={topic.id || i}
+              topic={topic}
+              pinned={isPinned(topic.id)}
+              onTogglePin={(id) => (isPinned(id) ? unpin(id) : pin(id))}
+            />
           ))}
         </Section>
       )}

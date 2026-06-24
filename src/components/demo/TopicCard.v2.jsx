@@ -1,4 +1,4 @@
-import { Tag, Clock } from 'lucide-react'
+import { Tag, Clock, Pin } from 'lucide-react'
 
 const TOPIC_STATUS_CONFIG = {
   active:   { bgClass: 'bg-[color:rgba(79,107,79,0.08)] border-[color:rgba(79,107,79,0.18)]', textClass: 'text-[color:#4f6b4f]' },
@@ -11,7 +11,7 @@ function getConfig(status) {
   return TOPIC_STATUS_CONFIG[s] || TOPIC_STATUS_CONFIG.default
 }
 
-export default function TopicCardV2({ topic }) {
+export default function TopicCardV2({ topic, pinned = false, onTogglePin }) {
   const status = topic.current_status || topic.status || 'active'
   const config = getConfig(status)
   const summary = topic.current_summary || topic.context || ''
@@ -30,6 +30,15 @@ export default function TopicCardV2({ topic }) {
         <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded ${config.textClass} bg-white/40`}>
           {status}
         </span>
+        {onTogglePin && (
+          <button
+            aria-label={pinned ? 'Unpin' : 'Pin'}
+            onClick={(e) => { e.stopPropagation(); onTogglePin(topic.id) }}
+            className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+          >
+            <Pin size={14} fill={pinned ? 'currentColor' : 'none'} />
+          </button>
+        )}
       </header>
 
       {summary && (
