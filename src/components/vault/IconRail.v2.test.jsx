@@ -15,25 +15,25 @@ describe('IconRailV2', () => {
     expect(screen.getByLabelText('Settings')).toBeInTheDocument()
   })
 
-  it('clicking "You" opens a popover with Self, Dates, Todos, People', async () => {
+  it('clicking "You" opens a popover with Self, Dates, Todos, Network', async () => {
     const user = userEvent.setup()
     render(<MemoryRouter><IconRailV2 basePath="/vault" /></MemoryRouter>)
     await user.click(screen.getByLabelText('You'))
     expect(screen.getByText('Self')).toBeInTheDocument()
     expect(screen.getByText('Dates')).toBeInTheDocument()
     expect(screen.getByText('Todos')).toBeInTheDocument()
-    expect(screen.getByText('People')).toBeInTheDocument()
+    expect(screen.getByText('Network')).toBeInTheDocument()
   })
 
-  it('clicking "Your Memory" opens a popover with Threads, Lists, Artifacts (no People)', async () => {
+  it('clicking "Your Memory" opens a popover with Threads, Lists, Artifacts (no Network)', async () => {
     const user = userEvent.setup()
     render(<MemoryRouter><IconRailV2 basePath="/vault" /></MemoryRouter>)
     await user.click(screen.getByLabelText('Your Memory'))
     expect(screen.getByText('Threads')).toBeInTheDocument()
     expect(screen.getByText('Lists')).toBeInTheDocument()
     expect(screen.getByText('Artifacts')).toBeInTheDocument()
-    // People belongs to "You" now, not "Your Memory".
-    expect(screen.queryAllByText('People')).toHaveLength(0)
+    // Network belongs to "You" now, not "Your Memory".
+    expect(screen.queryAllByText('Network')).toHaveLength(0)
   })
 
   it('"Your World" does NOT open a popover (single sub-item)', async () => {

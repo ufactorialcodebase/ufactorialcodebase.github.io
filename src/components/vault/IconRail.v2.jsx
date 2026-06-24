@@ -18,7 +18,7 @@ const CLUSTERS = (base) => [
       { path: `${base}/self`, label: 'Self' },
       { path: `${base}/dates`, label: 'Dates' },
       { path: `${base}/todos`, label: 'Todos' },
-      { path: `${base}/people`, label: 'People' },
+      { path: `${base}/people`, label: 'Network' },
     ],
   },
   {
