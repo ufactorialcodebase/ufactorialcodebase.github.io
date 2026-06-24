@@ -405,11 +405,11 @@ export default function Chat({
   }, [showContextPanel]);
   
   return (
-    <div className="h-full flex bg-[var(--bg-primary)] dark:bg-gradient-to-br dark:from-slate-900 dark:to-slate-950">
+    <div className="h-full flex bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header — hidden on mobile (MobileTopBar provides HridAI + gear) */}
-        <header className="hidden md:block flex-shrink-0 bg-[var(--bg-secondary)] dark:bg-slate-900 border-b border-[var(--border-subtle)] dark:border-slate-700 px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
+        <header className="hidden md:block flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-3 sm:py-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl ${

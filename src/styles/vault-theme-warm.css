@@ -36,6 +36,30 @@
   --entity-other:  #5b4c39;            /* warm neutral */
 }
 
+/* === Chat surface warm-up (scoped overrides, only when flag is on) ===
+ *
+ * Chat.jsx uses Tailwind utilities (bg-gradient-to-br from-slate-50 to-white,
+ * bg-white) for its outer wrapper + header. These work fine in the unflagged
+ * vault-theme path (light mode rendering as designed). For flag-on users we
+ * scope warm overrides via class selectors so the chat surface participates
+ * in the warm palette without touching the non-flagged code path.
+ *
+ * History: F1-B introduced these. F2-B mistakenly migrated Chat.jsx to read
+ * --bg-primary / --bg-secondary directly, which BROKE non-flagged light-mode
+ * chat — vault-theme's --bg-secondary is dark navy (intended for dark-mode
+ * chat that uses Tailwind dark: variants), making the header dark-on-dark.
+ * Reverted Chat.jsx to its original Tailwind classes; re-introduced these
+ * scoped overrides as the right architectural call.
+ */
+.vault-theme-warm .bg-gradient-to-br.from-slate-50.to-white {
+  background-image: none;
+  background-color: var(--bg-primary);
+}
+.vault-theme-warm header.bg-white.border-b.shadow-sm {
+  background-color: var(--bg-secondary);
+  border-bottom-color: var(--border-subtle);
+}
+
 /* === User-message bubble: warm-up the cool slate gradient ===
  *
  * MessageList.jsx hardcodes 'bg-gradient-to-br from-slate-700 to-slate-900'
