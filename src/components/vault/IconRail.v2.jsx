@@ -4,7 +4,7 @@
 // (deferred — add after beta feedback indicates discoverability is an issue).
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { MessageCircle, User, Globe, Archive, Settings } from 'lucide-react'
+import { MessageCircle, User, Globe, Brain, Settings } from 'lucide-react'
 import RailClusterPopover from './RailClusterPopover'
 
 const CLUSTERS = (base) => [
@@ -18,20 +18,20 @@ const CLUSTERS = (base) => [
       { path: `${base}/self`, label: 'Self' },
       { path: `${base}/dates`, label: 'Dates' },
       { path: `${base}/todos`, label: 'Todos' },
+      { path: `${base}/people`, label: 'People' },
+    ],
+  },
+  {
+    key: 'memory', label: 'Your Memory', icon: Brain,
+    items: [
+      { path: `${base}/topics`, label: 'Threads' },
+      { path: `${base}/lists`, label: 'Lists' },
+      { path: `${base}/artifacts`, label: 'Artifacts' },
     ],
   },
   {
     key: 'world', label: 'Your World', icon: Globe,
     items: [{ path: `${base}/world`, label: 'Graph' }],
-  },
-  {
-    key: 'vault', label: 'Your Vault', icon: Archive,
-    items: [
-      { path: `${base}/people`, label: 'People' },
-      { path: `${base}/topics`, label: 'Threads' },
-      { path: `${base}/lists`, label: 'Lists' },
-      { path: `${base}/artifacts`, label: 'Artifacts' },
-    ],
   },
 ]
 

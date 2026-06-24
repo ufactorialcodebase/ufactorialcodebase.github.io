@@ -6,32 +6,34 @@ import { MemoryRouter } from 'react-router-dom'
 import IconRailV2 from './IconRail.v2'
 
 describe('IconRailV2', () => {
-  it('renders 4 cluster icons (Chat, You, Your World, Your Vault) + Settings', () => {
+  it('renders 4 cluster icons (Chat, You, Your Memory, Your World) + Settings', () => {
     render(<MemoryRouter><IconRailV2 basePath="/vault" /></MemoryRouter>)
     expect(screen.getByLabelText('Chat')).toBeInTheDocument()
     expect(screen.getByLabelText('You')).toBeInTheDocument()
+    expect(screen.getByLabelText('Your Memory')).toBeInTheDocument()
     expect(screen.getByLabelText('Your World')).toBeInTheDocument()
-    expect(screen.getByLabelText('Your Vault')).toBeInTheDocument()
     expect(screen.getByLabelText('Settings')).toBeInTheDocument()
   })
 
-  it('clicking "You" opens a popover with Self, Dates, Todos', async () => {
+  it('clicking "You" opens a popover with Self, Dates, Todos, People', async () => {
     const user = userEvent.setup()
     render(<MemoryRouter><IconRailV2 basePath="/vault" /></MemoryRouter>)
     await user.click(screen.getByLabelText('You'))
     expect(screen.getByText('Self')).toBeInTheDocument()
     expect(screen.getByText('Dates')).toBeInTheDocument()
     expect(screen.getByText('Todos')).toBeInTheDocument()
+    expect(screen.getByText('People')).toBeInTheDocument()
   })
 
-  it('clicking "Your Vault" opens a popover with People, Threads, Lists, Artifacts', async () => {
+  it('clicking "Your Memory" opens a popover with Threads, Lists, Artifacts (no People)', async () => {
     const user = userEvent.setup()
     render(<MemoryRouter><IconRailV2 basePath="/vault" /></MemoryRouter>)
-    await user.click(screen.getByLabelText('Your Vault'))
-    expect(screen.getByText('People')).toBeInTheDocument()
+    await user.click(screen.getByLabelText('Your Memory'))
     expect(screen.getByText('Threads')).toBeInTheDocument()
     expect(screen.getByText('Lists')).toBeInTheDocument()
     expect(screen.getByText('Artifacts')).toBeInTheDocument()
+    // People belongs to "You" now, not "Your Memory".
+    expect(screen.queryAllByText('People')).toHaveLength(0)
   })
 
   it('"Your World" does NOT open a popover (single sub-item)', async () => {
