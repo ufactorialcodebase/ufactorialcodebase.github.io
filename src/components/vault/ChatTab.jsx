@@ -8,6 +8,7 @@ import { useFeatureFlag } from '../../hooks/useFeatureFlag'
 import { useAuth } from '../../hooks/useAuth'
 import WelcomeStrip from './WelcomeStrip'
 import { getWelcomeCounts } from '../../lib/api/vault-counts'
+import { getLastSeen } from '../../lib/api/vault-last-seen'
 
 const DEFAULT_PROMPTS = [
   "My brother Jack lives in Boston",
@@ -48,11 +49,15 @@ export default function ChatTab() {
   const flagOn = useFeatureFlag('vault_redesign')
   const { user } = useAuth()
   const [counts, setCounts] = useState(null)
+  const [lastSeen, setLastSeen] = useState(undefined) // undefined=loading, null=unavailable, ISO=present
 
   useEffect(() => {
     if (!flagOn) return
     let cancelled = false
-    getWelcomeCounts().then(c => { if (!cancelled) setCounts(c) }).catch(() => {})
+    Promise.all([
+      getWelcomeCounts().then(c => { if (!cancelled) setCounts(c) }).catch(() => {}),
+      getLastSeen().then(t => { if (!cancelled) setLastSeen(t) }).catch(() => { if (!cancelled) setLastSeen(null) }),
+    ])
     return () => { cancelled = true }
   }, [flagOn])
 
@@ -97,12 +102,29 @@ export default function ChatTab() {
       user?.user_metadata?.full_name ||
       user?.user_metadata?.first_name ||
       undefined
+
+    // Derive daysSince + deltas only when we have both lastSeen + raw lists.
+    // When lastSeen is null (endpoint absent or error), daysSince stays null
+    // and WelcomeStrip falls back to totals wording automatically.
+    let daysSince = null
+    let deltas = null
+    if (lastSeen && counts && Array.isArray(counts._rawTopics) && Array.isArray(counts._rawEntities)) {
+      const cutoff = new Date(lastSeen).getTime()
+      if (!Number.isNaN(cutoff)) {
+        daysSince = Math.max(0, Math.floor((Date.now() - cutoff) / 86400000))
+        deltas = {
+          newPeople: counts._rawEntities.filter(e => new Date(e.first_mentioned_at || e.created_at || 0).getTime() > cutoff).length,
+          newThreads: counts._rawTopics.filter(t => new Date(t.first_mentioned || t.created_at || 0).getTime() > cutoff).length,
+        }
+      }
+    }
+
     // Pass counts straight through (no zero-fallback). WelcomeStrip now
     // distinguishes "loading/failed" (null) from "real zero" (threads === 0)
     // and renders nothing in either case — see WelcomeStrip header comment.
     return (
       <>
-        <WelcomeStrip name={displayName} counts={counts} />
+        <WelcomeStrip name={displayName} counts={counts} daysSince={daysSince} deltas={deltas} />
         {chatElement}
       </>
     )
