@@ -137,7 +137,14 @@ export default function EntityDetail({ entity, onUpdate, onDelete, onMerge, allE
           >
             <option value="">Select entity to keep...</option>
             {allEntities
+              // Only same-type entities are valid merge targets — merging a
+              // person into an organization (or vice versa) is almost always
+              // an error. Filter out self too.
               .filter((e) => (e.id || e.entity_id) !== (entity.id || entity.entity_id))
+              .filter((e) => e.type === entity.type)
+              // Sort alphabetically by name so the list is scannable on
+              // accounts with many entities.
+              .sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }))
               .map((e) => (
                 <option key={e.id || e.entity_id} value={e.id || e.entity_id}>
                   {e.name} ({getTypeLabel(e.type)})
