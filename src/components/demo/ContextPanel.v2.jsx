@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ChevronRight,
   ChevronDown,
@@ -19,6 +19,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import TopicCardV2 from './TopicCard.v2';
+import { getRecentContext } from '../../lib/api/vault-recent';
 
 /**
  * Entity type configuration - colors and icons
@@ -227,20 +228,46 @@ function EpisodeCard({ episode }) {
  * Context debug panel showing retrieval information
  */
 export default function ContextPanel({ retrievalTrace, isLoading }) {
+  const [recent, setRecent] = useState(null)
+  useEffect(() => {
+    let cancelled = false
+    if (!retrievalTrace && !isLoading) {
+      getRecentContext().then(r => { if (!cancelled) setRecent(r) }).catch(() => {})
+    }
+    return () => { cancelled = true }
+  }, [retrievalTrace, isLoading])
+
   if (!retrievalTrace && !isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center text-slate-400 dark:text-slate-500 p-6">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-100 dark:from-slate-800 to-slate-50 dark:to-slate-900 flex items-center justify-center">
-            <Brain className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-          </div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Context Panel</p>
-          <p className="text-xs mt-1 text-slate-400 dark:text-slate-500">
-            As you chat, relevant context<br />will appear here
-          </p>
+    if (!recent) {
+      return (
+        <div className="h-full flex items-center justify-center text-[var(--text-tertiary)] p-6">
+          <p className="text-sm">Loading recent…</p>
         </div>
+      )
+    }
+    return (
+      <div className="h-full overflow-y-auto">
+        <div className="sticky top-0 bg-[var(--bg-secondary)] border-b border-[var(--border-subtle)] px-4 py-3 z-10">
+          <span className="text-sm font-semibold text-[var(--text-primary)]">Context</span>
+          <p className="text-xs text-[var(--text-tertiary)]">Recent threads, people, and moments — switches as you talk.</p>
+        </div>
+        {recent.topics.length > 0 && (
+          <Section title="Recent threads" icon={Tag} defaultOpen count={recent.topics.length}>
+            {recent.topics.map((t, i) => <TopicCardV2 key={t.id || i} topic={t} />)}
+          </Section>
+        )}
+        {recent.entities.length > 0 && (
+          <Section title="Recently mentioned" icon={Users} defaultOpen count={recent.entities.length}>
+            {recent.entities.map((e, i) => <EntityCard key={e.id || i} entity={normalizeEntity(e)} />)}
+          </Section>
+        )}
+        {recent.moments.length > 0 && (
+          <Section title="Recent moments" icon={MessageSquare} defaultOpen count={recent.moments.length}>
+            {recent.moments.map((m, i) => <EpisodeCard key={m.id || i} episode={m} />)}
+          </Section>
+        )}
       </div>
-    );
+    )
   }
   
   const { signals, entities_retrieved, topics_retrieved, episodes_retrieved } =
@@ -322,4 +349,8 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
       )}
     </div>
   );
+}
+
+function normalizeEntity(e) {
+  return { ...e, name: e.canonical_name || e.name }
 }
