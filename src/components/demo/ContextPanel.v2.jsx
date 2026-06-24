@@ -205,7 +205,7 @@ function EpisodeCard({ episode }) {
   return (
     <div className="rounded-lg p-3 mb-2 last:mb-0 border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 transition-all duration-150 hover:shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800">
       <div className="flex items-start gap-2">
-        <div className="p-1.5 rounded-md bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 mt-0.5">
+        <div className="p-1.5 rounded-md bg-[var(--bg-primary)] dark:bg-slate-900 text-slate-400 dark:text-slate-500 mt-0.5">
           <MessageSquare className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
@@ -274,9 +274,9 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
     retrievalTrace || {};
   
   return (
-    <div className="h-full overflow-y-auto bg-white dark:bg-slate-900">
+    <div className="h-full overflow-y-auto bg-[var(--bg-primary)] dark:bg-slate-900">
       {/* Header */}
-      <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 py-3 z-10 shadow-sm dark:shadow-slate-950/50 lg:pt-3 pt-14">
+      <div className="sticky top-0 bg-[var(--bg-secondary)] dark:bg-slate-900 border-b border-[var(--border-subtle)] dark:border-slate-700 px-4 py-3 z-10 shadow-sm dark:shadow-slate-950/50 lg:pt-3 pt-14">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 text-white">
             <Network className="w-4 h-4" />

@@ -97,6 +97,32 @@ function safeText(el) {
         }
       })
       report.surfaces[s.key] = { ok: true, screenshot: shotPath, probe }
+
+      // Bonus: on /vault/chat, also open the ContextPanel (hidden by default
+      // on desktop) and snapshot its idle state so we can verify F3+F5 visuals.
+      if (s.key === 'chat') {
+        try {
+          await page.locator('button[title*="context panel"]').first().click({ timeout: 3000 })
+          // Wait long enough for the idle-state fetch (getRecentContext composes
+          // from getTopics + getEntities and can take several seconds on prod).
+          await page.waitForTimeout(5000)
+          const panelShot = path.join(OUT_DIR, `chat-context-panel-${tag}.png`)
+          await page.screenshot({ path: panelShot, fullPage: false })
+          const panelProbe = await page.evaluate(() => {
+            const sticky = document.querySelector('.sticky.top-0')
+            const sections = Array.from(document.querySelectorAll('button')).map(b => b.textContent?.trim()).filter(t => t && t.length < 60)
+            const allText = (document.body.innerText || '').slice(-600)
+            return {
+              panelHeader: sticky?.textContent?.trim() || null,
+              sectionsSample: sections.slice(0, 30),
+              tailText: allText,
+            }
+          })
+          report.surfaces['chat-context-panel'] = { ok: true, screenshot: panelShot, probe: panelProbe }
+        } catch (panelErr) {
+          report.surfaces['chat-context-panel'] = { ok: false, error: 'panel toggle not found or click failed: ' + panelErr.message.split('\n')[0] }
+        }
+      }
     } catch (err) {
       report.surfaces[s.key] = { ok: false, error: String(err) }
       console.error(`    ✗ ${s.key}: ${err.message}`)
