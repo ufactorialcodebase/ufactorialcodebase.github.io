@@ -1,7 +1,7 @@
 // src/components/vault/VaultLayout.jsx
 import { useState, useEffect, createContext, useContext } from 'react'
 import { Outlet, Navigate, useLocation, useSearchParams } from 'react-router-dom'
-import IconRail from './IconRail'
+import IconRail from './IconRailContainer'
 import BottomNav from './BottomNav'
 import MobileTopBar from './MobileTopBar'
 import ChatTab from './ChatTab'
