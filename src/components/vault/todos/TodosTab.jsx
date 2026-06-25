@@ -344,7 +344,7 @@ export default function TodosTab() {
   )
 
   const todayPanel = (
-    <div className={`border-l border-[var(--border-subtle)] bg-[rgba(26,34,56,0.5)] ${
+    <div className={`today-panel-surface border-l border-[var(--border-subtle)] bg-[rgba(26,34,56,0.5)] ${
       mainExpanded ? 'hidden md:block md:w-[48px] md:min-w-[48px]' : ''
     } ${todayExpanded ? 'md:w-[90%]' : 'md:w-1/2'} ${
       mobileTab === 'today' ? 'flex flex-col flex-1' : 'hidden md:flex md:flex-col'

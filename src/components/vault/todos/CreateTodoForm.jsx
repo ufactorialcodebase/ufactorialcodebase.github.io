@@ -52,7 +52,13 @@ export default function CreateTodoForm({ tags, onSubmit, onCancel, onOpenTagModa
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
-          className={`${inputCls} [color-scheme:dark]`}
+          // Force-open the native picker on any click on the input. Browsers
+          // are inconsistent here — Chrome opens on icon-click only when the
+          // icon is rendered visibly; the dark calendar icon was invisible on
+          // the warm cream surface, so clicks elsewhere appeared to do nothing.
+          // showPicker() (Chrome 99+, FF 101+, Safari 16+) makes intent explicit.
+          onClick={(e) => { try { e.currentTarget.showPicker?.() } catch { /* unsupported — fall back to native behavior */ } }}
+          className={`${inputCls} cursor-pointer`}
         />
         {tags.length > 0 ? (
           <select value={tag} onChange={(e) => setTag(e.target.value)} className={inputCls}>

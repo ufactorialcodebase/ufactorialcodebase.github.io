@@ -76,3 +76,19 @@
   background-image: none;
   background-color: var(--accent-indigo);
 }
+
+/* === TodosTab "For Today" side panel ===
+ *
+ * The wrapper around <TodayPanel/> hardcodes bg-[rgba(26,34,56,0.5)] (navy
+ * at 50% alpha). On the dark vault-theme background that blends to a subtle
+ * deeper-shade panel — works as intended. On the warm cream surface the
+ * same navy-50% overlays cream to a gray-brown wash that reads as
+ * "grayed out / disabled". This override gives the panel a noticeable but
+ * unmistakably-active sub-shade (deeper warm cream).
+ *
+ * Specificity: two classes beats the single-class arbitrary-value Tailwind
+ * generates, so no !important needed.
+ */
+.vault-theme-warm .today-panel-surface {
+  background-color: var(--bg-tertiary);
+}
