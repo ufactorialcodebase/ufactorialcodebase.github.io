@@ -92,3 +92,17 @@
 .vault-theme-warm .today-panel-surface {
   background-color: var(--bg-tertiary);
 }
+
+/* === World view (force graph) edge color ===
+ *
+ * ForceGraph.jsx draws edges with stroke=var(--graph-edge-color). Default
+ * (dark theme): rgba(255,255,255,0.15) via the var() fallback — subtle
+ * white on navy. In warm mode we override to a muted warm brown that's
+ * visible against cream but stays on-palette. Final edge alpha = base
+ * alpha × per-edge stroke-opacity (capped at 0.6); 0.5 base × 0.6 = 0.3
+ * effective — approximately matches the perceived contrast of the dark
+ * default (0.15 × 0.6 = 0.09 against navy).
+ */
+.vault-theme-warm {
+  --graph-edge-color: rgba(91,76,57,0.5);  /* --text-secondary at 50% */
+}

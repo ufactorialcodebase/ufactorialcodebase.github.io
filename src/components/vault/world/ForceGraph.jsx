@@ -90,12 +90,15 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
 
     simulationRef.current = simulation
 
-    // Draw edges
+    // Draw edges. Stroke color reads --graph-edge-color from the active theme so
+    // warm mode gets a subtle warm-brown line (visible on cream) while dark mode
+    // keeps its original white-on-navy gossamer. .style() (inline CSS) supports
+    // var(); .attr() doesn't reliably.
     const link = g.append('g')
       .selectAll('line')
       .data(edgeData)
       .join('line')
-      .attr('stroke', 'rgba(255,255,255,0.15)')
+      .style('stroke', 'var(--graph-edge-color, rgba(255,255,255,0.15))')
       .attr('stroke-width', 1)
       .attr('stroke-opacity', d => Math.min(d.strength * 2, 0.6))
 
