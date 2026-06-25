@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
 import TopicFilters from './TopicFilters'
-import TopicRow from './TopicRow'
+import TopicRowContainer from './TopicRowContainer'
 import { getTopics, updateTopic, deleteTopic } from '../../../lib/api/vault-topics'
 import { getEntities } from '../../../lib/api/vault-entities'
 import { useVaultData, setCached, getCached } from '../../../lib/vault-cache'
@@ -115,7 +115,7 @@ export default function TopicsTab() {
         categoryFilter={categoryFilter} onCategoryFilterChange={setCategoryFilter}
       />
       {filtered.map((topic) => (
-        <TopicRow key={topic.id} topic={topic} onUpdate={handleUpdate} onDelete={handleDelete} entityLookup={entityLookup} />
+        <TopicRowContainer key={topic.id} topic={topic} onUpdate={handleUpdate} onDelete={handleDelete} entityLookup={entityLookup} />
       ))}
       {filtered.length === 0 && (
         <p className="text-[var(--text-tertiary)] text-sm text-center py-8">No topics match this filter.</p>
