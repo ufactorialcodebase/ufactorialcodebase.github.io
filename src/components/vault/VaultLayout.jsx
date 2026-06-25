@@ -11,6 +11,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { getCached, setCached } from '../../lib/vault-cache'
 import { getWorld } from '../../lib/api/vault-world'
 import { useFeatureFlag } from '../../hooks/useFeatureFlag'
+import { useTheme } from '../../hooks/useTheme'
 
 // Context to let Chat component communicate context panel state to MobileTopBar
 const MobileContextPanelCtx = createContext(null)
@@ -22,7 +23,19 @@ export default function VaultLayout() {
   const { refreshSubscription } = useAuth()
   const [toast, setToast] = useState(null)
   const [mobileContextOpen, setMobileContextOpen] = useState(false)
-  const themeClass = useFeatureFlag('vault_redesign') ? 'vault-theme-warm' : 'vault-theme'
+  // Theme matrix:
+  //   flag ON  + dark pref OFF -> 'vault-theme-warm'  (warm cream, redesigned layout)
+  //   flag ON  + dark pref ON  -> 'vault-theme'       (dark navy palette, redesigned layout) +
+  //                              .dark class on html (set by useTheme) so Tailwind dark: variants
+  //                              ALSO take effect for v1 components that the v2 components still
+  //                              embed (chat surface, MessageInput, etc.).
+  //   flag OFF + either        -> 'vault-theme'       (original UI, dark: variants per user pref)
+  //
+  // This makes "promote the flag to default" a non-event for dark-mode users —
+  // they keep the dark color palette they're used to, just with the new layout.
+  const flagOn = useFeatureFlag('vault_redesign')
+  const { isDark } = useTheme()
+  const themeClass = flagOn && !isDark ? 'vault-theme-warm' : 'vault-theme'
 
   // Eagerly preload world graph data on layout mount (heaviest dataset)
   useEffect(() => {
