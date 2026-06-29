@@ -16,7 +16,22 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
       textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
     }
   }, [message]);
-  
+
+  // Auto-focus when AI finishes responding so the user can keep typing without
+  // re-clicking. Desktop only — focusing on touch devices pops the on-screen
+  // keyboard mid-flow.
+  const prevDisabledRef = useRef(disabled);
+  useEffect(() => {
+    if (prevDisabledRef.current && !disabled && textareaRef.current) {
+      const desktop =
+        typeof window !== 'undefined' &&
+        window.matchMedia &&
+        window.matchMedia('(pointer: fine)').matches;
+      if (desktop) textareaRef.current.focus();
+    }
+    prevDisabledRef.current = disabled;
+  }, [disabled]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim() && !disabled) {
@@ -52,7 +67,7 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
                 w-full px-4 py-3 rounded-2xl border-2
                 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500
                 focus:outline-none focus:bg-white dark:focus:bg-slate-700 focus:border-slate-300 dark:focus:border-slate-600 focus:shadow-sm
-                resize-none overflow-hidden
+                resize-none overflow-y-auto
                 disabled:opacity-50 disabled:cursor-not-allowed
                 transition-all duration-150
                 ${disabled ? 'border-slate-200 dark:border-slate-700' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}
