@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, Mail } from "lucide-react";
 
 function Container({ children, className = "" }) {
@@ -43,6 +43,19 @@ const contacts = [
 ];
 
 export default function Contact() {
+  // SPA hydration eats the browser's default hash-scroll. Re-scroll once the
+  // section ids are in the DOM so /contact#export-data and /contact#delete-account
+  // (linked from vault Settings → Data & Privacy) land at the right card.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!hash) return;
+    const id = hash.slice(1);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [hash]);
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -68,10 +81,69 @@ export default function Contact() {
       <Container className="py-12 sm:py-16">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Contact Us</h1>
         <p className="mt-4 text-white/60 leading-7">
-          Reach us at the address that best matches your inquiry. All addresses below are <strong className="text-white">@ufactorial.com</strong>.
+          How can we help? Pick the option that best matches your inquiry.
         </p>
 
-        <div className="mt-10 space-y-4">
+        {/* Data requests — surfaced at the top because users landing here from
+            vault Settings (Data & Privacy → Export / Delete) expect to see
+            these actions first. */}
+        <section className="mt-10 rounded-xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+          <h2 className="text-xl font-semibold">Data requests</h2>
+          <p className="mt-2 text-sm text-white/60 leading-6">
+            During the closed beta, data exports and account deletions are
+            processed manually. Email us from the address on your account and
+            we&apos;ll get back to you within a few business days.
+          </p>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div
+              id="export-data"
+              className="scroll-mt-24 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-5"
+            >
+              <h3 className="text-base font-semibold text-white">Export my data</h3>
+              <p className="mt-2 text-sm text-white/60 leading-6">
+                A copy of everything we have on you — conversations, memories,
+                todos, and entities — as a downloadable file.
+              </p>
+              <a
+                href="mailto:contactus@ufactorial.com?subject=HridAI%20%E2%80%94%20Data%20export%20request&body=Hi%20HridAI%20team%2C%0A%0APlease%20export%20all%20data%20associated%20with%20my%20HridAI%20account.%0A%0AEmail%20on%20account%3A%20%5Byour%20email%5D%0A%0AThanks."
+                className="mt-5 inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300 transition-colors hover:bg-emerald-500/20"
+              >
+                <Mail className="h-4 w-4" />
+                Email data export request
+              </a>
+            </div>
+
+            <div
+              id="delete-account"
+              className="scroll-mt-24 rounded-lg border border-rose-500/20 bg-rose-500/[0.04] p-5"
+            >
+              <h3 className="text-base font-semibold text-white">Delete my account &amp; data</h3>
+              <p className="mt-2 text-sm text-white/60 leading-6">
+                Permanently delete your account and everything attached to it —
+                conversations, memories, todos, entities, embeddings.
+                Irreversible.
+              </p>
+              <a
+                href="mailto:contactus@ufactorial.com?subject=HridAI%20%E2%80%94%20Account%20%26%20data%20deletion%20request&body=Hi%20HridAI%20team%2C%0A%0APlease%20delete%20my%20HridAI%20account%20and%20all%20associated%20data.%20I%20understand%20this%20is%20irreversible.%0A%0AEmail%20on%20account%3A%20%5Byour%20email%5D%0A%0AThanks."
+                className="mt-5 inline-flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-300 transition-colors hover:bg-rose-500/20"
+              >
+                <Mail className="h-4 w-4" />
+                Email account deletion request
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <hr className="my-10 border-white/10" />
+
+        <h2 className="text-xl font-semibold">Other inquiries</h2>
+        <p className="mt-2 text-sm text-white/60 leading-6">
+          For everything else, reach us at the address below that best matches
+          your inquiry. All addresses are <strong className="text-white">@ufactorial.com</strong>.
+        </p>
+
+        <div className="mt-6 space-y-4">
           {contacts.map(({ address, label, description }) => (
             <div
               key={address}
@@ -83,7 +155,7 @@ export default function Contact() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-                    <h2 className="text-base font-semibold text-white">{label}</h2>
+                    <h3 className="text-base font-semibold text-white">{label}</h3>
                     <a
                       href={`mailto:${address}`}
                       className="text-sm text-emerald-400 hover:underline break-all"

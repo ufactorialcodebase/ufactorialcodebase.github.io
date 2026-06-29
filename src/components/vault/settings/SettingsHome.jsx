@@ -56,9 +56,8 @@ export default function SettingsHome({ s, onNavigate, onBack }) {
       {/* Data & Privacy */}
       <SettingsSection label="Data &amp; Privacy">
         <SettingsRow label="Privacy settings" chevron onClick={() => onNavigate('privacy')} />
-        <SettingsRow label="Export my data" right={<ComingSoon />} />
-        <SettingsRow label="Delete my data" danger right={<ComingSoon />} />
-        <SettingsRow label="Delete my account" danger right={<ComingSoon />} />
+        <SettingsRow label="Export my data" chevron href="/contact#export-data" />
+        <SettingsRow label="Delete my account & data" danger chevron href="/contact#delete-account" />
       </SettingsSection>
 
       {/* Experiments */}
@@ -94,13 +93,5 @@ export default function SettingsHome({ s, onNavigate, onBack }) {
         </button>
       </div>
     </div>
-  )
-}
-
-function ComingSoon() {
-  return (
-    <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-2.5 py-[3px] text-[10.5px] font-semibold text-teal-600 dark:text-teal-400">
-      Coming soon
-    </span>
   )
 }
