@@ -121,11 +121,14 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
       .text(d => truncateLabel(d.label))
       .attr('text-anchor', 'middle')
       .attr('dy', d => d.radius + 14)
-      .attr('fill', '#ffffff')
+      // Fill + text-shadow read from CSS vars so warm mode gets deep ink on
+      // cream (no halo needed) while dark mode keeps its bright-on-navy halo
+      // via the var() fallback. Uses .style() (not .attr()) so var() resolves.
+      .style('fill', 'var(--graph-label-color, #ffffff)')
       .attr('font-size', d => d.id === 'you' ? '12px' : '10px')
       .attr('font-weight', d => d.id === 'you' ? '600' : '400')
       .attr('pointer-events', 'none')
-      .style('text-shadow', '0 1px 3px rgba(0,0,0,0.8), 0 0px 6px rgba(0,0,0,0.5)')
+      .style('text-shadow', 'var(--graph-label-shadow, 0 1px 3px rgba(0,0,0,0.8), 0 0px 6px rgba(0,0,0,0.5))')
 
     // Tick function
     simulation.on('tick', () => {

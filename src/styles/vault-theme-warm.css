@@ -105,4 +105,12 @@
  */
 .vault-theme-warm {
   --graph-edge-color: rgba(91,76,57,0.5);  /* --text-secondary at 50% */
+
+  /* Node labels in the World force graph. Default (white, dark-mode) is
+   * invisible on the warm cream background — override to deep ink. Halo
+   * is set to `none` because dark text on cream is already high contrast;
+   * the dark-mode halo (dark shadow behind white text) exists to lift
+   * bright text off the navy panel, which is the exact opposite need. */
+  --graph-label-color: var(--text-primary);
+  --graph-label-shadow: none;
 }

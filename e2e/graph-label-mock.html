@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Graph label color check</title>
+<style>
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: system-ui, -apple-system, sans-serif;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    background: #4b5563;
+    min-height: 100vh;
+  }
+  .panel {
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .panel h2 { margin: 0 0 16px; font-size: 15px; font-weight: 600; opacity: 0.75; }
+
+  /* Warm palette copied from vault-theme-warm.css so this mock exercises the
+   * exact --graph-label-* vars we ship. */
+  .vault-theme-warm {
+    --text-primary: #1f1a14;
+    --graph-label-color: var(--text-primary);
+    --graph-label-shadow: none;
+    --graph-edge-color: rgba(91,76,57,0.5);
+    background: #FBF8F3;
+    color: #1f1a14;
+  }
+
+  /* Dark palette — no --graph-label-* set, so SVG text picks up the
+   * var() fallback (#ffffff, dark halo). Mirrors what real dark mode does. */
+  .vault-theme {
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+
+  text.node-label {
+    text-anchor: middle;
+    font-size: 10px;
+    fill: var(--graph-label-color, #ffffff);
+    text-shadow: var(--graph-label-shadow, 0 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5));
+  }
+  text.you-label {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  line.edge {
+    stroke: var(--graph-edge-color, rgba(255,255,255,0.15));
+    stroke-width: 1;
+    stroke-opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+  <div class="panel vault-theme-warm">
+    <h2>Warm — flag on, dark off (AFTER FIX)</h2>
+    <svg width="100%" height="380" viewBox="0 0 400 380">
+      <line class="edge" x1="200" y1="190" x2="80"  y2="90"/>
+      <line class="edge" x1="200" y1="190" x2="320" y2="90"/>
+      <line class="edge" x1="200" y1="190" x2="120" y2="290"/>
+      <line class="edge" x1="200" y1="190" x2="290" y2="310"/>
+
+      <circle cx="200" cy="190" r="24" fill="#fbbf24" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label you-label" x="200" y="228">You</text>
+
+      <circle cx="80" cy="90" r="12" fill="#60a5fa" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label" x="80" y="118">Alice Chen</text>
+
+      <circle cx="320" cy="90" r="12" fill="#34d399" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label" x="320" y="118">Acme Corp</text>
+
+      <circle cx="120" cy="290" r="12" fill="#fb923c" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label" x="120" y="318">New York</text>
+
+      <circle cx="290" cy="310" r="10" fill="#c084fc" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label" x="290" y="336">Q4 planning</text>
+    </svg>
+  </div>
+
+  <div class="panel vault-theme">
+    <h2>Dark — fallback (unchanged)</h2>
+    <svg width="100%" height="380" viewBox="0 0 400 380">
+      <line class="edge" x1="200" y1="190" x2="80"  y2="90"/>
+      <line class="edge" x1="200" y1="190" x2="320" y2="90"/>
+      <line class="edge" x1="200" y1="190" x2="120" y2="290"/>
+      <line class="edge" x1="200" y1="190" x2="290" y2="310"/>
+
+      <circle cx="200" cy="190" r="24" fill="#fbbf24" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label you-label" x="200" y="228">You</text>
+
+      <circle cx="80" cy="90" r="12" fill="#60a5fa" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label" x="80" y="118">Alice Chen</text>
+
+      <circle cx="320" cy="90" r="12" fill="#34d399" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label" x="320" y="118">Acme Corp</text>
+
+      <circle cx="120" cy="290" r="12" fill="#fb923c" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label" x="120" y="318">New York</text>
+
+      <circle cx="290" cy="310" r="10" fill="#c084fc" stroke="rgba(0,0,0,0.3)"/>
+      <text class="node-label" x="290" y="336">Q4 planning</text>
+    </svg>
+  </div>
+</body>
+</html>
