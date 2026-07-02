@@ -15,9 +15,18 @@ export function useTheme() {
   // instance keeps its own useState; without this listener, toggling in one
   // place wouldn't update the other. Storage event handles cross-tab too;
   // toggle() dispatches a synthetic event for the same-tab case.
+  //
+  // Use e.newValue directly, NOT readIsDark(). Our same-tab synthetic event
+  // fires inside the setIsDark updater below, BEFORE the localStorage.setItem
+  // in the [isDark] useEffect has run — so re-reading localStorage here would
+  // return the stale previous value. e.newValue always reflects the intended
+  // new state (we pass it explicitly on dispatch; real cross-tab storage
+  // events populate it from the write that just landed). Fixes a state-sync
+  // race that left VaultLayout's isDark one step behind Profile's after each
+  // toggle click.
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key === STORAGE_KEY) setIsDark(readIsDark());
+      if (e.key === STORAGE_KEY) setIsDark(e.newValue === 'dark');
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
