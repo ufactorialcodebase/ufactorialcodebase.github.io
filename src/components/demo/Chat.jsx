@@ -3,10 +3,12 @@ import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Mo
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanelContainer';
+import DailyLimitCard from './DailyLimitCard';
 import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting, createCheckoutSession } from '../../lib/api/index.js';
 import { signOut } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
+import { useDailyLimit } from '../../hooks/useDailyLimit';
 import { useMobileContextPanel } from '../vault/VaultLayout';
 
 /**
@@ -53,6 +55,28 @@ export default function Chat({
   });
   const greetingLoaded = useRef(false); // Prevent double greeting from StrictMode
 
+  // Daily usage limit (ISS-214) — persistent "you've hit today's cap" state.
+  // The hook hydrates from localStorage on mount, ticks the countdown, and
+  // calls onReset when the countdown reaches zero so we auto-refetch the
+  // greeting and re-enable the composer. loadGreeting is defined below; we
+  // reach it through a ref so this hook can be declared once at the top.
+  const loadGreetingRef = useRef(null);
+  // Imperative handle on MessageInput used to restore the just-sent text
+  // after a daily-limit 429 lands (the composer clears synchronously on
+  // submit but the 429 arrives async, so we push the text back in).
+  const messageInputRef = useRef(null);
+  const dailyLimit = useDailyLimit({
+    onReset: useCallback(() => {
+      setMessages([]);
+      messageInputRef.current?.setValue('');
+      loadGreetingRef.current?.();
+    }, []),
+  });
+  // Destructure the stable activate() reference so useCallback deps below
+  // can point at the primitive function instead of the whole `dailyLimit`
+  // object (which is a new literal on every render).
+  const activateDailyLimit = dailyLimit.activate;
+
   // Sync mobile context panel toggle with local state
   const mobileCtx = useMobileContextPanel()
   useEffect(() => {
@@ -70,7 +94,7 @@ export default function Chat({
       content: text,
       timestamp: new Date().toISOString(),
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     setIsRetrieving(true);
@@ -197,10 +221,10 @@ export default function Chat({
         console.error('Chat error:', error);
         setIsLoading(false);
         setIsRetrieving(false);
-        
+
         // Clear session to force fresh start (backend clears corrupted orchestrator)
         clearSessionId();
-        
+
         // Add error message
         setMessages(prev => [...prev, {
           id: generateId(),
@@ -210,11 +234,24 @@ export default function Chat({
           timestamp: new Date().toISOString(),
         }]);
       },
+
+      // Daily usage limit (ISS-214) — persistent state, not an error. Push
+      // the just-sent text back into the composer via its imperative handle
+      // (MessageInput cleared its local state synchronously on submit, and
+      // the 429 arrives async). Do NOT clear the session or add an error
+      // bubble — the user's message stays in the thread and the
+      // DailyLimitCard renders below it.
+      onDailyLimit: ({ resetsAt, message }) => {
+        setIsLoading(false);
+        setIsRetrieving(false);
+        activateDailyLimit(resetsAt, message, 'message');
+        messageInputRef.current?.setValue(text);
+      },
     });
     
     setAbortFn(() => abort);
-  }, []);
-  
+  }, [activateDailyLimit]);
+
   // loadStaticIntro removed - all modes now use loadGreeting()
   // Backend handles new vs returning user logic and returns appropriate messages
 
@@ -229,6 +266,16 @@ export default function Chat({
 
     try {
       const result = await getGreeting();
+
+      // Daily usage limit (ISS-214) — greeting-blocked. Hand to the hook and
+      // render the DailyLimitCard as the empty-state. The rest of the app
+      // (vault, entities, nav) is untouched because this state lives in Chat.
+      if (result.dailyLimit) {
+        activateDailyLimit(result.dailyLimit.resetsAt, result.dailyLimit.message, 'greeting');
+        setMessages([]);
+        setIsInitializing(false);
+        return;
+      }
 
       if (result.error) {
         console.error('Greeting error:', result.error);
@@ -272,8 +319,8 @@ export default function Chat({
     } finally {
       setIsInitializing(false);
     }
-  }, []);
-  
+  }, [activateDailyLimit]);
+
   /**
    * Handle reset conversation
    */
@@ -353,6 +400,13 @@ export default function Chat({
   const isSimulatedMode = mode === 'simulated';
   const showHelperPrompts = isAlexMode || isSimulatedMode;
   
+  // Keep loadGreetingRef pointing at the current loadGreeting so the daily-
+  // limit hook's onReset callback can invoke it after countdown expiry
+  // without creating a dependency cycle in hook declaration order.
+  useEffect(() => {
+    loadGreetingRef.current = loadGreeting;
+  }, [loadGreeting]);
+
   // ISS-026 + ISS-052: Load greeting on mount, but only after auth is initialized.
   // Without this gate, getAuthHeaders() races against Supabase session recovery
   // and returns empty headers → greeting silently fails.
@@ -360,6 +414,14 @@ export default function Chat({
     if (!authInitialized) return;
     if (greetingLoaded.current) return;
     greetingLoaded.current = true;
+
+    // Daily usage limit (ISS-214) — if we hydrated the blocked state from
+    // localStorage, don't fire a greeting request that would just come back
+    // as a 429. The DailyLimitCard renders directly from the persisted state.
+    if (dailyLimit.isBlocked) {
+      setIsInitializing(false);
+      return;
+    }
 
     // Use pre-generated greeting if provided (demo mode — skip LLM call)
     if (initialGreeting) {
@@ -375,7 +437,7 @@ export default function Chat({
     }
 
     loadGreeting();
-  }, [authInitialized, loadGreeting, initialGreeting]);
+  }, [authInitialized, loadGreeting, initialGreeting, dailyLimit.isBlocked]);
   
   // Handle browser close/refresh - persist session using sendBeacon
   useEffect(() => {
@@ -509,17 +571,40 @@ export default function Chat({
         {/* Messages area — isInitializing renders the spinner INSIDE
             MessageList's flex-1 space instead of a sibling flex-1, preventing
             the layout thrash that caused the second greeting bubble to paint
-            empty on first render. */}
-        <MessageList
-          messages={messages}
-          isLoading={isLoading && messages.length > 0}
-          isInitializing={isInitializing}
-          mode={mode}
-        />
-        
+            empty on first render.
+
+            Daily usage limit (ISS-214): when the block originated from a
+            greeting request (or from a stored-mount hydration where there is
+            no thread), the card replaces the message list entirely. When the
+            block originated from a send, the just-sent user message stays in
+            the thread and the card renders below it as an inline notice. */}
+        {dailyLimit.isBlocked && dailyLimit.source !== 'message' ? (
+          <DailyLimitCard
+            variant="empty"
+            message={dailyLimit.message}
+            remainingText={dailyLimit.remainingText}
+          />
+        ) : (
+          <>
+            <MessageList
+              messages={messages}
+              isLoading={isLoading && messages.length > 0}
+              isInitializing={isInitializing}
+              mode={mode}
+            />
+            {dailyLimit.isBlocked && (
+              <DailyLimitCard
+                variant="inline"
+                message={dailyLimit.message}
+                remainingText={dailyLimit.remainingText}
+              />
+            )}
+          </>
+        )}
+
         {/* Suggested prompts - for Alex and Simulated modes to guide users through memory demo */}
         {/* ISS-032: Try It Out should be blank slate, Alex/Simulated modes need prompts */}
-        {showHelperPrompts && !isLoading && !isInitializing && (
+        {showHelperPrompts && !isLoading && !isInitializing && !dailyLimit.isBlocked && (
           <div className="px-4 sm:px-6 pb-4 sm:pb-6">
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">{personaName} might say:</div>
             <div className="flex flex-wrap gap-2">
@@ -566,9 +651,13 @@ export default function Chat({
 
         {/* Input area */}
         <MessageInput
+          ref={messageInputRef}
           onSend={handleSend}
-          disabled={isLoading || isInitializing || (isFreeUser && conversationsRemaining <= 0)}
+          disabled={isLoading || isInitializing || (isFreeUser && conversationsRemaining <= 0) || dailyLimit.isBlocked}
           placeholder={(isAlexMode || isSimulatedMode) ? `Chat as ${personaName}...` : "Type a message..."}
+          footer={dailyLimit.isBlocked
+            ? `Daily limit reached — resets in ${dailyLimit.remainingText}`
+            : null}
         />
         <p className="text-center text-[10px] text-slate-400 dark:text-slate-500 py-0.5 md:py-1">
           HridAI may make mistakes — verify its responses
