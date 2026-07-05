@@ -1,6 +1,7 @@
 // src/lib/api/chat.js
 import { BASE_URL, getAuthHeaders, getTimezoneHeader } from '../api-client.js'
 import { getSessionId, setSessionId } from './auth.js'
+import { parseDailyLimit } from './daily-limit.js'
 
 export async function getGreeting() {
   const authHeaders = await getAuthHeaders()
@@ -20,6 +21,11 @@ export async function getGreeting() {
       }
       if (response.status === 429) {
         const error = await response.json()
+        // ISS-214: daily-cost-ceiling is a distinct persistent state, not a
+        // toast. Every other 429 (rate limit, weekly free-tier) still uses
+        // its existing string-detail rendering.
+        const daily = parseDailyLimit(error)
+        if (daily) return { dailyLimit: daily }
         return { error: error.detail || 'Rate limit exceeded. Please wait.' }
       }
       const error = await response.json()
@@ -69,7 +75,19 @@ export function sendMessageStream(message, callbacks) {
           callbacks.onError?.('Authentication failed. Please sign in again or re-enter your access code.')
           return
         }
+        // Streaming caveat (ISS-214): the 429 arrives BEFORE any SSE bytes, so
+        // parse the JSON body up front and route the daily-cost-ceiling
+        // variant to onDailyLimit. Every other 429 keeps the existing
+        // string-detail onError path so weekly-limit / rate-limit UX is
+        // untouched.
         const error = await response.json()
+        if (response.status === 429) {
+          const daily = parseDailyLimit(error)
+          if (daily) {
+            callbacks.onDailyLimit?.(daily)
+            return
+          }
+        }
         callbacks.onError?.(error.detail || 'Stream request failed')
         return
       }

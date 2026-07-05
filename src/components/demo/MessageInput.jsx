@@ -1,12 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Send, Loader2 } from 'lucide-react';
 
 /**
- * Message input component with auto-resize textarea
+ * Message input component with auto-resize textarea.
+ *
+ * Exposes an imperative `setValue(text)` handle so the parent can re-populate
+ * the composer when a send is blocked by the daily cap (ISS-214). Doing this
+ * imperatively (rather than a `restoreValue` prop) sidesteps set-state-in-
+ * effect / adjust-state-in-render lint rules and avoids re-rendering the
+ * parent tree on every keystroke.
  */
-export default function MessageInput({ onSend, disabled, placeholder }) {
+const MessageInput = forwardRef(function MessageInput({ onSend, disabled, placeholder, footer }, ref) {
   const [message, setMessage] = useState('');
   const textareaRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    setValue: (v) => setMessage(typeof v === 'string' ? v : ''),
+  }), []);
   
   // Auto-resize textarea
   useEffect(() => {
@@ -96,8 +106,12 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
         </div>
         
         <div className="mt-1 md:mt-2.5 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-          <span className="hidden md:inline">Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-500 dark:text-slate-400">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-500 dark:text-slate-400">Shift+Enter</kbd> for new line</span>
-          {message.length > 0 && (
+          {footer ? (
+            <span className="text-slate-500 dark:text-slate-400">{footer}</span>
+          ) : (
+            <span className="hidden md:inline">Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-500 dark:text-slate-400">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-500 dark:text-slate-400">Shift+Enter</kbd> for new line</span>
+          )}
+          {!footer && message.length > 0 && (
             <span className={message.length > 2000 ? 'text-amber-500' : ''}>
               {message.length.toLocaleString()} characters
             </span>
@@ -106,4 +120,6 @@ export default function MessageInput({ onSend, disabled, placeholder }) {
       </div>
     </form>
   );
-}
+});
+
+export default MessageInput;
