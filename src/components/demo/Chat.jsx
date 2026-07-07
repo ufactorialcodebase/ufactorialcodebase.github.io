@@ -189,10 +189,13 @@ export default function Chat({
         // preceding tool_start (bulk-execute path), and content that resumes
         // after tool_complete still needs the space fix.
         toolBoundaryPending = true;
-        // Tool execution finished - update the tool in the list
+        // Tool execution finished - update the tool in the list. Forward
+        // `result` when the backend sends it (currently absent from the
+        // tool_complete SSE payload; ISS-231 will populate it so artifact
+        // deep-links can prefer id-based routing over title-based).
         toolCalls = toolCalls.map(tc =>
           tc.name === toolData.name && tc.success === null
-            ? { ...tc, success: toolData.success, duration_ms: toolData.duration_ms, error: toolData.error }
+            ? { ...tc, success: toolData.success, duration_ms: toolData.duration_ms, error: toolData.error, result: toolData.result }
             : tc
         );
         
