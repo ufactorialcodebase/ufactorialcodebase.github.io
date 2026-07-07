@@ -94,12 +94,20 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
     // warm mode gets a subtle warm-brown line (visible on cream) while dark mode
     // keeps its original white-on-navy gossamer. .style() (inline CSS) supports
     // var(); .attr() doesn't reliably.
+    //
+    // Tie strength → stroke-width: strength is a 0..1-ish weight (defaults 0.3,
+    // higher = stronger relationship / more mentions). Scaling stroke-width by
+    // strength lets the heavy edges dominate visually without swamping the
+    // canvas. Clamped [0.5, 5] so a stray very-weak edge still shows and a
+    // very-strong one stays legible. `data-strength` mirrors the raw value for
+    // playwright + a11y tools.
     const link = g.append('g')
       .selectAll('line')
       .data(edgeData)
       .join('line')
       .style('stroke', 'var(--graph-edge-color, rgba(255,255,255,0.15))')
-      .attr('stroke-width', 1)
+      .attr('data-strength', d => d.strength)
+      .attr('stroke-width', d => Math.max(0.5, Math.min(5, (d.strength || 0.3) * 4)))
       .attr('stroke-opacity', d => Math.min(d.strength * 2, 0.6))
 
     // Draw nodes
