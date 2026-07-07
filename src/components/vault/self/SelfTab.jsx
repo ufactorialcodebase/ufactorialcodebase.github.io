@@ -1,5 +1,6 @@
 // src/components/vault/self/SelfTab.jsx
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import { Eye, EyeOff } from 'lucide-react'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
@@ -29,7 +30,7 @@ export default function SelfTab() {
       setLocalData(updated)
       setCached('self', updated)
     } catch (err) {
-      alert('Failed to save: ' + err.message)
+      toast.error('Failed to save: ' + err.message)
     }
   }
 

@@ -1,5 +1,6 @@
 // src/components/vault/artifacts/ArtifactsTab.jsx
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
 import SidePanel from '../SidePanel'
@@ -44,7 +45,7 @@ export default function ArtifactsTab() {
       })
       setSelectedArtifact(null)
     } catch (err) {
-      alert('Failed to delete: ' + err.message)
+      toast.error('Failed to delete: ' + err.message)
     }
   }
 

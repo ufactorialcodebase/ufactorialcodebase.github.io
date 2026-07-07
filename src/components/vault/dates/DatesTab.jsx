@@ -6,6 +6,7 @@ import EmptyState from '../EmptyState'
 import DateCard from './DateCard'
 import CreateDateForm from './CreateDateForm'
 import DateDetailSheet from './DateDetailSheet'
+import { toast } from 'sonner'
 import { getDates, createDate, deleteDate } from '../../../lib/api/vault-dates'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
 import { daysUntilDate } from '../../../lib/format-utils'
@@ -61,7 +62,7 @@ export default function DatesTab() {
       setCached('dates', updated)
       setShowCreateForm(false)
     } catch (err) {
-      alert('Failed to add date: ' + err.message)
+      toast.error('Failed to add date: ' + err.message)
     }
   }
 
@@ -72,7 +73,7 @@ export default function DatesTab() {
       setDates(updated)
       setCached('dates', updated)
     } catch (err) {
-      alert('Failed to delete: ' + err.message)
+      toast.error('Failed to delete: ' + err.message)
     }
   }
 
@@ -87,7 +88,7 @@ export default function DatesTab() {
       setDates(updated)
       setCached('dates', updated)
     } catch (err) {
-      alert('Failed to update: ' + err.message)
+      toast.error('Failed to update: ' + err.message)
       refetch()
     }
   }

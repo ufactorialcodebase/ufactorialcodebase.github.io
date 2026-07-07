@@ -1,5 +1,6 @@
 // src/components/vault/todos/TodosTab.jsx
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { toast } from 'sonner'
 import { Plus, ChevronDown, Maximize2, Minimize2 } from 'lucide-react'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
@@ -102,7 +103,7 @@ export default function TodosTab() {
       updateLocal((prev) => [...prev, newTodo])
       setShowCreateForm(false)
     } catch (err) {
-      alert('Failed to create: ' + err.message)
+      toast.error('Failed to create: ' + err.message)
     }
   }
 
@@ -111,7 +112,7 @@ export default function TodosTab() {
       const result = await completeTodo(todo.id)
       updateLocal((prev) => prev.map((t) => t.id === todo.id ? result : t))
     } catch (err) {
-      alert('Failed to complete: ' + err.message)
+      toast.error('Failed to complete: ' + err.message)
     }
   }
 
@@ -124,7 +125,7 @@ export default function TodosTab() {
       })
       updateLocal((prev) => prev.map((t) => t.id === updatedTodo.id ? result : t))
     } catch (err) {
-      alert('Failed to update: ' + err.message)
+      toast.error('Failed to update: ' + err.message)
     }
   }
 
@@ -133,7 +134,7 @@ export default function TodosTab() {
       await deleteTodo(todo.id)
       updateLocal((prev) => prev.filter((t) => t.id !== todo.id))
     } catch (err) {
-      alert('Failed to delete: ' + err.message)
+      toast.error('Failed to delete: ' + err.message)
     }
   }
 
@@ -142,7 +143,7 @@ export default function TodosTab() {
       const result = await setTodoToday(todo.id, inToday)
       updateLocal((prev) => prev.map((t) => t.id === todo.id ? result : t))
     } catch (err) {
-      alert('Failed to update: ' + err.message)
+      toast.error('Failed to update: ' + err.message)
     }
   }
 
@@ -178,7 +179,7 @@ export default function TodosTab() {
       const result = await setTodoTags(todo.id, newTags)
       updateLocal((prev) => prev.map((t) => t.id === todo.id ? result : t))
     } catch (err) {
-      alert('Failed to set tags: ' + err.message)
+      toast.error('Failed to set tags: ' + err.message)
     }
   }
 
@@ -192,7 +193,7 @@ export default function TodosTab() {
       })
       setShowTagModal(false)
     } catch (err) {
-      alert('Failed to create tag: ' + err.message)
+      toast.error('Failed to create tag: ' + err.message)
     }
   }
 

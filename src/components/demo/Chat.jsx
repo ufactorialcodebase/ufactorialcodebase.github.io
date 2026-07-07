@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Moon, Sun, Zap } from 'lucide-react';
+import { toast } from 'sonner';
+import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Moon, Sun, Zap, RefreshCw } from 'lucide-react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanelContainer';
@@ -53,7 +54,18 @@ export default function Chat({
     isResumed: false,
     relativeTimePhrase: null,
   });
-  const greetingLoaded = useRef(false); // Prevent double greeting from StrictMode
+  // Greeting-mount reliability (root-cause-greeting-mount.md):
+  //   * greetingInFlightRef guards against StrictMode's double-fire of the
+  //     mount effect (dev only) AND against a real re-render race.
+  //   * greetingLoaded is the *terminal* success flag — set only after the
+  //     network round-trip completes without error. On failure, both flags
+  //     go false so the user can retry via the inline chip or toast action.
+  //   * greetingError holds the last-failure message for the empty-state
+  //     retry chip; sonner surfaces the same message so it's visible even
+  //     when the user has switched away from Chat.
+  const greetingInFlightRef = useRef(false);
+  const greetingLoaded = useRef(false);
+  const [greetingError, setGreetingError] = useState(null);
 
   // Daily usage limit (ISS-214) — persistent "you've hit today's cap" state.
   // The hook hydrates from localStorage on mount, ticks the countdown, and
@@ -260,9 +272,16 @@ export default function Chat({
    * Backend returns `messages` array - each becomes a separate chat bubble.
    * New users: [static intro, LLM opener]
    * Returning users: [personalized greeting]
+   *
+   * Reliability contract (see docs/root-cause-greeting-mount.md):
+   * on failure we clear greetingLoaded so a retry (mount effect re-run,
+   * inline chip click, sonner action) can re-enter. Success is terminal.
    */
-  const loadGreeting = useCallback(async () => {
+  const loadGreeting = useCallback(async ({ isRetry = false } = {}) => {
+    if (greetingInFlightRef.current) return;
+    greetingInFlightRef.current = true;
     setIsInitializing(true);
+    setGreetingError(null);
 
     try {
       const result = await getGreeting();
@@ -273,14 +292,22 @@ export default function Chat({
       if (result.dailyLimit) {
         activateDailyLimit(result.dailyLimit.resetsAt, result.dailyLimit.message, 'greeting');
         setMessages([]);
-        setIsInitializing(false);
+        greetingLoaded.current = true;
         return;
       }
 
       if (result.error) {
         console.error('Greeting error:', result.error);
-        // Fall back to empty chat - user can still interact
-        setIsInitializing(false);
+        setGreetingError(result.error);
+        // Sonner surfaces the failure even if the user has already
+        // navigated to another tab. Duration is long enough to catch a
+        // glance, but the inline chip stays until manually retried.
+        toast.error('Could not load your greeting', {
+          description: result.error,
+          action: !isRetry
+            ? { label: 'Retry', onClick: () => loadGreetingRef.current?.({ isRetry: true }) }
+            : undefined,
+        });
         return;
       }
 
@@ -314,12 +341,26 @@ export default function Chat({
         isResumed: Boolean(result.isResumed),
         relativeTimePhrase: result.relativeTimePhrase || null,
       });
+      greetingLoaded.current = true;
     } catch (e) {
       console.error('Failed to load greeting:', e);
+      const message = 'Network error. Please try again.';
+      setGreetingError(message);
+      toast.error('Could not load your greeting', {
+        description: message,
+        action: !isRetry
+          ? { label: 'Retry', onClick: () => loadGreetingRef.current?.({ isRetry: true }) }
+          : undefined,
+      });
     } finally {
       setIsInitializing(false);
+      greetingInFlightRef.current = false;
     }
   }, [activateDailyLimit]);
+
+  const retryGreeting = useCallback(() => {
+    loadGreetingRef.current?.({ isRetry: true });
+  }, []);
 
   /**
    * Handle reset conversation
@@ -347,12 +388,14 @@ export default function Chat({
     setIsLoading(false);
     setIsRetrieving(false);
     setSessionMeta({ isResumed: false, relativeTimePhrase: null });
+    setGreetingError(null);
     clearSessionId();
-    
-    // Load new greeting for fresh session (all modes use backend)
+
+    // Load new greeting for fresh session (all modes use backend). loadGreeting
+    // owns the greetingLoaded latch — success sets it, failure leaves it
+    // false so retry from the empty-state chip re-enters cleanly.
     greetingLoaded.current = false;
     await loadGreeting();
-    greetingLoaded.current = true;
   }, [abortFn, loadGreeting]);
   
   /**
@@ -410,15 +453,21 @@ export default function Chat({
   // ISS-026 + ISS-052: Load greeting on mount, but only after auth is initialized.
   // Without this gate, getAuthHeaders() races against Supabase session recovery
   // and returns empty headers → greeting silently fails.
+  //
+  // Greeting-mount reliability (root-cause-greeting-mount.md): the latch is
+  // greetingLoaded (terminal success) + greetingInFlightRef (in-flight guard,
+  // set inside loadGreeting itself). If loadGreeting hits an error branch,
+  // both refs go false so a subsequent effect run or retry can re-enter.
   useEffect(() => {
     if (!authInitialized) return;
     if (greetingLoaded.current) return;
-    greetingLoaded.current = true;
+    if (greetingInFlightRef.current) return;
 
     // Daily usage limit (ISS-214) — if we hydrated the blocked state from
     // localStorage, don't fire a greeting request that would just come back
     // as a 429. The DailyLimitCard renders directly from the persisted state.
     if (dailyLimit.isBlocked) {
+      greetingLoaded.current = true;
       setIsInitializing(false);
       return;
     }
@@ -432,6 +481,7 @@ export default function Chat({
         toolCalls: [],
         timestamp: new Date().toISOString(),
       }]);
+      greetingLoaded.current = true;
       setIsInitializing(false);
       return;
     }
@@ -565,6 +615,29 @@ export default function Chat({
           >
             <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-violet-500" />
             Continuing from {sessionMeta.relativeTimePhrase}
+          </div>
+        )}
+
+        {/* Greeting-mount failure banner (root-cause-greeting-mount.md). Sits
+            above the message list so the retry is visible without hunting for
+            a toast. Sonner shows the same failure as a secondary channel for
+            users who have already navigated to another tab. */}
+        {greetingError && !isInitializing && !dailyLimit.isBlocked && (
+          <div
+            role="alert"
+            className="mx-4 sm:mx-6 mt-3 mb-1 flex items-center justify-between gap-3 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-800 dark:text-amber-200"
+          >
+            <span className="min-w-0 truncate">
+              Couldn't load your greeting — {greetingError}
+            </span>
+            <button
+              type="button"
+              onClick={retryGreeting}
+              className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full bg-amber-100 dark:bg-amber-900/60 px-3 py-1 text-xs font-medium text-amber-900 dark:text-amber-100 hover:bg-amber-200 dark:hover:bg-amber-900 transition-colors"
+            >
+              <RefreshCw className="h-3 w-3" />
+              Retry
+            </button>
           </div>
         )}
 

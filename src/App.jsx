@@ -14,6 +14,9 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
 import ScrollToTop from "./components/ScrollToTop";
+import ErrorBoundary from "./components/ErrorBoundary";
+import DevCrash from "./components/DevCrash";
+import { Toaster } from "sonner";
 import { AuthProvider } from "./hooks/useAuth.jsx";
 import AuthGuard from "./components/AuthGuard";
 import VaultLayout from "./components/vault/VaultLayout";
@@ -616,10 +619,23 @@ function LandingPage() {
 // Main App with routing
 export default function App() {
   return (
-    <AuthProvider>
-      <ScrollToTop />
-      <Routes>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ScrollToTop />
+        {/* Sonner toast host — dark theme matches the vault; position bottom-
+            right so error toasts do not collide with the fixed top-right
+            checkout-success toast rendered by VaultLayout. richColors gives
+            error toasts a red accent so they don't get lost in the UI. */}
+        <Toaster
+          position="bottom-right"
+          theme="dark"
+          richColors
+          closeButton
+          toastOptions={{ duration: 5000 }}
+        />
+        <Routes>
         <Route path="/" element={<LandingPageV2 />} />
+        <Route path="/dev/crash" element={<DevCrash />} />
         <Route path="/v1" element={<LandingPage />} />
         <Route path="/login" element={<Navigate to="/signup" replace />} />
         <Route path="/signup" element={<AuthPage />} />
@@ -658,6 +674,7 @@ export default function App() {
           <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
-    </AuthProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
