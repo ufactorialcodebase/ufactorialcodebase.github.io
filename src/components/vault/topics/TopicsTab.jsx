@@ -5,10 +5,16 @@ import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
 import TopicFilters from './TopicFilters'
 import TopicRowContainer from './TopicRowContainer'
+import SortToggle from '../SortToggle'
 import { getTopics, updateTopic, deleteTopic } from '../../../lib/api/vault-topics'
 import { getEntities } from '../../../lib/api/vault-entities'
 import { useVaultData, setCached, getCached } from '../../../lib/vault-cache'
 import { normalizeEntity } from '../people/entity-utils'
+
+const TOPIC_SORT_OPTIONS = [
+  { value: 'frequency', label: 'Frequency' },
+  { value: 'recency', label: 'Recency' },
+]
 
 export default function TopicsTab() {
   const { data: topicData, loading, error, refetch } = useVaultData('topics', getTopics, {
@@ -20,6 +26,7 @@ export default function TopicsTab() {
   const [topics, setTopics] = useState([])
   const [statusFilter, setStatusFilter] = useState(null)
   const [categoryFilter, setCategoryFilter] = useState(null)
+  const [sort, setSort] = useState('frequency')
 
   useEffect(() => { if (topicData) setTopics(topicData) }, [topicData])
 
@@ -41,8 +48,22 @@ export default function TopicsTab() {
     if (categoryFilter) {
       result = result.filter((t) => (t.category || '').toLowerCase() === categoryFilter)
     }
-    return result
-  }, [topics, statusFilter, categoryFilter])
+    // Sort is a new step layered on top of the existing filters so the
+    // status/category chip behavior stays intact. Frequency is desc on
+    // mention_count; Recency is desc on last_mentioned. Nulls sort last
+    // in both cases.
+    const sorted = [...result]
+    if (sort === 'frequency') {
+      sorted.sort((a, b) => (b.mention_count || 0) - (a.mention_count || 0))
+    } else {
+      sorted.sort((a, b) => {
+        const ta = new Date(a.last_mentioned || 0).getTime()
+        const tb = new Date(b.last_mentioned || 0).getTime()
+        return tb - ta
+      })
+    }
+    return sorted
+  }, [topics, statusFilter, categoryFilter, sort])
 
   const handleUpdate = async (updatedTopic) => {
     try {
@@ -115,6 +136,9 @@ export default function TopicsTab() {
         statusFilter={statusFilter} onStatusFilterChange={setStatusFilter}
         categoryFilter={categoryFilter} onCategoryFilterChange={setCategoryFilter}
       />
+      <div className="mb-4 -mt-1">
+        <SortToggle value={sort} onChange={setSort} options={TOPIC_SORT_OPTIONS} />
+      </div>
       {filtered.map((topic) => (
         <TopicRowContainer key={topic.id} topic={topic} onUpdate={handleUpdate} onDelete={handleDelete} entityLookup={entityLookup} />
       ))}

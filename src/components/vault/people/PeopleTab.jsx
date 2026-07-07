@@ -7,9 +7,19 @@ import SidePanel from '../SidePanel'
 import FilterBar from './FilterBar'
 import EntityCard from './EntityCard'
 import EntityDetail from './EntityDetail'
+import SortToggle from '../SortToggle'
 import { getEntities, deleteEntity, updateEntity, mergeEntities } from '../../../lib/api/vault-entities'
 import { normalizeEntity } from './entity-utils'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
+
+// The backend `/vault/entities` endpoint returns raw kg_entities rows —
+// no mention_count, no last_mentioned. Until ISS-230 exposes those fields
+// the People tab can only sort by Recency (falling back to updated_at).
+// When ISS-230 lands, add a { value: 'frequency', label: 'Frequency' }
+// entry here and mirror the TopicsTab sort logic.
+const ENTITY_SORT_OPTIONS = [
+  { value: 'recency', label: 'Recency' },
+]
 
 export default function PeopleTab() {
   const { data: entityData, loading, error, refetch } = useVaultData('entities', getEntities, {
@@ -19,6 +29,7 @@ export default function PeopleTab() {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('person')
   const [selectedEntity, setSelectedEntity] = useState(null)
+  const [sort, setSort] = useState('recency')
 
   useEffect(() => { if (entityData) setEntities(entityData) }, [entityData])
 
@@ -36,8 +47,16 @@ export default function PeopleTab() {
         return name.includes(q) || aliases.includes(q) || attrs.includes(q)
       })
     }
-    return list
-  }, [entities, typeFilter, search])
+    // Recency = last_mentioned desc, falling back to updated_at when the
+    // backend hasn't populated last_mentioned yet (ISS-230). Nulls sort last.
+    const sorted = [...list]
+    sorted.sort((a, b) => {
+      const ta = new Date(a.last_mentioned || a.updated_at || 0).getTime()
+      const tb = new Date(b.last_mentioned || b.updated_at || 0).getTime()
+      return tb - ta
+    })
+    return sorted
+  }, [entities, typeFilter, search, sort])
 
   const handleDelete = async (entity) => {
     if (!confirm(`Delete ${entity.name}? This will remove them and all their relationships.`)) return
@@ -143,6 +162,9 @@ export default function PeopleTab() {
         typeFilter={typeFilter}
         onTypeFilterChange={setTypeFilter}
       />
+      <div className="mb-4 -mt-1">
+        <SortToggle value={sort} onChange={setSort} options={ENTITY_SORT_OPTIONS} />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {filtered.map((entity) => (
           <EntityCard

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 
 /**
@@ -8,6 +9,30 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
  * Only tools in this map are shown — read-only tools and unknown tools are hidden.
  * The `message` function receives `toolCall.input` and returns the display text.
  */
+// Deep-link an artifact tool-call to /vault/artifacts. Preferred lookup is
+// by artifact_id from tool_complete.result (backend gap tracked in
+// ISS-231); fall back to openTitle= when only the input title is known.
+function renderArtifactLink(prefix, input, result) {
+  const title = input?.title || 'artifact';
+  const artifactId = result?.artifact_id || result?.data?.artifact_id;
+  const params = artifactId
+    ? new URLSearchParams({ open: String(artifactId) })
+    : new URLSearchParams({ openTitle: title });
+  return (
+    <>
+      {prefix} —{' '}
+      <Link
+        to={`/vault/artifacts?${params.toString()}`}
+        data-testid="artifact-link"
+        data-artifact-title={title}
+        className="underline underline-offset-2 hover:text-emerald-600 dark:hover:text-emerald-200 focus:outline-none"
+      >
+        {title}
+      </Link>
+    </>
+  );
+}
+
 const TOOL_DISPLAY = {
   memory_store_entity: {
     message: (input) => `New entity created — ${input.canonical_name || input.name || 'entity'}`,
@@ -46,11 +71,11 @@ const TOOL_DISPLAY = {
     loading: 'Completing todo...',
   },
   create_artifact: {
-    message: () => 'Artifact created — View in Artifacts tab',
+    render: (input, result) => renderArtifactLink('Artifact created', input, result),
     loading: 'Creating artifact...',
   },
   update_artifact: {
-    message: () => 'Artifact updated — View in Artifacts tab',
+    render: (input, result) => renderArtifactLink('Artifact updated', input, result),
     loading: 'Updating artifact...',
   },
   list_create: {
@@ -100,7 +125,11 @@ export default function ToolCallCard({ toolCall }) {
         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
       )}
       <span className="text-sm text-emerald-700 dark:text-emerald-300 truncate">
-        {isPending ? config.loading : config.message(input)}
+        {isPending
+          ? config.loading
+          : (config.render
+              ? config.render(input, toolCall.result)
+              : config.message(input))}
       </span>
     </div>
   );

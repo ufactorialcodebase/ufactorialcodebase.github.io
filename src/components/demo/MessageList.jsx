@@ -1,6 +1,44 @@
 import React, { useRef, useEffect } from 'react';
 import { User, Bot, Loader2, Sparkles, Brain } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import ToolCallCard, { shouldShowToolCall } from './ToolCallCard';
+import { formatMessageTime, formatDateRibbon, localDayKey } from '../../lib/format-utils';
+
+// Sticky ribbon between messages from different local days. Visually matches
+// the existing chat mute palette (slate-100/800 pill) so it reads as a
+// section header without shouting. `sticky top-2` keeps the current-day
+// label pinned as the user scrolls — same feel as iMessage / WhatsApp.
+function DateRibbon({ text }) {
+  return (
+    <div className="flex justify-center sticky top-2 z-10 pointer-events-none" data-testid="date-ribbon">
+      <div className="px-3 py-1 rounded-full text-[11px] font-medium bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur text-slate-500 dark:text-slate-400 shadow-sm">
+        {text}
+      </div>
+    </div>
+  );
+}
+
+// Whitelist: bold, italic, code, code blocks, lists, links, paragraphs.
+// Headings unwrap to plain text so an LLM-emitted "# Section" doesn't
+// blow up the chat bubble layout but the words still land in the bubble.
+const MARKDOWN_DISALLOWED = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+const MARKDOWN_COMPONENTS = {
+  a: ({ node, ...props }) => (
+    <a {...props} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 underline underline-offset-2 hover:text-emerald-500" />
+  ),
+  code: ({ node, inline, className, children, ...props }) => (
+    inline || !className
+      ? <code {...props} className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700/60 text-[0.9em] font-mono text-rose-600 dark:text-rose-300">{children}</code>
+      : <code {...props} className={className}>{children}</code>
+  ),
+  pre: ({ node, ...props }) => (
+    <pre {...props} className="my-2 p-3 rounded-lg bg-slate-100 dark:bg-slate-900/70 text-[13px] font-mono overflow-x-auto" />
+  ),
+  ul: ({ node, ...props }) => <ul {...props} className="list-disc pl-5 my-1.5 space-y-0.5" />,
+  ol: ({ node, ...props }) => <ol {...props} className="list-decimal pl-5 my-1.5 space-y-0.5" />,
+  li: ({ node, ...props }) => <li {...props} className="marker:text-slate-400 dark:marker:text-slate-500" />,
+  p: ({ node, ...props }) => <p {...props} className="my-1 first:mt-0 last:mb-0 whitespace-pre-wrap" />,
+};
 
 /**
  * Individual message bubble
@@ -53,9 +91,37 @@ function MessageBubble({ message, mode }) {
           }
         `}>
           {message.content ? (
-            <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
-              {message.content}
-            </div>
+            <>
+              {isUser ? (
+                <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
+                  {message.content}
+                </div>
+              ) : (
+                <div className="text-[15px] leading-relaxed" data-testid="ai-message-body">
+                  <ReactMarkdown
+                    disallowedElements={MARKDOWN_DISALLOWED}
+                    unwrapDisallowed
+                    components={MARKDOWN_COMPONENTS}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              )}
+              {message.timestamp && (
+                <div
+                  data-testid="message-timestamp"
+                  className={`mt-1 text-right text-[10px] tabular-nums select-none ${
+                    isUser
+                      ? 'text-white/60'
+                      : isError
+                        ? 'text-red-600/70 dark:text-red-400/70'
+                        : 'text-slate-400 dark:text-slate-500'
+                  }`}
+                >
+                  {formatMessageTime(message.timestamp)}
+                </div>
+              )}
+            </>
           ) : isStreaming ? (
             <span className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -134,11 +200,21 @@ export default function MessageList({ messages, isLoading, isInitializing = fals
     );
   }
   
+  let prevDayKey = null;
   return (
     <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
-      {messages.map((message, idx) => (
-        <MessageBubble key={message.id || idx} message={message} mode={mode} />
-      ))}
+      {messages.map((message, idx) => {
+        const dayKey = localDayKey(message.timestamp);
+        const showRibbon = dayKey && dayKey !== prevDayKey;
+        prevDayKey = dayKey;
+        const ribbonText = showRibbon ? formatDateRibbon(message.timestamp) : null;
+        return (
+          <React.Fragment key={message.id || idx}>
+            {showRibbon && <DateRibbon text={ribbonText} />}
+            <MessageBubble message={message} mode={mode} />
+          </React.Fragment>
+        );
+      })}
       
       {/* Loading indicator */}
       {isLoading && (

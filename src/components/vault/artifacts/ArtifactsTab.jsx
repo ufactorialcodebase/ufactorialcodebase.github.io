@@ -1,5 +1,6 @@
 // src/components/vault/artifacts/ArtifactsTab.jsx
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
@@ -16,8 +17,72 @@ export default function ArtifactsTab() {
   const [artifacts, setArtifacts] = useState([])
   const [selectedArtifact, setSelectedArtifact] = useState(null)
   const [loadingFull, setLoadingFull] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => { if (artifactData) setArtifacts(artifactData) }, [artifactData])
+
+  // Deep-link from chat.
+  //   ?open=<id>          → opens the SidePanel by artifact_id (preferred;
+  //                          requires backend to surface artifact_id in the
+  //                          tool_complete SSE payload — see ISS-231)
+  //   ?openTitle=<title>  → opens the FIRST matching artifact by title
+  //                          (fallback that works today because create_artifact
+  //                          tool_start already carries input.title)
+  useEffect(() => {
+    if (loading) return
+    const openId = searchParams.get('open')
+    const openTitle = searchParams.get('openTitle')
+    if (!openId && !openTitle) return
+
+    if (openId) {
+      if (selectedArtifact?.id === openId) return
+      const inList = artifacts.find((a) => a.id === openId)
+      if (inList) {
+        setSelectedArtifact(inList)
+        if (!inList.content) {
+          setLoadingFull(true)
+          getArtifact(openId)
+            .then((full) => setSelectedArtifact(full))
+            .catch(() => { /* keep partial */ })
+            .finally(() => setLoadingFull(false))
+        }
+      } else {
+        setLoadingFull(true)
+        getArtifact(openId)
+          .then((full) => setSelectedArtifact(full))
+          .catch(() => toast.error('Could not open that artifact'))
+          .finally(() => setLoadingFull(false))
+      }
+      return
+    }
+
+    // openTitle path — case-insensitive first-match. If the artifact was
+    // just created, it should be at the top of the list by updated_at desc.
+    const wanted = openTitle.trim().toLowerCase()
+    const match = artifacts.find((a) => (a.title || '').trim().toLowerCase() === wanted)
+    if (!match) return
+    if (selectedArtifact?.id === match.id) return
+    setSelectedArtifact(match)
+    if (!match.content) {
+      setLoadingFull(true)
+      getArtifact(match.id)
+        .then((full) => setSelectedArtifact(full))
+        .catch(() => { /* keep partial */ })
+        .finally(() => setLoadingFull(false))
+    }
+  }, [searchParams, loading, artifacts])
+
+  const closeSelected = () => {
+    setSelectedArtifact(null)
+    // Clear the ?open=/?openTitle= param so a subsequent click on another
+    // artifact isn't clobbered by the useEffect re-opening the linked one.
+    if (searchParams.get('open') || searchParams.get('openTitle')) {
+      const next = new URLSearchParams(searchParams)
+      next.delete('open')
+      next.delete('openTitle')
+      setSearchParams(next, { replace: true })
+    }
+  }
 
   const handleCardClick = async (artifact) => {
     // Open panel immediately with metadata, then load full content
@@ -108,7 +173,7 @@ export default function ArtifactsTab() {
 
       <SidePanel
         open={!!selectedArtifact}
-        onClose={() => setSelectedArtifact(null)}
+        onClose={closeSelected}
         title={selectedArtifact?.title || 'Document'}
       >
         {selectedArtifact && (
