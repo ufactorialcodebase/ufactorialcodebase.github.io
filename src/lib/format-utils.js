@@ -1,5 +1,32 @@
 // Shared formatting utilities
 
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+// Small in-bubble timestamp:
+//   today          → "HH:MM"        (14:07)
+//   this week      → "Mon HH:MM"    (Thu 14:07)
+//   older / future → "Mon DD"       (Jul 3)
+export function formatMessageTime(ts) {
+  if (!ts) return null
+  const d = new Date(ts)
+  if (Number.isNaN(d.getTime())) return null
+  const now = new Date()
+  const sameDay =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  const dayDiff = Math.floor(
+    (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) -
+      Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000
+  )
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  if (sameDay) return `${hh}:${mm}`
+  if (dayDiff > 0 && dayDiff < 7) return `${WEEKDAYS[d.getDay()]} ${hh}:${mm}`
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}`
+}
+
 export function timeAgo(dateStr) {
   if (!dateStr) return null
   const diff = Date.now() - new Date(dateStr).getTime()

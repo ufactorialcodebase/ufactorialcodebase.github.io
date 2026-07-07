@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { User, Bot, Loader2, Sparkles, Brain } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import ToolCallCard, { shouldShowToolCall } from './ToolCallCard';
+import { formatMessageTime } from '../../lib/format-utils';
 
 // Whitelist: bold, italic, code, code blocks, lists, links, paragraphs.
 // Headings unwrap to plain text so an LLM-emitted "# Section" doesn't
@@ -76,21 +77,37 @@ function MessageBubble({ message, mode }) {
           }
         `}>
           {message.content ? (
-            isUser ? (
-              <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
-                {message.content}
-              </div>
-            ) : (
-              <div className="text-[15px] leading-relaxed" data-testid="ai-message-body">
-                <ReactMarkdown
-                  disallowedElements={MARKDOWN_DISALLOWED}
-                  unwrapDisallowed
-                  components={MARKDOWN_COMPONENTS}
-                >
+            <>
+              {isUser ? (
+                <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
                   {message.content}
-                </ReactMarkdown>
-              </div>
-            )
+                </div>
+              ) : (
+                <div className="text-[15px] leading-relaxed" data-testid="ai-message-body">
+                  <ReactMarkdown
+                    disallowedElements={MARKDOWN_DISALLOWED}
+                    unwrapDisallowed
+                    components={MARKDOWN_COMPONENTS}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              )}
+              {message.timestamp && (
+                <div
+                  data-testid="message-timestamp"
+                  className={`mt-1 text-right text-[10px] tabular-nums select-none ${
+                    isUser
+                      ? 'text-white/60'
+                      : isError
+                        ? 'text-red-600/70 dark:text-red-400/70'
+                        : 'text-slate-400 dark:text-slate-500'
+                  }`}
+                >
+                  {formatMessageTime(message.timestamp)}
+                </div>
+              )}
+            </>
           ) : isStreaming ? (
             <span className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
               <Loader2 className="w-4 h-4 animate-spin" />
