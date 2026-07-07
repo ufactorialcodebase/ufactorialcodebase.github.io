@@ -1,5 +1,6 @@
 // src/components/vault/topics/TopicsTab.jsx
 import { useState, useEffect, useMemo } from 'react'
+import { toast } from 'sonner'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
 import TopicFilters from './TopicFilters'
@@ -55,7 +56,7 @@ export default function TopicsTab() {
         return updated
       })
     } catch (err) {
-      alert('Failed to update: ' + err.message)
+      toast.error('Failed to update: ' + err.message)
     }
   }
 
@@ -68,7 +69,7 @@ export default function TopicsTab() {
         return updated
       })
     } catch (err) {
-      alert('Failed to delete: ' + err.message)
+      toast.error('Failed to delete: ' + err.message)
     }
   }
 

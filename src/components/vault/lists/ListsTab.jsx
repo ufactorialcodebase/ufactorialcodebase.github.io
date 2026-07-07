@@ -1,5 +1,6 @@
 // src/components/vault/lists/ListsTab.jsx
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
 import ListIndex from './ListIndex'
@@ -39,7 +40,7 @@ export default function ListsTab() {
       setSelectedListId(newList.id)
       setShowCreateForm(false)
     } catch (err) {
-      alert('Failed to create list: ' + err.message)
+      toast.error('Failed to create list: ' + err.message)
     }
   }
 
@@ -56,7 +57,7 @@ export default function ListsTab() {
         return updated
       })
     } catch (err) {
-      alert('Failed to delete list: ' + err.message)
+      toast.error('Failed to delete list: ' + err.message)
     }
   }
 
@@ -75,7 +76,7 @@ export default function ListsTab() {
         return updated
       })
     } catch (err) {
-      alert('Failed to add item: ' + err.message)
+      toast.error('Failed to add item: ' + err.message)
     }
   }
 
@@ -94,7 +95,7 @@ export default function ListsTab() {
         return updated
       })
     } catch (err) {
-      alert('Failed to remove item: ' + err.message)
+      toast.error('Failed to remove item: ' + err.message)
     }
   }
 

@@ -1,5 +1,6 @@
 // src/components/vault/people/PeopleTab.jsx
 import { useState, useEffect, useMemo } from 'react'
+import { toast } from 'sonner'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
 import SidePanel from '../SidePanel'
@@ -49,7 +50,7 @@ export default function PeopleTab() {
       })
       setSelectedEntity(null)
     } catch (err) {
-      alert('Failed to delete: ' + err.message)
+      toast.error('Failed to delete: ' + err.message)
     }
   }
 
@@ -69,7 +70,7 @@ export default function PeopleTab() {
         setSelectedEntity(null)
       }
     } catch (err) {
-      alert('Failed to merge: ' + err.message)
+      toast.error('Failed to merge: ' + err.message)
     }
   }
 
@@ -85,7 +86,7 @@ export default function PeopleTab() {
       })
       setSelectedEntity(updatedEntity)
     } catch (err) {
-      alert('Failed to update: ' + err.message)
+      toast.error('Failed to update: ' + err.message)
     }
   }
 
