@@ -9,10 +9,14 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.js'],
     globals: true,
+    // Playwright specs live under e2e/tests/*.spec.js and use the
+    // @playwright/test runner — vitest picking them up produces
+    // "Playwright Test did not expect test() to be called here."
+    exclude: ['**/node_modules/**', 'dist/**', 'e2e/**', '.worktrees/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      exclude: ['node_modules/', 'src/test/', 'dist/', '**/*.config.*'],
+      exclude: ['node_modules/', 'src/test/', 'dist/', '**/*.config.*', 'e2e/**'],
     },
   },
   resolve: {
