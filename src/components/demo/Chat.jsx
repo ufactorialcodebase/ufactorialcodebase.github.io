@@ -117,6 +117,13 @@ export default function Chat({
     let assistantContent = '';
     let toolCalls = [];
     let responseTimeMs = null;
+    // When the LLM streams "…good." → [tool] → "The next step is…", the
+    // Anthropic tool-use protocol sends the pre-tool text as content deltas,
+    // the tool as a separate block, then the post-tool text as new content
+    // deltas — with no whitespace on either side of the tool. Concatenating
+    // naively produces "good.The next step". We track the boundary here and
+    // splice a single space back in when BOTH sides are non-whitespace.
+    let toolBoundaryPending = false;
     
     // Start streaming
     const abort = sendMessageStream(text, {
@@ -142,6 +149,9 @@ export default function Chat({
       },
       
       onToolStart: (toolData) => {
+        // Mark the boundary so the next content delta gets a space when the
+        // pre-tool buffer ended mid-sentence.
+        toolBoundaryPending = true;
         // Tool execution starting - add to list with pending state
         const newTool = {
           id: toolData.tool_id || `tool_${Date.now()}`,
@@ -175,6 +185,10 @@ export default function Chat({
       },
       
       onToolComplete: (toolData) => {
+        // Re-arm the boundary — some backends emit tool_complete without a
+        // preceding tool_start (bulk-execute path), and content that resumes
+        // after tool_complete still needs the space fix.
+        toolBoundaryPending = true;
         // Tool execution finished - update the tool in the list
         toolCalls = toolCalls.map(tc =>
           tc.name === toolData.name && tc.success === null
@@ -191,8 +205,19 @@ export default function Chat({
       },
       
       onContent: (delta) => {
+        if (toolBoundaryPending && assistantContent.length > 0 && delta.length > 0) {
+          const lastChar = assistantContent.charAt(assistantContent.length - 1);
+          const firstChar = delta.charAt(0);
+          // Only bridge with a space when neither side already has one; if
+          // either side is punctuation-adjacent whitespace or a newline the
+          // join is already fine.
+          if (!/\s/.test(lastChar) && !/\s/.test(firstChar)) {
+            assistantContent += ' ';
+          }
+          toolBoundaryPending = false;
+        }
         assistantContent += delta;
-        
+
         // Add or update assistant message
         setMessages(prev => {
           const lastMessage = prev[prev.length - 1];
