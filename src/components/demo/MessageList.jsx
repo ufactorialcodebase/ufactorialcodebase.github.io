@@ -2,7 +2,21 @@ import React, { useRef, useEffect } from 'react';
 import { User, Bot, Loader2, Sparkles, Brain } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import ToolCallCard, { shouldShowToolCall } from './ToolCallCard';
-import { formatMessageTime } from '../../lib/format-utils';
+import { formatMessageTime, formatDateRibbon, localDayKey } from '../../lib/format-utils';
+
+// Sticky ribbon between messages from different local days. Visually matches
+// the existing chat mute palette (slate-100/800 pill) so it reads as a
+// section header without shouting. `sticky top-2` keeps the current-day
+// label pinned as the user scrolls — same feel as iMessage / WhatsApp.
+function DateRibbon({ text }) {
+  return (
+    <div className="flex justify-center sticky top-2 z-10 pointer-events-none" data-testid="date-ribbon">
+      <div className="px-3 py-1 rounded-full text-[11px] font-medium bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur text-slate-500 dark:text-slate-400 shadow-sm">
+        {text}
+      </div>
+    </div>
+  );
+}
 
 // Whitelist: bold, italic, code, code blocks, lists, links, paragraphs.
 // Headings unwrap to plain text so an LLM-emitted "# Section" doesn't
@@ -186,11 +200,21 @@ export default function MessageList({ messages, isLoading, isInitializing = fals
     );
   }
   
+  let prevDayKey = null;
   return (
     <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
-      {messages.map((message, idx) => (
-        <MessageBubble key={message.id || idx} message={message} mode={mode} />
-      ))}
+      {messages.map((message, idx) => {
+        const dayKey = localDayKey(message.timestamp);
+        const showRibbon = dayKey && dayKey !== prevDayKey;
+        prevDayKey = dayKey;
+        const ribbonText = showRibbon ? formatDateRibbon(message.timestamp) : null;
+        return (
+          <React.Fragment key={message.id || idx}>
+            {showRibbon && <DateRibbon text={ribbonText} />}
+            <MessageBubble message={message} mode={mode} />
+          </React.Fragment>
+        );
+      })}
       
       {/* Loading indicator */}
       {isLoading && (
