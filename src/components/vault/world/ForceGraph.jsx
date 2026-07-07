@@ -112,6 +112,9 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
       .attr('cursor', d => d.id === 'you' ? 'default' : 'pointer')
       .attr('stroke', 'rgba(0,0,0,0.3)')
       .attr('stroke-width', 1)
+      // Node type surfaced for playwright + future data-attribute-based
+      // filter tests. "you" carries its own literal type.
+      .attr('data-node-type', d => d.id === 'you' ? 'you' : (d.type || 'other'))
 
     // Draw labels
     const label = g.append('g')

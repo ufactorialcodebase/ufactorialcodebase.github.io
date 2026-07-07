@@ -1,11 +1,16 @@
 // src/components/vault/world/WorldTab.jsx
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
 import SidePanel from '../SidePanel'
 import ForceGraph from './ForceGraph'
 import { useVaultData } from '../../../lib/vault-cache'
 import { getWorld } from '../../../lib/api/vault-world'
+
+const NODE_FILTERS = [
+  { value: 'all', label: 'All' },
+  { value: 'entities', label: 'Entities only' },
+]
 
 export default function WorldTab() {
   const { data: worldData, loading, error, refetch } = useVaultData('world', getWorld)
@@ -39,9 +44,28 @@ export default function WorldTab() {
     setSelectedNode(node)
   }, [])
 
-  const nodes = worldData?.nodes || []
-  const edges = worldData?.edges || []
-  const hasGraph = !loading && !error && nodes.length > 1
+  const [nodeFilter, setNodeFilter] = useState('all')
+  const rawNodes = worldData?.nodes || []
+  const rawEdges = worldData?.edges || []
+
+  // "Entities only" hides topic nodes (topic node type == 'topic') and any
+  // edge that references one. "you" always stays so the graph keeps its
+  // anchor. Todo nodes aren't currently rendered by the API but the filter
+  // is written to drop them too if that ever changes.
+  const { nodes, edges } = useMemo(() => {
+    if (nodeFilter === 'all') return { nodes: rawNodes, edges: rawEdges }
+    const kept = new Set()
+    const filteredNodes = rawNodes.filter((n) => {
+      const t = (n.type || '').toLowerCase()
+      const keep = n.id === 'you' || (t !== 'topic' && t !== 'todo')
+      if (keep) kept.add(n.id)
+      return keep
+    })
+    const filteredEdges = rawEdges.filter((e) => kept.has(e.source) && kept.has(e.target))
+    return { nodes: filteredNodes, edges: filteredEdges }
+  }, [rawNodes, rawEdges, nodeFilter])
+
+  const hasGraph = !loading && !error && rawNodes.length > 1
 
   // Overlay content shown inside the always-mounted container
   const overlay = loading ? (
@@ -75,14 +99,36 @@ export default function WorldTab() {
       <div className="p-6 pb-0">
         <PageHeader title="Your World" subtitle="Your life, visualized" />
       </div>
-      {/* Legend — only visible when graph is shown */}
+      {/* Node filter — chip strip matching FilterBar / TopicFilters pattern. */}
       {hasGraph && (
-        <div className="px-6 flex gap-4 text-[10px] text-[var(--text-secondary)]">
+        <div className="px-6 mt-1 flex gap-1" data-testid="world-node-filter">
+          {NODE_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setNodeFilter(f.value)}
+              data-filter={f.value}
+              className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                nodeFilter === f.value
+                  ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] font-medium'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]/50'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+      {/* Legend — only visible when graph is shown. Topic swatch hidden
+          under "Entities only" since no topic nodes are in the view. */}
+      {hasGraph && (
+        <div className="px-6 mt-2 flex gap-4 text-[10px] text-[var(--text-secondary)]">
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#fbbf24]" /> You</span>
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#60a5fa]" /> Person</span>
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#34d399]" /> Organization</span>
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#fb923c]" /> Place</span>
-          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#c084fc]" /> Topic</span>
+          {nodeFilter === 'all' && (
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#c084fc]" /> Topic</span>
+          )}
         </div>
       )}
       {/* Container is ALWAYS mounted so ResizeObserver can measure it */}
