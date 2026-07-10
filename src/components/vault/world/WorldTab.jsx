@@ -2,10 +2,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
-import SidePanel from '../SidePanel'
+import WorldNodePanel from './WorldNodePanel'
 import ForceGraph from './ForceGraph'
 import { useVaultData } from '../../../lib/vault-cache'
 import { getWorld } from '../../../lib/api/vault-world'
+import { bfsDistances } from '../../../lib/graph-highlight'
 
 const NODE_FILTERS = [
   { value: 'all', label: 'All' },
@@ -44,6 +45,10 @@ export default function WorldTab() {
     setSelectedNode(node)
   }, [])
 
+  const handleBackgroundClick = useCallback(() => {
+    setSelectedNode(null)
+  }, [])
+
   const [nodeFilter, setNodeFilter] = useState('all')
   const rawNodes = worldData?.nodes || []
   const rawEdges = worldData?.edges || []
@@ -66,6 +71,15 @@ export default function WorldTab() {
   }, [rawNodes, rawEdges, nodeFilter])
 
   const hasGraph = !loading && !error && rawNodes.length > 1
+
+  // BFS distance map from the selected node — drives node + edge + label
+  // opacity in ForceGraph. Null means "no highlight active": everything
+  // renders at full brightness. Uses raw edges (id strings) so the walk
+  // survives d3's mutation of edge.source / edge.target into node objects.
+  const highlightDistances = useMemo(() => {
+    if (!selectedNode) return null
+    return bfsDistances(selectedNode.id, rawEdges)
+  }, [selectedNode, rawEdges])
 
   // Overlay content shown inside the always-mounted container
   const overlay = loading ? (
@@ -141,11 +155,16 @@ export default function WorldTab() {
             width={dimensions.width}
             height={dimensions.height}
             onNodeClick={handleNodeClick}
+            onBackgroundClick={handleBackgroundClick}
+            highlightDistances={highlightDistances}
           />
         )}
       </div>
-      {/* Side panel for node details */}
-      <SidePanel open={!!selectedNode} onClose={() => setSelectedNode(null)} title={selectedNode?.label || 'Details'}>
+      {/* World-specific details panel — no backdrop dim, mobile bottom-sheet.
+          The graph stays visible + interactive behind the panel so the
+          user can see the highlighted subgraph while reading node detail
+          and click another node to re-anchor the highlight. */}
+      <WorldNodePanel open={!!selectedNode} onClose={() => setSelectedNode(null)} title={selectedNode?.label || 'Details'}>
         {selectedNode && (
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -161,7 +180,7 @@ export default function WorldTab() {
             )}
           </div>
         )}
-      </SidePanel>
+      </WorldNodePanel>
     </div>
   )
 }

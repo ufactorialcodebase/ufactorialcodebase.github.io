@@ -4,6 +4,7 @@ import { select } from 'd3-selection'
 import { zoom as d3Zoom, zoomIdentity } from 'd3-zoom'
 import { forceSimulation, forceManyBody, forceCenter, forceCollide, forceLink, forceX, forceY } from 'd3-force'
 import { drag as d3Drag } from 'd3-drag'
+import { nodeOpacity, edgeOpacity } from '../../../lib/graph-highlight'
 
 const TYPE_COLORS = {
   you: '#fbbf24',
@@ -32,9 +33,12 @@ function truncateLabel(label, max = 12) {
   return label.length > max ? label.slice(0, max) + '...' : label
 }
 
-export default function ForceGraph({ nodes, edges, onNodeClick, width, height }) {
+export default function ForceGraph({ nodes, edges, onNodeClick, width, height, highlightDistances = null, onBackgroundClick }) {
   const svgRef = useRef(null)
   const simulationRef = useRef(null)
+  // Ref so the highlight useEffect can walk each element and pull its base
+  // opacity (the tie-strength-derived value from Item 8) without recomputing.
+  const baseEdgeOpacityRef = useRef(new Map())
 
   useEffect(() => {
     if (!svgRef.current || !nodes.length || !width || !height) return
@@ -109,6 +113,12 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
       .attr('data-strength', d => d.strength)
       .attr('stroke-width', d => Math.max(0.5, Math.min(5, (d.strength || 0.3) * 4)))
       .attr('stroke-opacity', d => Math.min(d.strength * 2, 0.6))
+
+    // Cache the tie-strength-derived base opacity so the highlight
+    // effect can multiply against it without recomputing the strength ramp.
+    const baseMap = baseEdgeOpacityRef.current
+    baseMap.clear()
+    edgeData.forEach((d, i) => baseMap.set(i, Math.min(d.strength * 2, 0.6)))
 
     // Draw nodes
     const node = g.append('g')
@@ -188,6 +198,13 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
       }
     })
 
+    // Click on the SVG background (empty canvas) clears the highlight.
+    svg.on('click', (event) => {
+      if (event.target === svgRef.current && onBackgroundClick) {
+        onBackgroundClick()
+      }
+    })
+
     // Hover effects
     node
       .on('mouseenter', function (event, d) {
@@ -219,7 +236,35 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height })
       simulationRef.current = null
       svg.selectAll('*').remove()
     }
-  }, [nodes, edges, width, height, onNodeClick])
+  }, [nodes, edges, width, height, onNodeClick, onBackgroundClick])
+
+  // Highlight effect — runs independently of the sim rebuild so clicking a
+  // node doesn't tear down and re-force the graph. Walks the live SVG and
+  // updates opacity on nodes / edges / labels with a short transition.
+  // When highlightDistances is null (no active highlight), everything
+  // returns to full brightness.
+  useEffect(() => {
+    if (!svgRef.current) return
+    const svg = select(svgRef.current)
+
+    svg.selectAll('circle')
+      .transition().duration(180)
+      .attr('opacity', d => nodeOpacity(highlightDistances, d.id))
+
+    const baseMap = baseEdgeOpacityRef.current
+    svg.selectAll('line')
+      .transition().duration(180)
+      .attr('stroke-opacity', (d, i) => {
+        const sourceId = d.source && (d.source.id ?? d.source)
+        const targetId = d.target && (d.target.id ?? d.target)
+        const base = baseMap.get(i) ?? Math.min((d.strength || 0.3) * 2, 0.6)
+        return edgeOpacity(highlightDistances, sourceId, targetId, base)
+      })
+
+    svg.selectAll('text')
+      .transition().duration(180)
+      .attr('opacity', d => nodeOpacity(highlightDistances, d.id))
+  }, [highlightDistances])
 
   return (
     <svg
