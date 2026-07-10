@@ -51,14 +51,19 @@ async function upsertCode(request, code, fields) {
   }
 }
 
-async function getUnusedBetaCode(request) {
-  const res = await request.get(
-    `${SUPABASE_URL}/rest/v1/demo_access_codes?code=ilike.BETA-*&use_count=eq.0&select=code&limit=1`,
-    { headers: adminHeaders() }
-  )
-  const rows = await res.json()
-  expect(rows.length, 'need at least one unused BETA-* code on TEST').toBeGreaterThan(0)
-  return rows[0].code
+/**
+ * Mint a dedicated, single-use BETA-prefixed test code rather than
+ * consuming the operator's shared pool of pre-existing unused BETA-*
+ * codes (those are for real testers and are a finite, shared resource —
+ * a prior run in this same session exhausted both that existed on TEST).
+ */
+async function mintBetaStyleCode(request) {
+  const code = `BETA-E2E-${RUN_ID}`
+  await upsertCode(request, code, {
+    mode: 'unified', max_uses: 1, use_count: 0, is_active: true,
+    notes: '{"source":"e2e","purpose":"3b single-use BETA-style UX"}',
+  })
+  return code
 }
 
 async function fillAndSubmitSignup(page, { code, email, password, skipCode = false }) {
@@ -115,7 +120,7 @@ test.describe.serial('ISS-236 (3b): multi-code UX happy path', () => {
   test.beforeAll(async ({ request }) => {
     expect(SERVICE_KEY, 'E2E_SUPABASE_SERVICE_KEY must be set').toBeTruthy()
     expect(SUPABASE_URL).toContain('hruvdrxbzghqyrfecbxm')
-    betaCode = await getUnusedBetaCode(request)
+    betaCode = await mintBetaStyleCode(request)
 
     await upsertCode(request, CODE_MULTI, {
       mode: 'unified', max_uses: 3, use_count: 0, is_active: true,
