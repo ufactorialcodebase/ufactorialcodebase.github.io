@@ -224,19 +224,28 @@ Fresh finding while re-verifying: batch-1 <strong>Item 1 (markdown)</strong> sti
 <h2>Batch-2 progress</h2>
 
 <div class="item">
-  <div class="item-head"><span class="num">F4</span><h3>World interactive highlight — shipped</h3><span class="sha">eb96dc4</span></div>
+  <div class="item-head"><span class="num">F4</span><h3>World interactive highlight — revamped per your feedback</h3><span class="sha">641b176</span></div>
   <p class="desc">
-    Click a node → undirected BFS from that node, opacity ramp 1.0 / 0.75 / 0.4 / 0.2 across 0° / 1° / 2° / 3°, rest fades to 0.08. Colors preserved. Details panel has no backdrop — graph stays visible + interactive. Desktop: right-side spring panel. Mobile: framer-motion bottom sheet at 60vh (~40% visible), drag up to full or drag down to dismiss. Escape closes.
+    <strong>Reverts vs the first F4 pass (eb96dc4):</strong> opacity ramp deleted — fade-to-0.08 on non-neighbours made the graph feel washed out. Also reverted Item 8's edge-stroke-width scaling.
+  </p>
+  <p class="desc">
+    <strong>New behaviour:</strong> click a node → <strong>additive yellow drop-shadow glow</strong> on that node + its 1° / 2° / 3° neighbours; glow intensity decays by degree. Anything at 4+ hops or disconnected stays <em>completely normal</em> — no dim, no fade. Additive highlight instead of subtractive dim. Panel still opens without a backdrop.
+  </p>
+  <p class="desc">
+    <strong>Replaced edge-scaling with node-size-by-mention-frequency:</strong> bigger dot = more frequently mentioned. Log-scaled, clamped [10, 22], below the "you" anchor (24). Backend didn't need changes — WorldTab piggybacks on the shared vault-cache to enrich world nodes with <code>mention_count</code> client-side.
+  </p>
+  <p class="desc" style="margin-top: 0; color: var(--text-dim);">
+    <strong>Easy revert path per your ask:</strong> flip <code>NODE_SIZE_MODE</code> in <code>src/lib/graph-node-size.js</code> from <code>'frequency'</code> → <code>'fixed'</code> — one constant, restores pre-batch-2 sizing. Glow revert is comparable (drop the highlight useEffect in <code>ForceGraph.jsx</code>).
   </p>
   <div class="meta-row">
-    <span><code>src/lib/graph-highlight.js</code> + 14 vitest cases</span>
-    <span><code>ForceGraph.jsx</code> — imperative opacity, no d3 re-mount</span>
-    <span><code>WorldNodePanel.jsx</code> (new)</span>
-    <span class="test-result">2 playwright tests pass (fixture mocked)</span>
+    <span><code>graph-highlight.js</code> — glow tiers, 14 vitest cases</span>
+    <span><code>graph-node-size.js</code> (new) — 8 vitest cases</span>
+    <span><code>ForceGraph.jsx</code> — SVG glow filters via <code>&lt;defs&gt;</code></span>
+    <span class="test-result">4 playwright + 22 vitest all green</span>
   </div>
   <div class="shot-wrap">
-    <img src="e2e/screenshots/f4-world-highlight-active.png" alt="F4 screenshot" />
-    <div class="shot-caption">Clicked node is fully opaque; neighbours ramp down by degree; disconnected + far nodes fade to the REST floor (0.08).</div>
+    <img src="e2e/screenshots/f4-world-glow-active.png" alt="F4 screenshot — glow highlight" />
+    <div class="shot-caption">Alice clicked → yellow glow on her + 1° / 2° / 3° neighbours (decaying). Nodes further out or disconnected: normal, unmodified.</div>
   </div>
 </div>
 
