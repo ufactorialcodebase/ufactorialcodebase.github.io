@@ -6,6 +6,8 @@ import WorldNodePanel from './WorldNodePanel'
 import ForceGraph from './ForceGraph'
 import { useVaultData } from '../../../lib/vault-cache'
 import { getWorld } from '../../../lib/api/vault-world'
+import { getEntities } from '../../../lib/api/vault-entities'
+import { getTopics } from '../../../lib/api/vault-topics'
 import { bfsDistances } from '../../../lib/graph-highlight'
 
 const NODE_FILTERS = [
@@ -15,6 +17,18 @@ const NODE_FILTERS = [
 
 export default function WorldTab() {
   const { data: worldData, loading, error, refetch } = useVaultData('world', getWorld)
+  // Piggyback on the shared vault-cache: entities + topics are already
+  // fetched for the People / Topics tabs. Post-ISS-230 both endpoints
+  // return `mention_count` per row, which we use to size world nodes by
+  // frequency (bigger dot = more frequently mentioned). The world API
+  // itself doesn't propagate mention_count today — this is a client-side
+  // enrichment. Zero backend change needed.
+  const { data: entityData } = useVaultData('entities', getEntities, {
+    transform: (result) => result.entities || result || [],
+  })
+  const { data: topicData } = useVaultData('topics', getTopics, {
+    transform: (result) => result.topics || result || [],
+  })
   const [selectedNode, setSelectedNode] = useState(null)
   const containerRef = useRef(null)
   const [dimensions, setDimensions] = useState(null)
@@ -50,7 +64,32 @@ export default function WorldTab() {
   }, [])
 
   const [nodeFilter, setNodeFilter] = useState('all')
-  const rawNodes = worldData?.nodes || []
+
+  // Build a nodeId → mention_count map from the shared caches, then enrich
+  // world nodes with it so ForceGraph's `computeNodeRadius` can scale by
+  // frequency. Falls back gracefully when caches haven't loaded yet.
+  const mentionCountMap = useMemo(() => {
+    const m = new Map()
+    for (const e of (entityData || [])) {
+      const id = e.id || e.entity_id
+      if (id != null && typeof e.mention_count === 'number') m.set(id, e.mention_count)
+    }
+    for (const t of (topicData || [])) {
+      if (t.id != null && typeof t.mention_count === 'number') m.set(t.id, t.mention_count)
+    }
+    return m
+  }, [entityData, topicData])
+
+  const rawNodes = useMemo(() => {
+    const source = worldData?.nodes || []
+    if (mentionCountMap.size === 0) return source
+    return source.map((n) => (
+      n.id === 'you' || mentionCountMap.get(n.id) == null
+        ? n
+        : { ...n, mention_count: mentionCountMap.get(n.id) }
+    ))
+  }, [worldData, mentionCountMap])
+
   const rawEdges = worldData?.edges || []
 
   // "Entities only" hides topic nodes (topic node type == 'topic') and any

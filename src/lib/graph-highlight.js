@@ -1,35 +1,40 @@
 // Graph highlight utilities for the World force graph.
 //
-// When a user clicks a node we run an undirected BFS from that node and
-// produce a distance map (nodeId → hops). ForceGraph reads the map to
-// modulate opacity across nodes + edges + labels so the clicked node and
-// its 1st / 2nd / 3rd degree neighbours read as a "lit up" subgraph
-// (rest fade to a dim floor). BFS treats every edge as undirected —
-// clicking a person will always light "you" up as a 1° neighbour when
-// they share an edge.
+// When a user clicks a node we run an undirected BFS and produce a
+// distance map (nodeId → hops). ForceGraph reads the map and applies a
+// yellow drop-shadow glow to the clicked node + its 1st / 2nd / 3rd
+// degree neighbours — glow intensity decreases by degree. Nodes at
+// 4+ hops or disconnected stay COMPLETELY NORMAL (no dim, no fade) so
+// the graph remains readable at all times. This replaces the earlier
+// opacity-ramp version that pushed non-highlighted nodes to a floor —
+// user found the fade-out visually unpleasant; additive glow reads
+// better because it draws attention without hiding context.
 
 export const MAX_HIGHLIGHT_DEGREE = 3
 
-// Opacity ramp keyed by hops-from-source. Values chosen to be visually
-// distinct (each step is a ~2× decay) while keeping non-highlighted
-// nodes just barely visible so the user still has spatial context.
-export const DEGREE_OPACITY = {
-  0: 1.0,   // clicked node
-  1: 0.75,  // 1st-degree neighbours
-  2: 0.4,   // 2nd-degree
-  3: 0.2,   // 3rd-degree
-}
-export const REST_OPACITY = 0.08
+// Tier index → drop-shadow config used to build the SVG <filter>
+// definitions in ForceGraph. Lower index = brighter / larger halo.
+// stdDeviation drives the blur radius; floodOpacity the punch.
+export const GLOW_TIERS = [
+  { id: 'node-glow-0', stdDeviation: 12, floodOpacity: 1.0 },   // clicked
+  { id: 'node-glow-1', stdDeviation: 8,  floodOpacity: 0.85 },  // 1° neighbours
+  { id: 'node-glow-2', stdDeviation: 5,  floodOpacity: 0.55 },  // 2°
+  { id: 'node-glow-3', stdDeviation: 3,  floodOpacity: 0.30 },  // 3°
+]
 
-// Undirected BFS from a source node over the raw edges array. Returns a
-// Map<nodeId, distance>. Distance to source is 0. Only walks out to
-// MAX_HIGHLIGHT_DEGREE hops — anything further is treated as REST.
+// Warm yellow — matches the "you" node palette so the highlight reads
+// as "in your orbit." Change here to retint the whole glow ramp.
+export const GLOW_COLOR = '#fbbf24'
+
+// Undirected BFS from a source node over the raw edges array. Returns
+// a Map<nodeId, distance>. Distance to source is 0. Walks out to
+// MAX_HIGHLIGHT_DEGREE hops — anything further is treated as "no glow."
 export function bfsDistances(sourceId, edges, maxDegree = MAX_HIGHLIGHT_DEGREE) {
   if (!sourceId || !Array.isArray(edges)) return new Map()
 
-  // Build undirected adjacency. d3 mutates edge.source / edge.target into
-  // node objects after simulation setup, so we accept both id-strings and
-  // object-with-.id shapes when walking a live graph.
+  // d3 mutates edge.source / edge.target into node objects after
+  // simulation setup, so we accept both id-strings and object-with-.id
+  // shapes when walking a live graph.
   const adj = new Map()
   const idOf = (v) => (v && typeof v === 'object' && v.id !== undefined) ? v.id : v
   for (const e of edges) {
@@ -63,27 +68,13 @@ export function bfsDistances(sourceId, edges, maxDegree = MAX_HIGHLIGHT_DEGREE) 
   return distances
 }
 
-// Opacity for a single node given the active distance map.
-//   distances === null → no highlight active (everything fully opaque)
-//   node not in map    → node is beyond MAX_HIGHLIGHT_DEGREE (REST floor)
-export function nodeOpacity(distances, nodeId) {
-  if (!distances) return 1
+// Glow tier index for a node given the active distance map. null means
+// "no glow" — either no highlight is active, or the node is 4+ hops
+// out or disconnected. Non-null values are indices into GLOW_TIERS.
+export function glowTierForDistance(distances, nodeId) {
+  if (!distances) return null
   const d = distances.get(nodeId)
-  if (d === undefined) return REST_OPACITY
-  return DEGREE_OPACITY[d] ?? REST_OPACITY
-}
-
-// Opacity for an edge. Edge is only "lit" if BOTH endpoints are within
-// the highlight radius; its brightness matches the FURTHER endpoint so an
-// edge from 1° to 3° reads as 3°. Multiplied by the edge's base opacity
-// (which is a function of tie strength, per Item 8) so the ramp still
-// respects the underlying strength signal.
-export function edgeOpacity(distances, sourceId, targetId, baseOpacity = 1) {
-  if (!distances) return baseOpacity
-  const sd = distances.get(sourceId)
-  const td = distances.get(targetId)
-  if (sd === undefined || td === undefined) return REST_OPACITY * baseOpacity
-  const dist = Math.max(sd, td)
-  const factor = DEGREE_OPACITY[dist] ?? REST_OPACITY
-  return factor * baseOpacity
+  if (d === undefined) return null
+  if (d < 0 || d >= GLOW_TIERS.length) return null
+  return d
 }
