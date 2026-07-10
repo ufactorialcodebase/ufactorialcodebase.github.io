@@ -300,11 +300,16 @@ The <code>--headed</code> flag opens a real Chromium window so you can watch it 
 
 <h3>What to look for (design intent)</h3>
 <ul class="follow">
-  <li><strong>Colors preserved.</strong> Person-blue / org-green / place-orange / topic-violet stay meaningful — the ramp is opacity only, not tint.</li>
-  <li><strong>Edge opacity respects tie strength AND degree.</strong> A strong edge to a 3° neighbour should still be visibly dimmer than a strong edge to a 1° neighbour (per Item 8, base opacity is a function of tie strength; F4 multiplies against it).</li>
-  <li><strong>No backdrop over the graph.</strong> Old shared SidePanel dimmed everything to a 40% black overlay — that's gone from the World tab (kept for People + Artifacts). This is deliberate — the whole point is being able to <em>see</em> the highlighted subgraph while reading node detail.</li>
-  <li><strong>The "you" node.</strong> Clicking a person that's connected to "you" (through any chain) should light "you" up. If not, the graph data has no you-connection for that node — expected on cold accounts.</li>
+  <li><strong>Additive glow, not subtractive dim.</strong> Non-highlighted nodes look exactly the same as they did without any click — no opacity change. Only the highlighted nodes get a yellow halo added.</li>
+  <li><strong>Glow decays by degree.</strong> Clicked node: brightest, biggest halo. 1°: strong. 2°: medium. 3°: subtle. 4°+ and disconnected islands: no halo.</li>
+  <li><strong>Node size by mention frequency.</strong> A person you mention a lot (say Ruchi, if she's in your graph) will render noticeably bigger than someone mentioned once. Capped so no single outlier dominates. The "you" anchor stays at 24px.</li>
+  <li><strong>Edges are uniform width.</strong> Reverted from Item 8's strength-scaled stroke-width. Tie-strength is still subtly signalled via stroke-opacity (heavier ties are slightly more opaque) but every edge is 1px wide.</li>
+  <li><strong>No backdrop over the graph.</strong> Panel opens without dimming anything. People + Artifacts tabs still darken behind their SidePanel — that's kept intentionally.</li>
+  <li><strong>The "you" node.</strong> Clicking a person connected to "you" (through any chain within 3 hops) lights "you" up. If not, the graph data has no you-connection to that node within 3 hops.</li>
 </ul>
+<p style="color: var(--text-dim); font-size: 13px; margin-top: 12px;">
+Not liking any of it? <code>NODE_SIZE_MODE</code> in <code>src/lib/graph-node-size.js</code> flips the size behaviour in one line. Glow is a single useEffect at the bottom of <code>ForceGraph.jsx</code>.
+</p>
 </section>
 
 <section id="validate-f3">
