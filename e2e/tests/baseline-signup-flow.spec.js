@@ -1,23 +1,22 @@
 /**
- * ISS-236 Phase 0 — BASELINE capture of the current (broken) signup flow.
+ * ISS-236 — signup/auth flow regression suite.
  *
- * Every test in this file asserts the CURRENT BROKEN BEHAVIOR and passes today.
- * After Phase A ships, these assertions get flipped to assert the fixed
- * behavior — this file is the regression lock for the signup funnel.
+ * TEST Supabase has "Confirm email" OFF (coordinator-confirmed 2026-07-10):
+ * signUp() immediately followed by signIn() succeeds with zero email
+ * round-trip. baseline-02 asserts that success path (auto-signin -> /vault/chat).
  *
- * Email-verification-click simulation — choice and rationale (dispatch step 4):
- * We use a variant of pattern (A): GoTrue's admin `generate_link` endpoint
- * (POST /auth/v1/admin/generate_link, service_role key) rather than
- * `email_confirm: true` + hand-navigating to a guessed callback URL.
- * `generate_link` returns the EXACT `action_link` the verification email
- * would contain — including the real `redirect_to` target, which defaults to
- * the Supabase project's Site URL because the backend's `auth.sign_up()`
- * passes no `email_redirect_to` (src/api/routes/auth.py, Step 3). Where that
- * link actually dumps the user IS the bug under test, so simulating with a
- * guessed URL would assume the answer. Navigating the browser to the
- * action_link reproduces the email click end-to-end: GoTrue verifies the
- * token, marks the email confirmed, and 302-redirects with tokens in the URL
- * fragment — exactly what a real user experiences.
+ * baseline-03/04/05 exercise a DIFFERENT real path: magic-link sign-in
+ * (LoginForm's "Send magic link instead", independent of the confirm-email
+ * setting). We simulate the email click via GoTrue's admin `generate_link`
+ * endpoint (POST /auth/v1/admin/generate_link, service_role key) rather than
+ * hand-navigating to a guessed callback URL — `generate_link` returns the
+ * EXACT `action_link` the email would contain, including the real
+ * `redirect_to` target (defaults to the project's Site URL since the backend
+ * passes no `email_redirect_to`). Where that link actually lands the user IS
+ * the thing under test, so simulating with a guessed URL would assume the
+ * answer. Navigating the browser to the action_link reproduces the email
+ * click end-to-end: GoTrue verifies the token and redirects with session
+ * tokens in the URL fragment, exactly like a real click.
  *
  * Runtime requirements (documented in docs/dispatch/iss-236-baseline-findings.md):
  *   - frontend dev server on http://localhost:5173
@@ -105,7 +104,7 @@ async function generateEmailVerificationLink(request) {
   throw new Error('generate_link failed for both signup and magiclink types')
 }
 
-test.describe.serial('ISS-236 baseline: current broken signup flow', () => {
+test.describe.serial('ISS-236: signup + auth-callback regression suite', () => {
   test.beforeAll(async ({ request }) => {
     expect(SERVICE_KEY, 'E2E_SUPABASE_SERVICE_KEY must be set (SUPABASE_KEY from backend .env.test)').toBeTruthy()
     // Never run this against anything but the TEST project.
@@ -134,7 +133,7 @@ test.describe.serial('ISS-236 baseline: current broken signup flow', () => {
     await page.screenshot({ path: `${SHOT_DIR}/baseline-01-try-hridai-scrolled.png`, fullPage: false })
   })
 
-  test('baseline-02-signup-submit-triggers-email-verification', async ({ page }) => {
+  test('baseline-02-signup-submit-lands-in-app', async ({ page }) => {
     await page.goto('/signup')
     await page.fill('#access-code', ACCESS_CODE)
 
@@ -158,25 +157,26 @@ test.describe.serial('ISS-236 baseline: current broken signup flow', () => {
     // scope to the form to hit the submit.
     await page.locator('form').getByRole('button', { name: 'Create account' }).click()
 
-    // CURRENT REALITY: account is created, auto-sign-in fails because email
-    // confirmation is required, and the user is told to go to their inbox.
-    await expect(
-      page.getByText('Account created! Check your email for a confirmation link, then come back and sign in.')
-    ).toBeVisible({ timeout: 20_000 })
-    // Still parked on /signup — no session, no redirect.
-    expect(page.url()).toContain('/signup')
+    // TEST Supabase has "Confirm email" OFF (coordinator-confirmed via
+    // screenshot 2026-07-10): signUp() immediately followed by signIn()
+    // succeeds with no email round-trip at all. Auto-signin landing in
+    // /vault/chat IS the correct, expected outcome here — not a bug to work
+    // around. (PROD's email-confirmation posture may differ; that path is
+    // covered by the OAuth-callback correctness check, not this test.)
+    await page.waitForURL(/\/vault\/chat/, { timeout: 20_000 })
+    await expect(page.getByRole('heading', { name: 'Your HridAI' })).toBeVisible()
 
-    await page.screenshot({ path: `${SHOT_DIR}/baseline-02-check-your-email.png` })
+    await page.screenshot({ path: `${SHOT_DIR}/baseline-02-signup-success-vault.png` })
   })
 
-  test('baseline-03-verification-click-lands-on-signup-not-app', async ({ page, request }) => {
+  test('baseline-03-magic-link-click-lands-on-homepage-not-app', async ({ page, request }) => {
     const { link, type } = await generateEmailVerificationLink(request)
 
     // Record where GoTrue will redirect (the email's redirect_to target =
     // project Site URL, since backend passes no email_redirect_to).
     const linkUrl = new URL(link)
     const redirectTo = linkUrl.searchParams.get('redirect_to')
-    console.log(`[baseline-03] verification link type=${type} redirect_to=${redirectTo}`)
+    console.log(`[baseline-03] link type=${type} redirect_to=${redirectTo}`)
 
     let landedUrl
     try {
@@ -184,14 +184,17 @@ test.describe.serial('ISS-236 baseline: current broken signup flow', () => {
       await page.waitForTimeout(2000) // let any client-side auth/redirects run
       landedUrl = page.url()
     } catch (err) {
-      // If the Site URL points somewhere unreachable, the email link is a
-      // dead end — an even harder failure than "lands on signup".
+      // If the Site URL points somewhere unreachable, the link is a dead
+      // end — an even harder failure than "lands on the homepage".
       landedUrl = `UNREACHABLE (${redirectTo}) — ${err.message.split('\n')[0]}`
     }
     console.log(`[baseline-03] landed on: ${landedUrl}`)
 
-    // BROKEN TODAY: clicking the verification link does NOT put the user in
-    // the app. (The app = /vault/chat; /hridai is the authed try-it-out.)
+    // BROKEN TODAY (real, current bug — independent of confirm-email
+    // setting): clicking a magic-link-style auth callback does NOT put the
+    // user in the app. (The app = /vault/chat; /hridai is the authed
+    // try-it-out.) This is the exact path LoginForm's "Send magic link
+    // instead" produces for a real user.
     expect(landedUrl).not.toContain('/vault/chat')
     expect(landedUrl).not.toContain('/hridai')
 
