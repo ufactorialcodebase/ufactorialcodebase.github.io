@@ -9,6 +9,7 @@ import DemoSimulatedVault from "./pages/demo/DemoSimulatedVault";
 import LandingPageV2 from "./pages/LandingPageV2";
 import AuthPage from "./pages/Signup";
 import AuthCallback from "./pages/AuthCallback";
+import CompleteSignup from "./pages/CompleteSignup";
 import Profile from "./pages/Profile";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -640,6 +641,7 @@ export default function App() {
         <Route path="/login" element={<Navigate to="/signup" replace />} />
         <Route path="/signup" element={<AuthPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/complete-signup" element={<CompleteSignup />} />
         <Route path="/profile" element={<Navigate to="/vault/profile" replace />} />
         <Route path="/demo" element={<CodeEntry />} />
         <Route path="/hridai" element={<AuthGuard><TryItOut /></AuthGuard>} />
