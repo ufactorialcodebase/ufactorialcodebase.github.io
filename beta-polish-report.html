@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beta polish — report</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b1120;
+    --bg-elev: #111827;
+    --bg-card: #1e293b;
+    --border: rgba(148, 163, 184, 0.16);
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --accent: #10b981;
+    --accent-2: #34d399;
+    --amber: #f59e0b;
+    --rose: #f87171;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  a { color: var(--accent-2); }
+  code, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px; }
+  pre { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 13px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
+  header.page { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px; }
+  header.page h1 { font-size: 28px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  header.page .meta { color: var(--text-muted); font-size: 14px; }
+  header.page .meta strong { color: var(--text); }
+  section { margin-bottom: 40px; }
+  section h2 { font-size: 20px; margin: 0 0 14px; letter-spacing: -0.005em; }
+  section h3 { font-size: 15px; margin: 20px 0 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .callout { border-left: 3px solid var(--accent); background: rgba(16, 185, 129, 0.06); padding: 12px 16px; border-radius: 0 8px 8px 0; margin-bottom: 20px; }
+  .callout.warn { border-left-color: var(--amber); background: rgba(245, 158, 11, 0.06); }
+  .callout.bad { border-left-color: var(--rose); background: rgba(248, 113, 113, 0.06); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kv { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .kv .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 4px; }
+  .kv .value { font-size: 20px; font-weight: 600; color: var(--text); }
+  .item { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin-bottom: 20px; }
+  .item-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .item-head .num { background: rgba(16, 185, 129, 0.18); color: var(--accent-2); font-weight: 700; padding: 2px 10px; border-radius: 999px; font-size: 12px; letter-spacing: 0.05em; }
+  .item-head h3 { font-size: 17px; margin: 0; color: var(--text); text-transform: none; letter-spacing: normal; }
+  .item-head .sha { margin-left: auto; font-family: ui-monospace, Menlo, monospace; color: var(--text-dim); font-size: 12px; background: rgba(255,255,255,0.04); padding: 2px 8px; border-radius: 4px; }
+  .item .desc { color: var(--text-muted); font-size: 14px; margin: 6px 0 14px; }
+  .item .meta-row { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-dim); font-size: 13px; margin-bottom: 12px; }
+  .item .meta-row span::before { content: "• "; color: var(--text-dim); }
+  .item .meta-row span:first-child::before { content: ""; }
+  .item .test-result { display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.14); color: var(--accent-2); padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .item .test-result::before { content: "✓"; }
+  .shot-wrap { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #000; }
+  .shot-wrap img { display: block; width: 100%; height: auto; }
+  .shot-caption { font-size: 12px; color: var(--text-dim); padding: 8px 12px; background: var(--bg-card); border-top: 1px solid var(--border); }
+  table.tests { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.tests th, table.tests td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  table.tests th { color: var(--text-dim); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  table.tests td.sha { font-family: ui-monospace, Menlo, monospace; color: var(--text-dim); }
+  table.tests td.pass { color: var(--accent-2); font-weight: 600; }
+  table.tests td.blocked { color: var(--amber); font-weight: 600; }
+  ul.follow { padding-left: 20px; }
+  ul.follow li { margin-bottom: 10px; color: var(--text-muted); }
+  ul.follow li strong { color: var(--text); }
+  nav.toc { position: sticky; top: 0; background: rgba(11, 17, 32, 0.92); backdrop-filter: blur(8px); padding: 12px 0; margin-bottom: 24px; border-bottom: 1px solid var(--border); z-index: 10; }
+  nav.toc a { color: var(--text-muted); text-decoration: none; margin-right: 16px; font-size: 13px; }
+  nav.toc a:hover { color: var(--accent-2); }
+</style>
+</head>
+<body>
+<main>
+
+<header class="page">
+  <h1>Beta polish — status report</h1>
+  <p class="meta">
+    Frontend repo <strong>ufactorialcodebase.github.io</strong> •
+    Test account <strong>pratikcpednekar_test2</strong> •
+    Backend <strong>SUPABASE_ENV=test</strong>
+  </p>
+</header>
+
+<nav class="toc">
+  <a href="#status">Status</a>
+  <a href="#items">Batch-1 items</a>
+  <a href="#followup">Post-merge follow-up</a>
+  <a href="#blocker">Backend blocker</a>
+  <a href="#new">Next batch (4 features)</a>
+</nav>
+
+<section id="status">
+<h2>Status</h2>
+
+<div class="grid">
+  <div class="kv"><div class="label">Batch-1 (8 items)</div><div class="value">merged</div></div>
+  <div class="kv"><div class="label">ISS-230 + 231</div><div class="value">merged</div></div>
+  <div class="kv"><div class="label">Post-merge follow-up</div><div class="value">shipped</div></div>
+  <div class="kv"><div class="label">Live re-verify</div><div class="value" style="color:var(--amber)">blocked</div></div>
+</div>
+
+<div class="callout">
+Batch-1 landed to <code>main</code> at <code>997c531</code> — all 8 items live. Backend ISS-230 (entity mention_count) and ISS-231 (tool_complete result.artifact_id) both merged. Post-merge frontend follow-up (People Frequency sort + Item 6 UUID assertion) shipped on branch <code>product-experience/beta-polish-followup</code> as <code>2dc1a04</code>.
+</div>
+
+<div class="callout warn">
+Live re-verification of the followup commit is blocked on a separate backend regression — see <a href="#blocker">Backend blocker</a> below.
+</div>
+</section>
+
+<section id="items">
+<h2>Batch-1 — 8 items shipped</h2>
+
+<table class="tests">
+  <thead><tr><th>#</th><th>Item</th><th>Commit</th><th>Test</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Markdown in AI messages</td><td class="sha">eb02054</td><td><code>01-markdown.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>2</td><td>In-bubble timestamps</td><td class="sha">6ffc345</td><td><code>02-timestamps.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>3</td><td>Date ribbon dividers</td><td class="sha">92457ac</td><td><code>03-date-ribbon.spec.js</code> + vitest boundaries</td><td class="pass">shipped</td></tr>
+    <tr><td>4</td><td>Tool-boundary space fix</td><td class="sha">bdbdb2c</td><td><code>04-tool-boundary-space.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>5</td><td>Sort controls (Topics + People)</td><td class="sha">f538e48</td><td><code>05-sort-controls.spec.js</code> (2 tests)</td><td class="pass">shipped</td></tr>
+    <tr><td>6</td><td>Artifact deep-link</td><td class="sha">40b235c</td><td><code>06-artifact-deep-link.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>7</td><td>World Entities-only filter</td><td class="sha">6b1944c</td><td><code>07-world-entities-only.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>8</td><td>Edge stroke-width by weight</td><td class="sha">99d4e6b</td><td><code>08-world-edge-weight.spec.js</code></td><td class="pass">shipped</td></tr>
+  </tbody>
+</table>
+
+<h3>Screenshots from the passing batch-1 run</h3>
+
+<div class="item">
+  <div class="item-head"><span class="num">01</span><h3>Markdown rendering</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/01-markdown.png" alt="Markdown screenshot" /><div class="shot-caption">AI reply renders parsed <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, <code>&lt;code&gt;</code>.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">02</span><h3>Message timestamps</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/02-timestamps.png" alt="Timestamps screenshot" /><div class="shot-caption">Right-aligned HH:MM stamp inside every bubble.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">03</span><h3>Date ribbons</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/03-date-ribbon.png" alt="Ribbon screenshot" /><div class="shot-caption">Sticky "Today" pill at the top of the current-day messages.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">04</span><h3>Tool-boundary space fix</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/04-tool-boundary.png" alt="Boundary screenshot" /><div class="shot-caption">Text-tool-text turn — no <code>[a-z]\.[A-Z]</code> concat pattern.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">05a</span><h3>Topics sort</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/05-topics-sort.png" alt="Topics sort screenshot" /><div class="shot-caption">Topics tab — Recency active after click; Frequency chip inactive.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">05b</span><h3>People sort (batch-1 state — Recency only)</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/05-people-sort.png" alt="People sort screenshot" /><div class="shot-caption">People tab as of batch-1 merge — Recency chip only. Post-merge follow-up adds Frequency (default) — see below.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">06</span><h3>Artifact deep-link (batch-1 state — title fallback)</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/06-artifact-deep-link.png" alt="Deep-link screenshot" /><div class="shot-caption">Artifact SidePanel opened via <code>?openTitle=</code>. Post-merge follow-up tightens to <code>?open=&lt;uuid&gt;</code>.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">07</span><h3>World Entities-only filter</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/07-world-entities-only.png" alt="Entities-only screenshot" /><div class="shot-caption">Topic nodes hidden, entity nodes remain.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">08</span><h3>Edge weight scaling</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/08-world-edge-weight.png" alt="Edge weight screenshot" /><div class="shot-caption">Visibly varied edge thickness across the visible ties.</div></div>
+</div>
+
+</section>
+
+<section id="followup">
+<h2>Post-merge follow-up (branch <code>product-experience/beta-polish-followup</code>)</h2>
+
+<p class="desc" style="color: var(--text-muted); margin-bottom: 16px;">
+Once backend ISS-230 (<code>334084f</code>) and ISS-231 (<code>6646d1e</code> + <code>82ff64e</code>) merged to <code>main</code>, two frontend deltas unlock the id-based deep-link and the Frequency sort on People.
+</p>
+
+<div class="item">
+  <div class="item-head"><span class="num">A</span><h3>PeopleTab — Frequency sort (default) + Recency</h3><span class="sha">2dc1a04</span></div>
+  <p class="desc">
+    <code>ENTITY_SORT_OPTIONS</code> gains <code>{value: 'frequency', label: 'Frequency'}</code>; default state flips to <code>'frequency'</code>; the <code>useMemo</code> sorter branches on <code>sort === 'frequency'</code> (mention_count desc) vs <code>'recency'</code> (last_mentioned desc). Mirrors the Topics tab pattern.
+    Playwright test flipped from "asserts Recency only" to "Frequency default-active + click flips to Recency."
+  </p>
+  <div class="meta-row">
+    <span><code>src/components/vault/people/PeopleTab.jsx</code></span>
+    <span><code>e2e/tests/05-sort-controls.spec.js</code></span>
+    <span style="color: var(--amber);">live re-verify blocked (see below)</span>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">B</span><h3>Item 6 — assert id-based deep-link, not title fallback</h3><span class="sha">2dc1a04</span></div>
+  <p class="desc">
+    href regex tightened from lenient <code>/open(Title)?=/</code> to strict <code>/\?open=[0-9a-fA-F][0-9a-fA-F-]{19,}/</code>. If backend ever regresses to <code>result: null</code> on artifact tools, the test flips red immediately rather than silently succeeding on the fallback path. <code>waitForURL</code> uses the same strict pattern.
+  </p>
+  <div class="meta-row">
+    <span><code>e2e/tests/06-artifact-deep-link.spec.js</code></span>
+    <span style="color: var(--amber);">live re-verify blocked (see below)</span>
+  </div>
+</div>
+
+</section>
+
+<section id="blocker">
+<h2>Backend blocker (predates this commit)</h2>
+
+<div class="callout bad">
+<strong>RLS regression on <code>conversation_sessions</code>.</strong> Every <code>POST /api/chat/greeting</code> returns 500 with <code>new row violates row-level security policy for table "conversation_sessions"</code> (Postgres 42501). The local test backend is on the ISS-231 fix branch (<code>7c3e241</code>), which is code-identical to <code>main</code> for the artifact path — so this is unrelated to ISS-231. Same failure observed for other test users (<code>e2e_mc04a_*</code>) in the same log window, so it's not <code>pratikcpednekar_test2</code>-specific.
+</div>
+
+<h3>What this blocks</h3>
+<ul class="follow">
+  <li>Every playwright test that seeds via chat: Items 1, 4, 5-Topics (beforeAll seed), 6, 7 (beforeAll seed).</li>
+  <li>People sort test — the shared beforeAll in <code>05-sort-controls.spec.js</code> seeds entities via chat; when seed times out, the People test's data is empty and the SortToggle doesn't mount.</li>
+  <li>Item 8 — depends on entities/topics existing from prior seeds; no new data means the world graph is empty.</li>
+</ul>
+
+<h3>What this does NOT block</h3>
+<ul class="follow">
+  <li>The 2 shipped commits are code-review-verifiable — small, focused, forward-compatible changes.</li>
+  <li>Batch-1 items already merged; no live regression on prod (Railway is on <code>main</code>).</li>
+  <li>Vitest suite (format-utils boundary tests etc.) — unaffected by backend state.</li>
+</ul>
+
+<h3>Suggested fix path</h3>
+<ul class="follow">
+  <li>Trace where <code>conversation_sessions</code> gets its INSERT — likely a <code>Session</code> adapter using a Supabase client that lost its <code>SET LOCAL app.current_user_id</code> or was migrated to a non-service-role client.</li>
+  <li>Migration <code>011_enable_rls.sql</code> defines <code>conversation_sessions_user_isolation</code> policy on <code>USING (user_id = current_setting('app.current_user_id', true))</code> — the setting has to be set on the connection before every session insert or the RLS check fails.</li>
+  <li>Verify the failure reproduces on prod / Railway — if prod is fine, the regression is local-env or SUPABASE_ENV=test-only. If prod is also failing, this is a live outage.</li>
+</ul>
+</section>
+
+<section id="new">
+<h2>Next batch — 4 features (pending approval to start)</h2>
+
+<div class="callout">
+Coming next batch — pending answers to the follow-up questions in the chat thread:
+</div>
+
+<ul class="follow">
+  <li><strong>List → checklist mode</strong> — toggle a list into checklist behavior (checked items sink; unchecked float). Needs backend fields (<code>lists.is_checklist</code>, <code>list_items.is_checked</code>) — needs an ISS filed.</li>
+  <li><strong>Edit list item</strong> — currently only delete. Need to confirm backend has <code>list_update_item</code> or similar; file ISS if not.</li>
+  <li><strong>Edit artifact directly</strong> — pure frontend, backend PUT already exists. Scope question: simple textarea vs markdown editor.</li>
+  <li><strong>World view interactive highlight</strong> — click a node → light up that node + 2nd + 3rd degree neighbors, dim the rest. Mobile: bottom-sheet detail view, expandable to full screen. Pure frontend.</li>
+</ul>
+</section>
+
+</main>
+</body>
+</html>
