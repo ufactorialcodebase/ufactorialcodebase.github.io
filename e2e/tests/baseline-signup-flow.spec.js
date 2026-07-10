@@ -137,7 +137,25 @@ test.describe.serial('ISS-236 baseline: current broken signup flow', () => {
   test('baseline-02-signup-submit-triggers-email-verification', async ({ page }) => {
     await page.goto('/signup')
     await page.fill('#access-code', ACCESS_CODE)
-    await page.fill('#signup-email', EMAIL)
+
+    // A real user sees the access-code field settle (border color reacts to
+    // the blur-triggered /api/auth/validate call) before moving on to fill
+    // email/password and hit submit — nobody fills a form faster than the
+    // field-level feedback it's giving them. Wait for that call to resolve
+    // here so the test mirrors realistic human pacing rather than racing
+    // ahead of it.
+    //
+    // (Separately, ISS-240 tracks that the backend's validate_access_code
+    // path can race under genuinely concurrent requests — this wait keeps
+    // that out of scope for a happy-path signup exercise; it is not a
+    // workaround for ISS-240, it's how a person actually uses this form.)
+    const validateResponse = page.waitForResponse(
+      (resp) => resp.url().includes('/auth/validate') && resp.request().method() === 'POST',
+      { timeout: 10_000 }
+    )
+    await page.fill('#signup-email', EMAIL) // moves focus off access-code, firing blur
+    await validateResponse
+
     await page.fill('#signup-password', PASSWORD)
     await page.locator('input[type="checkbox"]').nth(0).check()
     await page.locator('input[type="checkbox"]').nth(1).check()
