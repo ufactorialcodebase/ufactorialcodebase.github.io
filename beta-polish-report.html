@@ -83,8 +83,9 @@
   <a href="#status">Status</a>
   <a href="#items">Batch-1 items</a>
   <a href="#followup">Post-merge follow-up</a>
-  <a href="#blocker">Backend blocker</a>
-  <a href="#new">Next batch (4 features)</a>
+  <a href="#new">Batch-2 progress</a>
+  <a href="#validate-f4">Validate F4</a>
+  <a href="#validate-f3">Validate F3</a>
 </nav>
 
 <section id="status">
@@ -206,32 +207,15 @@ Once backend ISS-230 (<code>334084f</code>) and ISS-231 (<code>6646d1e</code> + 
 </section>
 
 <section id="blocker">
-<h2>Backend blocker (predates this commit)</h2>
+<h2>Backend "RLS regression" — resolved (was environmental)</h2>
 
-<div class="callout bad">
-<strong>RLS regression on <code>conversation_sessions</code>.</strong> Every <code>POST /api/chat/greeting</code> returns 500 with <code>new row violates row-level security policy for table "conversation_sessions"</code> (Postgres 42501). The local test backend is on the ISS-231 fix branch (<code>7c3e241</code>), which is code-identical to <code>main</code> for the artifact path — so this is unrelated to ISS-231. Same failure observed for other test users (<code>e2e_mc04a_*</code>) in the same log window, so it's not <code>pratikcpednekar_test2</code>-specific.
+<div class="callout">
+Coordinator confirmed the code path was healthy — INSERTs against <code>conversation_sessions</code> succeed cleanly with the service_role key. My local backend was misconfigured (running with the anon key, probably from stale env). Restarting with <code>SUPABASE_ENV=test</code> + the reload uvicorn command unblocked greeting + stream. Live traffic on <code>/api/chat/*</code> now 200 across the board (verified in <code>/tmp/beta-polish-backend.log</code>).
 </div>
 
-<h3>What this blocks</h3>
-<ul class="follow">
-  <li>Every playwright test that seeds via chat: Items 1, 4, 5-Topics (beforeAll seed), 6, 7 (beforeAll seed).</li>
-  <li>People sort test — the shared beforeAll in <code>05-sort-controls.spec.js</code> seeds entities via chat; when seed times out, the People test's data is empty and the SortToggle doesn't mount.</li>
-  <li>Item 8 — depends on entities/topics existing from prior seeds; no new data means the world graph is empty.</li>
-</ul>
-
-<h3>What this does NOT block</h3>
-<ul class="follow">
-  <li>The 2 shipped commits are code-review-verifiable — small, focused, forward-compatible changes.</li>
-  <li>Batch-1 items already merged; no live regression on prod (Railway is on <code>main</code>).</li>
-  <li>Vitest suite (format-utils boundary tests etc.) — unaffected by backend state.</li>
-</ul>
-
-<h3>Suggested fix path</h3>
-<ul class="follow">
-  <li>Trace where <code>conversation_sessions</code> gets its INSERT — likely a <code>Session</code> adapter using a Supabase client that lost its <code>SET LOCAL app.current_user_id</code> or was migrated to a non-service-role client.</li>
-  <li>Migration <code>011_enable_rls.sql</code> defines <code>conversation_sessions_user_isolation</code> policy on <code>USING (user_id = current_setting('app.current_user_id', true))</code> — the setting has to be set on the connection before every session insert or the RLS check fails.</li>
-  <li>Verify the failure reproduces on prod / Railway — if prod is fine, the regression is local-env or SUPABASE_ENV=test-only. If prod is also failing, this is a live outage.</li>
-</ul>
+<div class="callout warn">
+Fresh finding while re-verifying: batch-1 <strong>Item 1 (markdown)</strong> still fails, but for a NEW reason — the LLM system prompt has been hardened to refuse "please repeat back verbatim" test prompts ("<em>I'm your life manager — I'm here to help you, not to talk about how I work internally.</em>"). The MARKDOWN CODE is fine (Item 1 shipped in <code>eb02054</code>, batch-1 was merged to main and works in prod). The <em>test</em> just needs a more resilient prompt (or a mocked stream). Filing as a low-priority followup — not blocking anything in flight.
+</div>
 </section>
 
 <section id="new">
@@ -255,10 +239,18 @@ Once backend ISS-230 (<code>334084f</code>) and ISS-231 (<code>6646d1e</code> + 
 </div>
 
 <div class="item">
-  <div class="item-head"><span class="num" style="background: rgba(245, 158, 11, 0.18); color: var(--amber);">F3</span><h3>Edit artifact — blocked on small backend gap</h3></div>
+  <div class="item-head"><span class="num">F3</span><h3>Edit artifact — shipped</h3><span class="sha">dc37d9f</span></div>
   <p class="desc">
-    <code>UpdateArtifactRequest</code> in <code>src/api/routes/vault.py</code> only exposes <code>title</code> + <code>metadata</code> — no <code>content</code>, no auto-versioning. The storage adapter (<code>src/storage/artifacts.py</code>) already accepts <code>content</code> / <code>summary</code> / <code>version</code>; the route just needs to expose + wire them.
+    Click Edit on any artifact card. Title becomes an input, content becomes a textarea. Save fires <code>PUT /vault/artifacts/{id}</code> with only the changed fields (so the backend's version-bump logic stays honest — metadata-only edits don't bump). Version pill visible in read + edit modes so you can see it flip v1 → v2 on save. Cancel discards the draft. Delete is hidden in edit mode to avoid destructive-action confusion.
   </p>
+  <p class="desc" style="margin-top: 0; color: var(--text-dim);">
+    Depends on backend fix (<code>fix/vault-artifacts-update-content</code>) that extends <code>UpdateArtifactRequest</code> to accept <code>content</code>/<code>summary</code> + auto-bumps version. Frontend won't merge to main until backend lands on <code>main</code> + Railway redeploys.
+  </p>
+  <div class="meta-row">
+    <span><code>src/components/vault/artifacts/ArtifactReader.jsx</code></span>
+    <span><code>ArtifactsTab.jsx</code> — new <code>handleUpdate</code> propagates state</span>
+    <span class="test-result">2 playwright tests pass (fixture routed via <code>page.route</code>)</span>
+  </div>
 </div>
 
 <div class="item">
@@ -274,6 +266,63 @@ Once backend ISS-230 (<code>334084f</code>) and ISS-231 (<code>6646d1e</code> + 
     No <code>update_list_item</code> today. Need <code>PATCH /vault/lists/&lt;name&gt;/items</code> that takes <code>{old_value, new_value, notes}</code> and updates in place (preserves order + notes).
   </p>
 </div>
+</section>
+
+<section id="validate-f4">
+<h2>How to validate F4 (world interactive highlight)</h2>
+
+<div class="callout">
+Two ways: quick (mocked fixture, deterministic) or real (live chat data). Both need the batch-2 branch checked out — the code is not on <code>main</code> yet.
+</div>
+
+<h3>Path A — playwright with mocked fixture (30 seconds)</h3>
+<pre><code>cd "/Users/pratik/Projects/uFactorial website/ufactorialcodebase.github.io"
+git checkout product-experience/beta-polish-batch-2
+npx playwright test e2e/tests/f4-world-highlight.spec.js --headed
+</code></pre>
+<p class="desc">
+The <code>--headed</code> flag opens a real Chromium window so you can watch it happen. Two tests: (1) clicks Alice, the panel opens without a backdrop, node opacity ramps by degree (screenshot to <code>e2e/screenshots/f4-world-highlight-active.png</code>); (2) clicks the SVG background, panel closes, all nodes back to full opacity. Fixture graph is 11 nodes / 10 edges hand-drawn to exercise every degree from 1° to 3°.
+</p>
+
+<h3>Path B — real data in the vault (2 minutes)</h3>
+<ol style="color: var(--text-muted); padding-left: 22px; margin-bottom: 20px;">
+  <li>Backend running (already up on port 8000 from the correct env — verified in the report banner).</li>
+  <li>Frontend running: <code>cd "/Users/pratik/Projects/uFactorial website/ufactorialcodebase.github.io" &amp;&amp; git checkout product-experience/beta-polish-batch-2 &amp;&amp; npm run dev</code>.</li>
+  <li>Open <a href="http://localhost:5173/vault/world">http://localhost:5173/vault/world</a> in a signed-in browser. If your <code>pratikcpednekar_test2</code> account has no data (RLS was blocking earlier seeds), send a couple of chat messages first (<a href="http://localhost:5173/vault/chat">/vault/chat</a>) mentioning several people/places — then come back to World.</li>
+  <li><strong>Click any node</strong> that isn't "you". Watch: the clicked node stays fully opaque, its 1° neighbours dim gently, 2° dim more, 3° dim more still, everything else fades to a floor. Details panel opens on the right (desktop) or from the bottom (mobile).</li>
+  <li><strong>Click another node</strong> — highlight re-anchors to that node, panel content updates.</li>
+  <li><strong>Click empty canvas</strong> — highlight clears, panel closes.</li>
+  <li><strong>Press Escape</strong> — panel closes (any time).</li>
+  <li><strong>Mobile eyeball</strong>: open dev tools, toggle device toolbar (⌘⇧M in Chrome), pick iPhone. Click a node — panel slides up from the bottom at ~40% viewport. Drag the grip handle up → snaps to full screen. Drag down → dismisses. World stays interactive behind.</li>
+</ol>
+
+<h3>What to look for (design intent)</h3>
+<ul class="follow">
+  <li><strong>Colors preserved.</strong> Person-blue / org-green / place-orange / topic-violet stay meaningful — the ramp is opacity only, not tint.</li>
+  <li><strong>Edge opacity respects tie strength AND degree.</strong> A strong edge to a 3° neighbour should still be visibly dimmer than a strong edge to a 1° neighbour (per Item 8, base opacity is a function of tie strength; F4 multiplies against it).</li>
+  <li><strong>No backdrop over the graph.</strong> Old shared SidePanel dimmed everything to a 40% black overlay — that's gone from the World tab (kept for People + Artifacts). This is deliberate — the whole point is being able to <em>see</em> the highlighted subgraph while reading node detail.</li>
+  <li><strong>The "you" node.</strong> Clicking a person that's connected to "you" (through any chain) should light "you" up. If not, the graph data has no you-connection for that node — expected on cold accounts.</li>
+</ul>
+</section>
+
+<section id="validate-f3">
+<h2>How to validate F3 (edit artifact)</h2>
+
+<h3>Playwright (fixture-routed)</h3>
+<pre><code>cd "/Users/pratik/Projects/uFactorial website/ufactorialcodebase.github.io"
+git checkout product-experience/beta-polish-batch-2
+npx playwright test e2e/tests/f3-artifact-edit.spec.js --headed
+</code></pre>
+
+<h3>Real data</h3>
+<ol style="color: var(--text-muted); padding-left: 22px; margin-bottom: 20px;">
+  <li>Requires the F3 backend fix (branch <code>fix/vault-artifacts-update-content</code>) to be running. If your local uvicorn is on that branch with <code>--reload</code>, you're covered — otherwise switch to it and let uvicorn reload.</li>
+  <li>Navigate to <a href="http://localhost:5173/vault/artifacts">/vault/artifacts</a>. Click any artifact card.</li>
+  <li>Click the small <strong>Edit</strong> button (pencil icon, top-right of the panel).</li>
+  <li>Title becomes an input; content becomes a textarea. Version pill shows the current version (e.g. v1).</li>
+  <li>Change either. Click <strong>Save</strong>. On success: panel returns to read mode, version pill bumps (v1 → v2), toast confirms.</li>
+  <li>Click Cancel to discard changes — no PUT fires, version unchanged.</li>
+</ol>
 </section>
 
 </main>
