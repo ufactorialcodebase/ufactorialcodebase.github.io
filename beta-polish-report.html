@@ -235,18 +235,45 @@ Once backend ISS-230 (<code>334084f</code>) and ISS-231 (<code>6646d1e</code> + 
 </section>
 
 <section id="new">
-<h2>Next batch — 4 features (pending approval to start)</h2>
+<h2>Batch-2 progress</h2>
 
-<div class="callout">
-Coming next batch — pending answers to the follow-up questions in the chat thread:
+<div class="item">
+  <div class="item-head"><span class="num">F4</span><h3>World interactive highlight — shipped</h3><span class="sha">eb96dc4</span></div>
+  <p class="desc">
+    Click a node → undirected BFS from that node, opacity ramp 1.0 / 0.75 / 0.4 / 0.2 across 0° / 1° / 2° / 3°, rest fades to 0.08. Colors preserved. Details panel has no backdrop — graph stays visible + interactive. Desktop: right-side spring panel. Mobile: framer-motion bottom sheet at 60vh (~40% visible), drag up to full or drag down to dismiss. Escape closes.
+  </p>
+  <div class="meta-row">
+    <span><code>src/lib/graph-highlight.js</code> + 14 vitest cases</span>
+    <span><code>ForceGraph.jsx</code> — imperative opacity, no d3 re-mount</span>
+    <span><code>WorldNodePanel.jsx</code> (new)</span>
+    <span class="test-result">2 playwright tests pass (fixture mocked)</span>
+  </div>
+  <div class="shot-wrap">
+    <img src="e2e/screenshots/f4-world-highlight-active.png" alt="F4 screenshot" />
+    <div class="shot-caption">Clicked node is fully opaque; neighbours ramp down by degree; disconnected + far nodes fade to the REST floor (0.08).</div>
+  </div>
 </div>
 
-<ul class="follow">
-  <li><strong>List → checklist mode</strong> — toggle a list into checklist behavior (checked items sink; unchecked float). Needs backend fields (<code>lists.is_checklist</code>, <code>list_items.is_checked</code>) — needs an ISS filed.</li>
-  <li><strong>Edit list item</strong> — currently only delete. Need to confirm backend has <code>list_update_item</code> or similar; file ISS if not.</li>
-  <li><strong>Edit artifact directly</strong> — pure frontend, backend PUT already exists. Scope question: simple textarea vs markdown editor.</li>
-  <li><strong>World view interactive highlight</strong> — click a node → light up that node + 2nd + 3rd degree neighbors, dim the rest. Mobile: bottom-sheet detail view, expandable to full screen. Pure frontend.</li>
-</ul>
+<div class="item">
+  <div class="item-head"><span class="num" style="background: rgba(245, 158, 11, 0.18); color: var(--amber);">F3</span><h3>Edit artifact — blocked on small backend gap</h3></div>
+  <p class="desc">
+    <code>UpdateArtifactRequest</code> in <code>src/api/routes/vault.py</code> only exposes <code>title</code> + <code>metadata</code> — no <code>content</code>, no auto-versioning. The storage adapter (<code>src/storage/artifacts.py</code>) already accepts <code>content</code> / <code>summary</code> / <code>version</code>; the route just needs to expose + wire them.
+  </p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num" style="background: rgba(245, 158, 11, 0.18); color: var(--amber);">F1</span><h3>List → checklist mode — blocked on backend fields</h3></div>
+  <p class="desc">
+    Path A: <code>lists.is_checklist BOOLEAN DEFAULT false</code> + <code>lists.checked_values TEXT[]</code>. Preserve <code>checked_values</code> on toggle-off (per Q1b). Toggle on list detail page.
+  </p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num" style="background: rgba(245, 158, 11, 0.18); color: var(--amber);">F2</span><h3>Edit list item — blocked on backend endpoint</h3></div>
+  <p class="desc">
+    No <code>update_list_item</code> today. Need <code>PATCH /vault/lists/&lt;name&gt;/items</code> that takes <code>{old_value, new_value, notes}</code> and updates in place (preserves order + notes).
+  </p>
+</div>
 </section>
 
 </main>
