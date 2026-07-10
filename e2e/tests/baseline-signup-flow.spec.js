@@ -144,11 +144,6 @@ test.describe.serial('ISS-236 baseline: current broken signup flow', () => {
     // field-level feedback it's giving them. Wait for that call to resolve
     // here so the test mirrors realistic human pacing rather than racing
     // ahead of it.
-    //
-    // (Separately, ISS-240 tracks that the backend's validate_access_code
-    // path can race under genuinely concurrent requests — this wait keeps
-    // that out of scope for a happy-path signup exercise; it is not a
-    // workaround for ISS-240, it's how a person actually uses this form.)
     const validateResponse = page.waitForResponse(
       (resp) => resp.url().includes('/auth/validate') && resp.request().method() === 'POST',
       { timeout: 10_000 }
