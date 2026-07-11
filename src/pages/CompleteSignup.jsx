@@ -2,10 +2,28 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
+// Mirrors Signup.jsx's logAcceptance — kept local rather than extracted to
+// a shared module to keep this fix minimal (two small, independent call
+// sites, same 3-row shape).
+const ACCEPTANCE_VERSION = '2026-04-29'
+
+async function logAcceptance(userId) {
+  if (!supabase) return
+  const rows = [
+    { user_id: userId, document_type: 'tos', version_identifier: ACCEPTANCE_VERSION, version_date: ACCEPTANCE_VERSION },
+    { user_id: userId, document_type: 'privacy', version_identifier: ACCEPTANCE_VERSION, version_date: ACCEPTANCE_VERSION },
+    { user_id: userId, document_type: 'age_18_plus', version_identifier: ACCEPTANCE_VERSION, version_date: ACCEPTANCE_VERSION },
+  ]
+  const { error } = await supabase.from('acceptance_log').insert(rows)
+  if (error) console.error('Acceptance log failed:', error)
+}
+
 export default function CompleteSignup() {
   const navigate = useNavigate()
   const [session, setSession] = useState(null)
   const [code, setCode] = useState('')
+  const [ageConfirmed, setAgeConfirmed] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -17,11 +35,14 @@ export default function CompleteSignup() {
     })
   }, [navigate])
 
+  const canSubmit = ageConfirmed && termsAccepted && code.trim() && !loading
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!ageConfirmed || !termsAccepted) return
     setError(null)
     setLoading(true)
-    const { error: rpcError } = await supabase.rpc('complete_signup', {
+    const { data: userId, error: rpcError } = await supabase.rpc('complete_signup', {
       p_auth_id: session.user.id,
       p_email: session.user.email,
       p_access_code: code.trim().toUpperCase(),
@@ -33,6 +54,9 @@ export default function CompleteSignup() {
       setError(rpcError.hint || rpcError.message || 'Signup failed.')
       setLoading(false)
       return
+    }
+    if (userId) {
+      await logAcceptance(userId)
     }
     navigate('/vault/chat')
   }
@@ -67,10 +91,32 @@ export default function CompleteSignup() {
               placeholder="DEMO-XXXX-XXXX"
             />
           </div>
+
+          {/* Acceptance checkboxes — same wording/links as the Create Account form */}
+          <div className="space-y-3 pt-1">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" checked={ageConfirmed} onChange={(e) => setAgeConfirmed(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 cursor-pointer" />
+              <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">
+                I am at least 18 years old
+              </span>
+            </label>
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 cursor-pointer" />
+              <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">
+                I agree to the{' '}
+                <a href="https://ufactorial.com/terms" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Terms of Service</a>
+                {' '}and{' '}
+                <a href="https://ufactorial.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Privacy Policy</a>
+              </span>
+            </label>
+          </div>
+
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <button
             type="submit"
-            disabled={loading || !code.trim()}
+            disabled={!canSubmit}
             className="w-full py-3 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Continuing...' : 'Continue'}

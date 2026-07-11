@@ -123,8 +123,11 @@ test.describe.serial('ISS-236 (3a): Google OAuth signup flow', () => {
     await expect(page.getByText(email)).toBeVisible()
     await page.screenshot({ path: `${SHOT_DIR}/oauth-02-complete-signup-page.png` })
 
-    // Finish the flow: enter the access code, land in the app.
+    // Finish the flow: enter the access code, accept T&C/age (required —
+    // fresh OAuth signups must not skip legal consent), land in the app.
     await page.fill('#oauth-access-code', CODE)
+    await page.locator('input[type="checkbox"]').nth(0).check()
+    await page.locator('input[type="checkbox"]').nth(1).check()
     await page.getByRole('button', { name: 'Continue' }).click()
     await page.waitForURL(/\/vault\/chat/, { timeout: 20_000 })
     await page.screenshot({ path: `${SHOT_DIR}/oauth-02-landed-in-app.png` })
@@ -156,8 +159,42 @@ test.describe.serial('ISS-236 (3a): Google OAuth signup flow', () => {
     await page.waitForURL(/\/complete-signup/, { timeout: 15_000 })
 
     await page.fill('#oauth-access-code', 'E2E-OAUTH-NONEXISTENT-XYZ')
+    await page.locator('input[type="checkbox"]').nth(0).check()
+    await page.locator('input[type="checkbox"]').nth(1).check()
     await page.getByRole('button', { name: 'Continue' }).click()
     await expect(page.getByText(/does not exist|invalid access code/i)).toBeVisible({ timeout: 15_000 })
     await page.screenshot({ path: `${SHOT_DIR}/oauth-04-invalid-code-error.png` })
+  })
+
+  test('oauth-05-complete-signup-requires-tos-and-age-consent', async ({ page, request, baseURL }) => {
+    // Regression lock for a real compliance gap: fresh OAuth users landing
+    // on /complete-signup must not be able to finish signup without ever
+    // seeing T&C/Privacy/age consent (previously only shown on the Create
+    // Account tab; OAuth signups skipped it entirely).
+    const email = `e2e.oauth05.${RUN_ID}@e2e.ufactorial.com`
+    const callbackUrl = await getCallbackUrlForNewSession(request, baseURL, email, `OAuthTest!05${RUN_ID}`)
+
+    await page.goto(callbackUrl, { waitUntil: 'domcontentloaded' })
+    await page.waitForURL(/\/complete-signup/, { timeout: 15_000 })
+
+    await expect(page.getByText('I am at least 18 years old')).toBeVisible()
+    await expect(page.getByText(/I agree to the/)).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Terms of Service' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Privacy Policy' })).toBeVisible()
+
+    await page.fill('#oauth-access-code', CODE)
+    const continueButton = page.getByRole('button', { name: 'Continue' })
+
+    // Neither box checked: submit is blocked.
+    await expect(continueButton).toBeDisabled()
+
+    // Only one box checked: still blocked.
+    await page.locator('input[type="checkbox"]').nth(0).check()
+    await expect(continueButton).toBeDisabled()
+
+    // Both checked: submit is now allowed.
+    await page.locator('input[type="checkbox"]').nth(1).check()
+    await expect(continueButton).toBeEnabled()
+    await page.screenshot({ path: `${SHOT_DIR}/oauth-05-consent-required.png` })
   })
 })
