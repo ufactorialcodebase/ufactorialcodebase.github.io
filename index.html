@@ -6,6 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HridAI — The AI you were promised</title>
 
+    <!--
+      SPA URL restore — GitHub Pages 404.html redirect unwinder.
+      404.html encodes the original path+hash into a ?p= query param on /.
+      This inline script runs SYNCHRONOUSLY before any module loads, so
+      Supabase's detectSessionInUrl (which reads window.location.hash at
+      createClient time) sees the correct URL. Without this, the OAuth
+      callback #access_token fragment is trapped inside ?p= and Supabase
+      never captures the session.
+    -->
+    <script>
+      (function () {
+        var qs = window.location.search;
+        if (qs.indexOf('?p=') === 0) {
+          try {
+            var decoded = decodeURIComponent(qs.slice(3));
+            window.history.replaceState(null, '', decoded);
+          } catch (e) {
+            // If decode fails, leave URL as-is; the SPA's RedirectHandler
+            // will still try to route.
+          }
+        }
+      })();
+    </script>
+
     <!-- Google Analytics (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-48ZPRP3C09"></script>
     <script>
