@@ -48,3 +48,20 @@ export async function toggleCheckedValue(listName, value) {
     body: { value },
   })
 }
+
+// F2 — rename a list item in place (position preserved). Backend returns
+// 200 with updated list, 404 if list or old_value missing, 409 on
+// collision with a different existing item. If the row is in checklist
+// mode and old_value was in checked_values, the checked state follows
+// the rename (backend concern; frontend just re-renders from the
+// returned list).
+export async function updateListItem(listName, oldValue, newValue, notes) {
+  return apiFetch(`/vault/lists/${encodeURIComponent(listName)}/items`, {
+    method: 'PATCH',
+    body: {
+      old_value: oldValue,
+      new_value: newValue,
+      notes: notes ?? null,
+    },
+  })
+}

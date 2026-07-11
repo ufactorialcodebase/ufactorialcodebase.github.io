@@ -1,12 +1,13 @@
 // src/components/vault/lists/ListDetail.jsx
-import { useState, useMemo } from 'react'
-import { X, Trash2, Plus, CheckSquare, Square, ListChecks } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { X, Trash2, Plus, CheckSquare, Square, ListChecks, Pencil, Check } from 'lucide-react'
 import { getCategoryStyle } from './list-utils'
 
 export default function ListDetail({
   list,
   onAddItem,
   onRemoveItem,
+  onUpdateItem,
   onDeleteList,
   onToggleChecklistMode,
   onToggleCheckedValue,
@@ -15,6 +16,46 @@ export default function ListDetail({
   const [newNotes, setNewNotes] = useState('')
   const [addingItem, setAddingItem] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
+
+  // F2 — inline item edit. Only one row can be in edit mode at a time;
+  // switching lists drops out of edit mode automatically.
+  const [editingValue, setEditingValue] = useState(null)
+  const [editDraftValue, setEditDraftValue] = useState('')
+  const [editDraftNotes, setEditDraftNotes] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
+  useEffect(() => {
+    setEditingValue(null)
+    setEditDraftValue('')
+    setEditDraftNotes('')
+  }, [list.id])
+
+  const startEdit = (item) => {
+    setEditingValue(item.value)
+    setEditDraftValue(item.value)
+    setEditDraftNotes(item.notes || '')
+  }
+  const cancelEdit = () => {
+    setEditingValue(null)
+    setEditDraftValue('')
+    setEditDraftNotes('')
+  }
+  const saveEdit = async (oldValue) => {
+    const newValue = editDraftValue.trim()
+    if (!newValue) return
+    const notes = editDraftNotes.trim() || null
+    if (newValue === oldValue && notes === ((list.items || []).find((i) => i.value === oldValue)?.notes || null)) {
+      // No-op edit — just close.
+      cancelEdit()
+      return
+    }
+    setSavingEdit(true)
+    try {
+      const ok = await onUpdateItem?.(list.name, oldValue, newValue, notes)
+      if (ok) cancelEdit()
+    } finally {
+      setSavingEdit(false)
+    }
+  }
 
   const items = list.items || []
   const style = getCategoryStyle(list.category)
@@ -111,17 +152,19 @@ export default function ListDetail({
         )}
         {sortedItems.map((item) => {
           const isChecked = isChecklist && checkedSet.has(item.value)
+          const isEditing = editingValue === item.value
           return (
             <div
               key={item.value}
               data-testid="list-item"
               data-item-value={item.value}
               data-checked={isChecked ? 'true' : 'false'}
+              data-editing={isEditing ? 'true' : 'false'}
               className={`flex items-start gap-2 bg-[var(--bg-tertiary)] rounded-lg px-3 py-2 group transition-opacity ${
                 isChecked ? 'opacity-60' : ''
               }`}
             >
-              {isChecklist && (
+              {isChecklist && !isEditing && (
                 <button
                   onClick={() => onToggleCheckedValue?.(list.name, item.value)}
                   data-testid="list-item-checkbox"
@@ -135,24 +178,84 @@ export default function ListDetail({
                 </button>
               )}
               <div className="flex-1 min-w-0">
-                <div
-                  className={`text-[var(--text-primary)] text-sm ${
-                    isChecked ? 'line-through' : ''
-                  }`}
-                >
-                  {item.value}
-                </div>
-                {item.notes && (
-                  <div className="text-[var(--text-tertiary)] text-xs mt-0.5">{item.notes}</div>
+                {isEditing ? (
+                  <form
+                    onSubmit={(e) => { e.preventDefault(); saveEdit(item.value) }}
+                    data-testid="list-item-edit-form"
+                    className="flex flex-col gap-1.5"
+                  >
+                    <input
+                      autoFocus
+                      value={editDraftValue}
+                      onChange={(e) => setEditDraftValue(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Escape') cancelEdit() }}
+                      placeholder="Item value"
+                      data-testid="list-item-edit-value"
+                      className="bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-md px-2 py-1 text-sm outline-none focus:border-[var(--accent-indigo)]"
+                    />
+                    <input
+                      value={editDraftNotes}
+                      onChange={(e) => setEditDraftNotes(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Escape') cancelEdit() }}
+                      placeholder="Notes (optional)"
+                      data-testid="list-item-edit-notes"
+                      className="bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border-subtle)] rounded-md px-2 py-1 text-xs outline-none focus:border-[var(--accent-indigo)]"
+                    />
+                    <div className="flex gap-1">
+                      <button
+                        type="submit"
+                        disabled={savingEdit || !editDraftValue.trim()}
+                        data-testid="list-item-edit-save"
+                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-[var(--accent-indigo)] text-white text-xs disabled:opacity-40 hover:opacity-90 transition-opacity"
+                      >
+                        <Check size={12} />
+                        {savingEdit ? 'Saving…' : 'Save'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEdit}
+                        data-testid="list-item-edit-cancel"
+                        className="flex items-center gap-1 px-2 py-1 rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)] text-xs hover:border-[var(--border-active)] transition-colors"
+                      >
+                        <X size={12} />
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div
+                      className={`text-[var(--text-primary)] text-sm ${
+                        isChecked ? 'line-through' : ''
+                      }`}
+                    >
+                      {item.value}
+                    </div>
+                    {item.notes && (
+                      <div className="text-[var(--text-tertiary)] text-xs mt-0.5">{item.notes}</div>
+                    )}
+                  </>
                 )}
               </div>
-              <button
-                onClick={() => onRemoveItem(list.name, item.value)}
-                className="text-[var(--text-tertiary)] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0 mt-0.5"
-                aria-label={`Remove "${item.value}"`}
-              >
-                <X size={14} />
-              </button>
+              {onUpdateItem && !isEditing && (
+                <button
+                  onClick={() => startEdit(item)}
+                  data-testid="list-item-edit"
+                  aria-label={`Edit "${item.value}"`}
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors opacity-0 group-hover:opacity-100 shrink-0 mt-0.5"
+                >
+                  <Pencil size={13} />
+                </button>
+              )}
+              {!isEditing && (
+                <button
+                  onClick={() => onRemoveItem(list.name, item.value)}
+                  className="text-[var(--text-tertiary)] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0 mt-0.5"
+                  aria-label={`Remove "${item.value}"`}
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
           )
         })}

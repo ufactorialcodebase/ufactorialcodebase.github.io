@@ -6,7 +6,7 @@ import EmptyState from '../EmptyState'
 import ListIndex from './ListIndex'
 import ListDetail from './ListDetail'
 import CreateListForm from './CreateListForm'
-import { getLists, createList, deleteList, addListItem, removeListItem, setChecklistMode, toggleCheckedValue } from '../../../lib/api/vault-lists'
+import { getLists, createList, deleteList, addListItem, removeListItem, setChecklistMode, toggleCheckedValue, updateListItem } from '../../../lib/api/vault-lists'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
 
 export default function ListsTab() {
@@ -118,6 +118,47 @@ export default function ListsTab() {
     }
   }
 
+  // F2 — rename an item in place, preserving array position. Optimistic
+  // with rollback. Returns true / false so ListDetail can drop out of
+  // edit mode only on success. 404 (missing list/item) and 409
+  // (collision with another item) each surface a specific toast.
+  const handleUpdateItem = async (listName, oldValue, newValue, notes) => {
+    const previous = lists
+    setLists((prev) => {
+      const updated = prev.map((l) => {
+        if (l.name !== listName) return l
+        const items = (l.items || []).map((item) =>
+          item.value === oldValue
+            ? { ...item, value: newValue, notes: notes ?? item.notes }
+            : item
+        )
+        const checked = l.checked_values || []
+        const nextChecked = checked.includes(oldValue)
+          ? checked.map((v) => (v === oldValue ? newValue : v))
+          : checked
+        return { ...l, items, checked_values: nextChecked }
+      })
+      setCached('lists', updated)
+      return updated
+    })
+    try {
+      await updateListItem(listName, oldValue, newValue, notes)
+      return true
+    } catch (err) {
+      setLists(previous)
+      setCached('lists', previous)
+      const msg = err.message || String(err)
+      if (msg.includes('409') || /already exists|collid/i.test(msg)) {
+        toast.error(`"${newValue}" already exists in this list`)
+      } else if (msg.includes('404') || /not.?found/i.test(msg)) {
+        toast.error(`"${oldValue}" is no longer in the list`)
+      } else {
+        toast.error(`Failed to rename "${oldValue}": ${msg}`)
+      }
+      return false
+    }
+  }
+
   // Toggle an item's checked state. Optimistic; rolls back on failure.
   // Idempotent server-side, so a double-tap ends up at the intended state.
   const handleToggleCheckedValue = async (listName, value) => {
@@ -220,6 +261,7 @@ export default function ListsTab() {
                 list={selectedList}
                 onAddItem={handleAddItem}
                 onRemoveItem={handleRemoveItem}
+                onUpdateItem={handleUpdateItem}
                 onDeleteList={handleDeleteList}
                 onToggleChecklistMode={handleToggleChecklistMode}
                 onToggleCheckedValue={handleToggleCheckedValue}
