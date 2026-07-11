@@ -113,4 +113,10 @@
    * bright text off the navy panel, which is the exact opposite need. */
   --graph-label-color: var(--text-primary);
   --graph-label-shadow: none;
+
+  /* World highlight glow (F4). Default dark-mode glow is bright yellow
+   * (#fbbf24) which vanishes on warm cream. Override to a deep amber
+   * that stays on-palette but has enough contrast against cream to
+   * read as a distinct halo around highlighted nodes. */
+  --graph-glow-color: #92400e;  /* amber-800 — deep enough to sit on cream */
 }

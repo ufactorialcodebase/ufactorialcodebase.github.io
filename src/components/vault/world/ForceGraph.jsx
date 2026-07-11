@@ -4,7 +4,7 @@ import { select } from 'd3-selection'
 import { zoom as d3Zoom, zoomIdentity } from 'd3-zoom'
 import { forceSimulation, forceManyBody, forceCenter, forceCollide, forceLink, forceX, forceY } from 'd3-force'
 import { drag as d3Drag } from 'd3-drag'
-import { glowTierForDistance, GLOW_TIERS, GLOW_COLOR } from '../../../lib/graph-highlight'
+import { glowTierForDistance, GLOW_TIERS, GLOW_COLOR, DIM_FILTER_ID, DIM_STATE } from '../../../lib/graph-highlight'
 import { computeNodeRadius } from '../../../lib/graph-node-size'
 
 const TYPE_COLORS = {
@@ -55,11 +55,20 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height, h
     const svg = select(svgRef.current)
     svg.selectAll('*').remove()
 
-    // ── SVG <defs> with drop-shadow glow filters, one per highlight tier.
-    // Tier 0 = clicked node (brightest, largest halo); tier 3 = 3° neighbour
-    // (subtle). No opacity or dimming anywhere — non-highlighted nodes just
-    // render without a filter so the rest of the graph stays fully legible.
+    // ── SVG <defs> with two families of filters:
+    //   1. Drop-shadow glow, one per highlight tier — applied to the
+    //      clicked node + its 1° / 2° / 3° neighbours. Glow color reads
+    //      --graph-glow-color from the active theme (yellow on dark
+    //      navy, deep amber on warm cream) so the halo pops on both.
+    //   2. A single "dim" filter applied to every non-highlighted node
+    //      when a highlight is active — desaturates the fill so the
+    //      graph visibly steps back and the glowing subgraph pops.
+    //      Non-highlighted nodes also get their opacity reduced (in the
+    //      highlight useEffect) for extra separation.
     const defs = svg.append('defs')
+    const glowColor = (
+      getComputedStyle(svgRef.current).getPropertyValue('--graph-glow-color').trim() || GLOW_COLOR
+    )
     GLOW_TIERS.forEach((tier) => {
       const filter = defs.append('filter')
         .attr('id', tier.id)
@@ -68,9 +77,17 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height, h
       filter.append('feDropShadow')
         .attr('dx', 0).attr('dy', 0)
         .attr('stdDeviation', tier.stdDeviation)
-        .attr('flood-color', GLOW_COLOR)
+        .attr('flood-color', glowColor)
         .attr('flood-opacity', tier.floodOpacity)
     })
+    // Dim filter for non-highlighted nodes: desaturates the fill so
+    // the color still reads as blue / orange / etc but visibly steps
+    // back from full saturation.
+    defs.append('filter')
+      .attr('id', DIM_FILTER_ID)
+      .append('feColorMatrix')
+      .attr('type', 'saturate')
+      .attr('values', String(DIM_STATE.saturation))
 
     // Root group for zoom/pan
     const g = svg.append('g')
@@ -194,20 +211,55 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height, h
     }
   }, [nodes, edges, width, height, onNodeClick, onBackgroundClick])
 
-  // Highlight effect — glow-based, not opacity. Applies a drop-shadow
-  // <filter> to nodes within the highlight radius (tier by distance);
-  // everything else keeps its default appearance (no dim, no fade).
+  // Highlight effect — dual filter: glow for the clicked node + its
+  // 1° / 2° / 3° neighbours, dim for everything else so the lit
+  // subgraph visibly pops. When no highlight is active, every node
+  // returns to its native appearance (no filter, full opacity).
   useEffect(() => {
     if (!svgRef.current) return
     const svg = select(svgRef.current)
+    const active = highlightDistances != null
 
     svg.selectAll('circle')
       .attr('filter', function (d) {
-        // "you" is always visible in its native color — no glow even on click
-        // (though onNodeClick guards against clicking "you" anyway).
-        if (!d || d.id === 'you') return null
+        if (!d || d.id === 'you') return null   // "you" is never dimmed
+        if (!active) return null
         const tier = glowTierForDistance(highlightDistances, d.id)
-        return tier === null ? null : `url(#${GLOW_TIERS[tier].id})`
+        if (tier !== null) return `url(#${GLOW_TIERS[tier].id})`
+        return `url(#${DIM_FILTER_ID})`
+      })
+      .attr('opacity', function (d) {
+        if (!d || d.id === 'you') return 1
+        if (!active) return 1
+        const tier = glowTierForDistance(highlightDistances, d.id)
+        return tier === null ? DIM_STATE.opacity : 1
+      })
+
+    // Labels + edges also step back so the lit subgraph reads as a
+    // clean cluster. Labels: opacity only (glow on text looks messy).
+    // Edges: dim to a fraction of their normal stroke-opacity unless
+    // BOTH endpoints are in the highlight radius (edge-inside-cluster).
+    svg.selectAll('text')
+      .attr('opacity', function (d) {
+        if (!d || d.id === 'you') return 1
+        if (!active) return 1
+        const tier = glowTierForDistance(highlightDistances, d.id)
+        return tier === null ? DIM_STATE.labelOpacity : 1
+      })
+
+    svg.selectAll('line')
+      .attr('stroke-opacity', function (d) {
+        const baseStrength = d?.strength || 0.3
+        const baseOpacity = Math.min(baseStrength * 2, 0.6)
+        if (!active) return baseOpacity
+        const sId = d?.source && (d.source.id ?? d.source)
+        const tId = d?.target && (d.target.id ?? d.target)
+        const sTier = glowTierForDistance(highlightDistances, sId)
+        const tTier = glowTierForDistance(highlightDistances, tId)
+        // Both endpoints inside the highlight radius → full base opacity.
+        // Otherwise dim so the lit subgraph reads as a distinct cluster.
+        if (sTier !== null && tTier !== null) return baseOpacity
+        return baseOpacity * DIM_STATE.edgeOpacityMultiplier
       })
   }, [highlightDistances])
 

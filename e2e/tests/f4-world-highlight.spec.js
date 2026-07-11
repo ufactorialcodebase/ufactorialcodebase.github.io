@@ -54,19 +54,18 @@ test.describe('Feature 4 — world node glow highlight', () => {
     )
   })
 
-  test('SVG defs include a glow filter per tier', async ({ page }) => {
+  test('SVG defs include a glow filter per tier + a dim filter', async ({ page }) => {
     test.setTimeout(60_000)
     await gotoVault(page, '/vault/world')
     await page.waitForSelector('svg circle[data-node-type="person"]', { timeout: 15_000 })
 
-    // Four tiers: node-glow-0 (clicked) through node-glow-3 (3° neighbour)
-    for (const id of ['node-glow-0', 'node-glow-1', 'node-glow-2', 'node-glow-3']) {
+    for (const id of ['node-glow-0', 'node-glow-1', 'node-glow-2', 'node-glow-3', 'node-dim']) {
       const el = page.locator(`svg defs #${id}`)
       await expect(el).toHaveCount(1)
     }
   })
 
-  test('click node → glow filter applied to clicked + neighbours; graph stays fully opaque', async ({ page }) => {
+  test('click node → glow on lit subgraph + dim filter on the rest so highlight pops', async ({ page }) => {
     test.setTimeout(60_000)
     await gotoVault(page, '/vault/world')
     await page.waitForSelector('svg circle[data-node-type="person"]', { timeout: 15_000 })
@@ -78,30 +77,33 @@ test.describe('Feature 4 — world node glow highlight', () => {
     const panel = page.locator('[data-testid="world-node-panel"]')
     await expect(panel).toBeVisible({ timeout: 5_000 })
 
-    // No dim backdrop
+    // No dim backdrop overlay — graph stays visible behind the panel.
     expect(await page.locator('div.bg-black\\/40').count()).toBe(0)
 
     await page.waitForTimeout(200)
 
-    // At least one circle should carry a glow filter (the clicked node
-    // and its ≤3° neighbours). At least one should NOT have any filter
-    // (a 4+ hop node or a disconnected island).
-    const filters = await page.$$eval('svg circle[data-node-type]', (circles) =>
-      circles.map((c) => c.getAttribute('filter'))
+    // Highlighted subgraph: nodes in the lit cluster carry a glow filter.
+    // Non-highlighted: dim filter (desaturated) + reduced opacity so the
+    // lit cluster pops visually. "you" carries no filter — always native.
+    const state = await page.$$eval('svg circle[data-node-type]', (circles) =>
+      circles.map((c) => ({
+        type: c.getAttribute('data-node-type'),
+        filter: c.getAttribute('filter'),
+        opacity: parseFloat(c.getAttribute('opacity') ?? '1'),
+      }))
     )
-    const glowing = filters.filter((f) => f && f.includes('node-glow-'))
-    const plain = filters.filter((f) => !f)
-    expect(glowing.length, 'at least one node should have a glow').toBeGreaterThanOrEqual(1)
-    expect(plain.length, 'at least one node should have no filter').toBeGreaterThanOrEqual(1)
+    const glowing = state.filter((s) => s.filter && s.filter.includes('node-glow-'))
+    const dimmed = state.filter((s) => s.filter && s.filter.includes('node-dim'))
+    const you = state.find((s) => s.type === 'you')
 
-    // Crucial revert-check: no circle should have opacity < 1 (opacity
-    // ramp was reverted; only glow filters distinguish highlighted nodes).
-    const opacities = await page.$$eval('svg circle[data-node-type]', (circles) =>
-      circles.map((c) => parseFloat(c.getAttribute('opacity') ?? '1'))
-    )
-    for (const o of opacities) {
-      expect(o, 'no circle should be dimmed — highlight is additive only').toBeGreaterThanOrEqual(1)
-    }
+    expect(glowing.length, 'at least the clicked node should glow').toBeGreaterThanOrEqual(1)
+    expect(dimmed.length, 'nodes outside the 3-hop radius should be dimmed').toBeGreaterThanOrEqual(1)
+    expect(you?.filter, '"you" should never carry a filter').toBeNull()
+
+    // Glowing nodes stay fully opaque; dimmed nodes fade to the DIM_STATE
+    // opacity floor so the lit cluster reads distinctly.
+    for (const g of glowing) expect(g.opacity).toBeGreaterThanOrEqual(1)
+    for (const d of dimmed) expect(d.opacity, 'dimmed nodes fade to signal off-cluster').toBeLessThan(1)
 
     await page.screenshot({ path: 'e2e/screenshots/f4-world-glow-active.png', fullPage: false })
   })
@@ -122,10 +124,17 @@ test.describe('Feature 4 — world node glow highlight', () => {
     await expect(page.locator('[data-testid="world-node-panel"]')).toBeHidden({ timeout: 3_000 })
     await page.waitForTimeout(200)
 
-    const anyFilter = await page.$$eval('svg circle[data-node-type]', (circles) =>
-      circles.some((c) => (c.getAttribute('filter') || '').includes('node-glow-'))
+    // After clearing: no glow, no dim, everything back to full opacity.
+    const state = await page.$$eval('svg circle[data-node-type]', (circles) =>
+      circles.map((c) => ({
+        filter: c.getAttribute('filter'),
+        opacity: parseFloat(c.getAttribute('opacity') ?? '1'),
+      }))
     )
-    expect(anyFilter, 'no glow filter should remain after clearing').toBe(false)
+    for (const s of state) {
+      expect(s.filter, 'no filter should remain after clearing').toBeFalsy()
+      expect(s.opacity, 'all opacity should reset to 1').toBeGreaterThanOrEqual(1)
+    }
   })
 
   test('node radius scales by mention_count when enriched from cache', async ({ page }) => {

@@ -23,8 +23,25 @@ export const GLOW_TIERS = [
 ]
 
 // Warm yellow — matches the "you" node palette so the highlight reads
-// as "in your orbit." Change here to retint the whole glow ramp.
+// as "in your orbit." Used as the DARK-MODE default; the warm/light
+// theme overrides via --graph-glow-color in vault-theme-warm.css.
+// ForceGraph reads the CSS var at filter-setup time; this is the
+// fallback when the var is missing.
 export const GLOW_COLOR = '#fbbf24'
+
+// Non-highlighted node/label/edge treatment when a highlight is
+// active. Nodes get their saturation cut (fill still reads as the
+// original hue, just muted) AND their opacity reduced — the pair is
+// what makes the glowing subgraph pop instead of feeling like a subtle
+// tint. Kept as a plain object here so a downstream consumer can
+// probe / test the exact values.
+export const DIM_FILTER_ID = 'node-dim'
+export const DIM_STATE = {
+  saturation: 0.35,          // feColorMatrix saturate — 0=grey, 1=full
+  opacity: 0.5,              // circle opacity when dimmed
+  labelOpacity: 0.4,         // text opacity when dimmed
+  edgeOpacityMultiplier: 0.15, // dim edges to 15% of their strength-derived base
+}
 
 // Undirected BFS from a source node over the raw edges array. Returns
 // a Map<nodeId, distance>. Distance to source is 0. Walks out to
