@@ -30,3 +30,21 @@ export async function removeListItem(listName, value) {
     body: { value },
   })
 }
+
+// ISS-241 (F1) — per-list checklist mode. When `is_checklist` is true, items
+// with a value in `checked_values` render as "checked" and sink to the
+// bottom of the list. Toggling off preserves `checked_values` so re-enabling
+// restores state (per Q1b decision).
+export async function setChecklistMode(listName, enabled) {
+  return apiFetch(`/vault/lists/${encodeURIComponent(listName)}`, {
+    method: 'PATCH',
+    body: { is_checklist: enabled },
+  })
+}
+
+export async function toggleCheckedValue(listName, value) {
+  return apiFetch(`/vault/lists/${encodeURIComponent(listName)}/checked`, {
+    method: 'POST',
+    body: { value },
+  })
+}

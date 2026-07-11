@@ -6,7 +6,7 @@ import EmptyState from '../EmptyState'
 import ListIndex from './ListIndex'
 import ListDetail from './ListDetail'
 import CreateListForm from './CreateListForm'
-import { getLists, createList, deleteList, addListItem, removeListItem } from '../../../lib/api/vault-lists'
+import { getLists, createList, deleteList, addListItem, removeListItem, setChecklistMode, toggleCheckedValue } from '../../../lib/api/vault-lists'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
 
 export default function ListsTab() {
@@ -99,6 +99,49 @@ export default function ListsTab() {
     }
   }
 
+  // ISS-241 F1 — checklist mode. Optimistic flip so the UI feels instant;
+  // roll back on failure. `checked_values` is preserved by the backend
+  // when disabling, so we don't zero it out here.
+  const handleToggleChecklistMode = async (listName, enabled) => {
+    const previous = lists
+    setLists((prev) => {
+      const updated = prev.map((l) => l.name === listName ? { ...l, is_checklist: enabled } : l)
+      setCached('lists', updated)
+      return updated
+    })
+    try {
+      await setChecklistMode(listName, enabled)
+    } catch (err) {
+      setLists(previous)
+      setCached('lists', previous)
+      toast.error(`Failed to ${enabled ? 'enable' : 'disable'} checklist mode: ${err.message}`)
+    }
+  }
+
+  // Toggle an item's checked state. Optimistic; rolls back on failure.
+  // Idempotent server-side, so a double-tap ends up at the intended state.
+  const handleToggleCheckedValue = async (listName, value) => {
+    const previous = lists
+    setLists((prev) => {
+      const updated = prev.map((l) => {
+        if (l.name !== listName) return l
+        const current = new Set(l.checked_values || [])
+        if (current.has(value)) current.delete(value)
+        else current.add(value)
+        return { ...l, checked_values: Array.from(current) }
+      })
+      setCached('lists', updated)
+      return updated
+    })
+    try {
+      await toggleCheckedValue(listName, value)
+    } catch (err) {
+      setLists(previous)
+      setCached('lists', previous)
+      toast.error(`Failed to toggle "${value}": ${err.message}`)
+    }
+  }
+
   if (loading) {
     return (
       <div className="p-6 sm:p-8">
@@ -178,6 +221,8 @@ export default function ListsTab() {
                 onAddItem={handleAddItem}
                 onRemoveItem={handleRemoveItem}
                 onDeleteList={handleDeleteList}
+                onToggleChecklistMode={handleToggleChecklistMode}
+                onToggleCheckedValue={handleToggleCheckedValue}
               />
             </div>
           ) : (
