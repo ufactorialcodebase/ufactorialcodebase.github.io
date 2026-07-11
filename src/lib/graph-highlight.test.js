@@ -29,6 +29,27 @@ describe('bfsDistances', () => {
     expect(bfsDistances('you', EDGES).get('you')).toBe(0)
   })
 
+  it('with bridgeExcluded=["you"], does NOT walk through the central hub', () => {
+    // Click A. Without exclusion, F would be 2° (A → you → F). With
+    // exclusion, "you" is never visited so F is unreachable — the only
+    // path was through you.
+    const d = bfsDistances('A', EDGES, undefined, { bridgeExcluded: ['you'] })
+    expect(d.get('A')).toBe(0)
+    expect(d.get('B')).toBe(1)   // A ── B, non-you path
+    expect(d.get('G')).toBe(1)   // A ── G, non-you path
+    expect(d.has('you')).toBe(false)  // never visited
+    expect(d.has('F')).toBe(false)    // only path was via you
+    expect(d.get('C')).toBe(2)   // A → B → C
+    expect(d.get('H')).toBe(2)   // A → G → H — shorter than A → B → C → H
+    expect(d.get('D')).toBe(3)   // A → B → C → D
+  })
+
+  it('bridgeExcluded default is empty (backwards compatible)', () => {
+    // Existing callers that pass no options get the old traversal.
+    const withHub = bfsDistances('A', EDGES).get('F')
+    expect(withHub).toBe(2)  // A → you → F
+  })
+
   it('walks undirected — a person\'s neighbours light "you" as 1°', () => {
     const d = bfsDistances('A', EDGES)
     expect(d.get('you')).toBe(1)

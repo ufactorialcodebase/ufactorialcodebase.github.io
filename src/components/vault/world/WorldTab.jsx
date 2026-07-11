@@ -8,7 +8,7 @@ import { useVaultData } from '../../../lib/vault-cache'
 import { getWorld } from '../../../lib/api/vault-world'
 import { getEntities } from '../../../lib/api/vault-entities'
 import { getTopics } from '../../../lib/api/vault-topics'
-import { bfsDistances } from '../../../lib/graph-highlight'
+import { bfsDistances, DEFAULT_BRIDGE_EXCLUDED } from '../../../lib/graph-highlight'
 
 const NODE_FILTERS = [
   { value: 'all', label: 'All' },
@@ -111,13 +111,17 @@ export default function WorldTab() {
 
   const hasGraph = !loading && !error && rawNodes.length > 1
 
-  // BFS distance map from the selected node — drives node + edge + label
-  // opacity in ForceGraph. Null means "no highlight active": everything
-  // renders at full brightness. Uses raw edges (id strings) so the walk
-  // survives d3's mutation of edge.source / edge.target into node objects.
+  // BFS distance map from the selected node — drives which nodes get
+  // the glow filter and which get the dim filter. `bridgeExcluded:
+  // ['you']` prevents BFS from walking through the central "you" hub;
+  // otherwise every entity would be 2° from every other (via the
+  // you-in-the-middle shortcut) and the highlight would collapse into
+  // "everything lights up." What we WANT is entity-to-entity closeness.
   const highlightDistances = useMemo(() => {
     if (!selectedNode) return null
-    return bfsDistances(selectedNode.id, rawEdges)
+    return bfsDistances(selectedNode.id, rawEdges, undefined, {
+      bridgeExcluded: DEFAULT_BRIDGE_EXCLUDED,
+    })
   }, [selectedNode, rawEdges])
 
   // Overlay content shown inside the always-mounted container

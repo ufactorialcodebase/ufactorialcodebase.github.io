@@ -43,11 +43,25 @@ export const DIM_STATE = {
   edgeOpacityMultiplier: 0.15, // dim edges to 15% of their strength-derived base
 }
 
+// Nodes that BFS should NEVER visit — they act as visual hubs (every
+// entity is 1° from "you") which, if traversed, would collapse the
+// notion of "1° / 2° / 3° neighbours from the clicked node" into
+// "anything in the user's orbit lights up." Excluding these from the
+// walk makes the highlight reflect ENTITY-TO-ENTITY closeness, not
+// "reachable via the central hub." The frontend passes ['you'] here.
+export const DEFAULT_BRIDGE_EXCLUDED = ['you']
+
 // Undirected BFS from a source node over the raw edges array. Returns
 // a Map<nodeId, distance>. Distance to source is 0. Walks out to
 // MAX_HIGHLIGHT_DEGREE hops — anything further is treated as "no glow."
-export function bfsDistances(sourceId, edges, maxDegree = MAX_HIGHLIGHT_DEGREE) {
+//
+// `options.bridgeExcluded` — node ids that BFS must not visit. Their
+// edges still exist in the adjacency; the walk just skips OVER them,
+// so a path A → you → B becomes "B is unreachable from A" if that's
+// the only path.
+export function bfsDistances(sourceId, edges, maxDegree = MAX_HIGHLIGHT_DEGREE, options = {}) {
   if (!sourceId || !Array.isArray(edges)) return new Map()
+  const excluded = new Set(options.bridgeExcluded || [])
 
   // d3 mutates edge.source / edge.target into node objects after
   // simulation setup, so we accept both id-strings and object-with-.id
@@ -73,6 +87,7 @@ export function bfsDistances(sourceId, edges, maxDegree = MAX_HIGHLIGHT_DEGREE) 
       const neighbours = adj.get(node)
       if (!neighbours) continue
       for (const neighbour of neighbours) {
+        if (excluded.has(neighbour)) continue    // hub: never enter it
         if (!distances.has(neighbour)) {
           distances.set(neighbour, d)
           nextFrontier.push(neighbour)
