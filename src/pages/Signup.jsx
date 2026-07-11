@@ -4,6 +4,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { signUp, signIn, signInWithMagicLink, resetPassword } from '../lib/auth'
 import { validateAccessCode } from '../lib/api/index.js'
 import { supabase } from '../lib/supabase'
+import OAuthButtons from '../components/auth/OAuthButtons'
 
 const ACCEPTANCE_VERSION = '2026-04-29'
 
@@ -59,6 +60,13 @@ export default function AuthPage() {
           >
             Sign in
           </button>
+        </div>
+
+        <OAuthButtons />
+        <div className="flex items-center gap-3 my-6">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-xs text-white/40">Or continue with email</span>
+          <div className="flex-1 h-px bg-white/10" />
         </div>
 
         {tab === 'signup' ? (
