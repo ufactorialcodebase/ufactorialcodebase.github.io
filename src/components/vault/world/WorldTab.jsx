@@ -2,10 +2,13 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import PageHeader from '../PageHeader'
 import EmptyState from '../EmptyState'
-import SidePanel from '../SidePanel'
+import WorldNodePanel from './WorldNodePanel'
 import ForceGraph from './ForceGraph'
 import { useVaultData } from '../../../lib/vault-cache'
 import { getWorld } from '../../../lib/api/vault-world'
+import { getEntities } from '../../../lib/api/vault-entities'
+import { getTopics } from '../../../lib/api/vault-topics'
+import { bfsDistances, DEFAULT_BRIDGE_EXCLUDED } from '../../../lib/graph-highlight'
 
 const NODE_FILTERS = [
   { value: 'all', label: 'All' },
@@ -14,6 +17,18 @@ const NODE_FILTERS = [
 
 export default function WorldTab() {
   const { data: worldData, loading, error, refetch } = useVaultData('world', getWorld)
+  // Piggyback on the shared vault-cache: entities + topics are already
+  // fetched for the People / Topics tabs. Post-ISS-230 both endpoints
+  // return `mention_count` per row, which we use to size world nodes by
+  // frequency (bigger dot = more frequently mentioned). The world API
+  // itself doesn't propagate mention_count today — this is a client-side
+  // enrichment. Zero backend change needed.
+  const { data: entityData } = useVaultData('entities', getEntities, {
+    transform: (result) => result.entities || result || [],
+  })
+  const { data: topicData } = useVaultData('topics', getTopics, {
+    transform: (result) => result.topics || result || [],
+  })
   const [selectedNode, setSelectedNode] = useState(null)
   const containerRef = useRef(null)
   const [dimensions, setDimensions] = useState(null)
@@ -44,8 +59,37 @@ export default function WorldTab() {
     setSelectedNode(node)
   }, [])
 
+  const handleBackgroundClick = useCallback(() => {
+    setSelectedNode(null)
+  }, [])
+
   const [nodeFilter, setNodeFilter] = useState('all')
-  const rawNodes = worldData?.nodes || []
+
+  // Build a nodeId → mention_count map from the shared caches, then enrich
+  // world nodes with it so ForceGraph's `computeNodeRadius` can scale by
+  // frequency. Falls back gracefully when caches haven't loaded yet.
+  const mentionCountMap = useMemo(() => {
+    const m = new Map()
+    for (const e of (entityData || [])) {
+      const id = e.id || e.entity_id
+      if (id != null && typeof e.mention_count === 'number') m.set(id, e.mention_count)
+    }
+    for (const t of (topicData || [])) {
+      if (t.id != null && typeof t.mention_count === 'number') m.set(t.id, t.mention_count)
+    }
+    return m
+  }, [entityData, topicData])
+
+  const rawNodes = useMemo(() => {
+    const source = worldData?.nodes || []
+    if (mentionCountMap.size === 0) return source
+    return source.map((n) => (
+      n.id === 'you' || mentionCountMap.get(n.id) == null
+        ? n
+        : { ...n, mention_count: mentionCountMap.get(n.id) }
+    ))
+  }, [worldData, mentionCountMap])
+
   const rawEdges = worldData?.edges || []
 
   // "Entities only" hides topic nodes (topic node type == 'topic') and any
@@ -66,6 +110,19 @@ export default function WorldTab() {
   }, [rawNodes, rawEdges, nodeFilter])
 
   const hasGraph = !loading && !error && rawNodes.length > 1
+
+  // BFS distance map from the selected node — drives which nodes get
+  // the glow filter and which get the dim filter. `bridgeExcluded:
+  // ['you']` prevents BFS from walking through the central "you" hub;
+  // otherwise every entity would be 2° from every other (via the
+  // you-in-the-middle shortcut) and the highlight would collapse into
+  // "everything lights up." What we WANT is entity-to-entity closeness.
+  const highlightDistances = useMemo(() => {
+    if (!selectedNode) return null
+    return bfsDistances(selectedNode.id, rawEdges, undefined, {
+      bridgeExcluded: DEFAULT_BRIDGE_EXCLUDED,
+    })
+  }, [selectedNode, rawEdges])
 
   // Overlay content shown inside the always-mounted container
   const overlay = loading ? (
@@ -141,11 +198,16 @@ export default function WorldTab() {
             width={dimensions.width}
             height={dimensions.height}
             onNodeClick={handleNodeClick}
+            onBackgroundClick={handleBackgroundClick}
+            highlightDistances={highlightDistances}
           />
         )}
       </div>
-      {/* Side panel for node details */}
-      <SidePanel open={!!selectedNode} onClose={() => setSelectedNode(null)} title={selectedNode?.label || 'Details'}>
+      {/* World-specific details panel — no backdrop dim, mobile bottom-sheet.
+          The graph stays visible + interactive behind the panel so the
+          user can see the highlighted subgraph while reading node detail
+          and click another node to re-anchor the highlight. */}
+      <WorldNodePanel open={!!selectedNode} onClose={() => setSelectedNode(null)} title={selectedNode?.label || 'Details'}>
         {selectedNode && (
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -161,7 +223,7 @@ export default function WorldTab() {
             )}
           </div>
         )}
-      </SidePanel>
+      </WorldNodePanel>
     </div>
   )
 }

@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beta polish — report</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b1120;
+    --bg-elev: #111827;
+    --bg-card: #1e293b;
+    --border: rgba(148, 163, 184, 0.16);
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --accent: #10b981;
+    --accent-2: #34d399;
+    --amber: #f59e0b;
+    --rose: #f87171;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  a { color: var(--accent-2); }
+  code, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px; }
+  pre { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 13px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
+  header.page { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px; }
+  header.page h1 { font-size: 28px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  header.page .meta { color: var(--text-muted); font-size: 14px; }
+  header.page .meta strong { color: var(--text); }
+  section { margin-bottom: 40px; }
+  section h2 { font-size: 20px; margin: 0 0 14px; letter-spacing: -0.005em; }
+  section h3 { font-size: 15px; margin: 20px 0 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .callout { border-left: 3px solid var(--accent); background: rgba(16, 185, 129, 0.06); padding: 12px 16px; border-radius: 0 8px 8px 0; margin-bottom: 20px; }
+  .callout.warn { border-left-color: var(--amber); background: rgba(245, 158, 11, 0.06); }
+  .callout.bad { border-left-color: var(--rose); background: rgba(248, 113, 113, 0.06); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kv { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .kv .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 4px; }
+  .kv .value { font-size: 20px; font-weight: 600; color: var(--text); }
+  .item { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin-bottom: 20px; }
+  .item-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .item-head .num { background: rgba(16, 185, 129, 0.18); color: var(--accent-2); font-weight: 700; padding: 2px 10px; border-radius: 999px; font-size: 12px; letter-spacing: 0.05em; }
+  .item-head h3 { font-size: 17px; margin: 0; color: var(--text); text-transform: none; letter-spacing: normal; }
+  .item-head .sha { margin-left: auto; font-family: ui-monospace, Menlo, monospace; color: var(--text-dim); font-size: 12px; background: rgba(255,255,255,0.04); padding: 2px 8px; border-radius: 4px; }
+  .item .desc { color: var(--text-muted); font-size: 14px; margin: 6px 0 14px; }
+  .item .meta-row { display: flex; gap: 16px; flex-wrap: wrap; color: var(--text-dim); font-size: 13px; margin-bottom: 12px; }
+  .item .meta-row span::before { content: "• "; color: var(--text-dim); }
+  .item .meta-row span:first-child::before { content: ""; }
+  .item .test-result { display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.14); color: var(--accent-2); padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .item .test-result::before { content: "✓"; }
+  .shot-wrap { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #000; }
+  .shot-wrap img { display: block; width: 100%; height: auto; }
+  .shot-caption { font-size: 12px; color: var(--text-dim); padding: 8px 12px; background: var(--bg-card); border-top: 1px solid var(--border); }
+  table.tests { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.tests th, table.tests td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  table.tests th { color: var(--text-dim); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  table.tests td.sha { font-family: ui-monospace, Menlo, monospace; color: var(--text-dim); }
+  table.tests td.pass { color: var(--accent-2); font-weight: 600; }
+  table.tests td.blocked { color: var(--amber); font-weight: 600; }
+  ul.follow { padding-left: 20px; }
+  ul.follow li { margin-bottom: 10px; color: var(--text-muted); }
+  ul.follow li strong { color: var(--text); }
+  nav.toc { position: sticky; top: 0; background: rgba(11, 17, 32, 0.92); backdrop-filter: blur(8px); padding: 12px 0; margin-bottom: 24px; border-bottom: 1px solid var(--border); z-index: 10; }
+  nav.toc a { color: var(--text-muted); text-decoration: none; margin-right: 16px; font-size: 13px; }
+  nav.toc a:hover { color: var(--accent-2); }
+</style>
+</head>
+<body>
+<main>
+
+<header class="page">
+  <h1>Beta polish — status report</h1>
+  <p class="meta">
+    Frontend repo <strong>ufactorialcodebase.github.io</strong> •
+    Test account <strong>pratikcpednekar_test2</strong> •
+    Backend <strong>SUPABASE_ENV=test</strong>
+  </p>
+</header>
+
+<nav class="toc">
+  <a href="#status">Status</a>
+  <a href="#items">Batch-1 items</a>
+  <a href="#followup">Post-merge follow-up</a>
+  <a href="#new">Batch-2 progress</a>
+  <a href="#validate-f4">Validate F4</a>
+  <a href="#validate-f3">Validate F3</a>
+</nav>
+
+<section id="status">
+<h2>Status</h2>
+
+<div class="grid">
+  <div class="kv"><div class="label">Batch-1 (8 items)</div><div class="value">merged</div></div>
+  <div class="kv"><div class="label">ISS-230 + 231</div><div class="value">merged</div></div>
+  <div class="kv"><div class="label">Post-merge follow-up</div><div class="value">shipped</div></div>
+  <div class="kv"><div class="label">Backend env</div><div class="value">healthy</div></div>
+  <div class="kv"><div class="label">F4 world highlight</div><div class="value">shipped</div></div>
+  <div class="kv"><div class="label">F3 edit artifact</div><div class="value">shipped</div></div>
+</div>
+
+<div class="callout">
+Batch-1 landed to <code>main</code> at <code>997c531</code> — all 8 items live. Backend ISS-230 (entity mention_count) and ISS-231 (tool_complete result.artifact_id) both merged. Post-merge frontend follow-up (People Frequency sort + Item 6 UUID assertion) shipped on branch <code>product-experience/beta-polish-followup</code> as <code>2dc1a04</code>.
+</div>
+
+<div class="callout warn">
+Live re-verification of the followup commit is blocked on a separate backend regression — see <a href="#blocker">Backend blocker</a> below.
+</div>
+</section>
+
+<section id="items">
+<h2>Batch-1 — 8 items shipped</h2>
+
+<table class="tests">
+  <thead><tr><th>#</th><th>Item</th><th>Commit</th><th>Test</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Markdown in AI messages</td><td class="sha">eb02054</td><td><code>01-markdown.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>2</td><td>In-bubble timestamps</td><td class="sha">6ffc345</td><td><code>02-timestamps.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>3</td><td>Date ribbon dividers</td><td class="sha">92457ac</td><td><code>03-date-ribbon.spec.js</code> + vitest boundaries</td><td class="pass">shipped</td></tr>
+    <tr><td>4</td><td>Tool-boundary space fix</td><td class="sha">bdbdb2c</td><td><code>04-tool-boundary-space.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>5</td><td>Sort controls (Topics + People)</td><td class="sha">f538e48</td><td><code>05-sort-controls.spec.js</code> (2 tests)</td><td class="pass">shipped</td></tr>
+    <tr><td>6</td><td>Artifact deep-link</td><td class="sha">40b235c</td><td><code>06-artifact-deep-link.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>7</td><td>World Entities-only filter</td><td class="sha">6b1944c</td><td><code>07-world-entities-only.spec.js</code></td><td class="pass">shipped</td></tr>
+    <tr><td>8</td><td>Edge stroke-width by weight</td><td class="sha">99d4e6b</td><td><code>08-world-edge-weight.spec.js</code></td><td class="pass">shipped</td></tr>
+  </tbody>
+</table>
+
+<h3>Screenshots from the passing batch-1 run</h3>
+
+<div class="item">
+  <div class="item-head"><span class="num">01</span><h3>Markdown rendering</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/01-markdown.png" alt="Markdown screenshot" /><div class="shot-caption">AI reply renders parsed <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, <code>&lt;code&gt;</code>.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">02</span><h3>Message timestamps</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/02-timestamps.png" alt="Timestamps screenshot" /><div class="shot-caption">Right-aligned HH:MM stamp inside every bubble.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">03</span><h3>Date ribbons</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/03-date-ribbon.png" alt="Ribbon screenshot" /><div class="shot-caption">Sticky "Today" pill at the top of the current-day messages.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">04</span><h3>Tool-boundary space fix</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/04-tool-boundary.png" alt="Boundary screenshot" /><div class="shot-caption">Text-tool-text turn — no <code>[a-z]\.[A-Z]</code> concat pattern.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">05a</span><h3>Topics sort</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/05-topics-sort.png" alt="Topics sort screenshot" /><div class="shot-caption">Topics tab — Recency active after click; Frequency chip inactive.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">05b</span><h3>People sort (batch-1 state — Recency only)</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/05-people-sort.png" alt="People sort screenshot" /><div class="shot-caption">People tab as of batch-1 merge — Recency chip only. Post-merge follow-up adds Frequency (default) — see below.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">06</span><h3>Artifact deep-link (batch-1 state — title fallback)</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/06-artifact-deep-link.png" alt="Deep-link screenshot" /><div class="shot-caption">Artifact SidePanel opened via <code>?openTitle=</code>. Post-merge follow-up tightens to <code>?open=&lt;uuid&gt;</code>.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">07</span><h3>World Entities-only filter</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/07-world-entities-only.png" alt="Entities-only screenshot" /><div class="shot-caption">Topic nodes hidden, entity nodes remain.</div></div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">08</span><h3>Edge weight scaling</h3></div>
+  <div class="shot-wrap"><img src="e2e/screenshots/08-world-edge-weight.png" alt="Edge weight screenshot" /><div class="shot-caption">Visibly varied edge thickness across the visible ties.</div></div>
+</div>
+
+</section>
+
+<section id="followup">
+<h2>Post-merge follow-up (branch <code>product-experience/beta-polish-followup</code>)</h2>
+
+<p class="desc" style="color: var(--text-muted); margin-bottom: 16px;">
+Once backend ISS-230 (<code>334084f</code>) and ISS-231 (<code>6646d1e</code> + <code>82ff64e</code>) merged to <code>main</code>, two frontend deltas unlock the id-based deep-link and the Frequency sort on People.
+</p>
+
+<div class="item">
+  <div class="item-head"><span class="num">A</span><h3>PeopleTab — Frequency sort (default) + Recency</h3><span class="sha">2dc1a04</span></div>
+  <p class="desc">
+    <code>ENTITY_SORT_OPTIONS</code> gains <code>{value: 'frequency', label: 'Frequency'}</code>; default state flips to <code>'frequency'</code>; the <code>useMemo</code> sorter branches on <code>sort === 'frequency'</code> (mention_count desc) vs <code>'recency'</code> (last_mentioned desc). Mirrors the Topics tab pattern.
+    Playwright test flipped from "asserts Recency only" to "Frequency default-active + click flips to Recency."
+  </p>
+  <div class="meta-row">
+    <span><code>src/components/vault/people/PeopleTab.jsx</code></span>
+    <span><code>e2e/tests/05-sort-controls.spec.js</code></span>
+    <span style="color: var(--amber);">live re-verify blocked (see below)</span>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">B</span><h3>Item 6 — assert id-based deep-link, not title fallback</h3><span class="sha">2dc1a04</span></div>
+  <p class="desc">
+    href regex tightened from lenient <code>/open(Title)?=/</code> to strict <code>/\?open=[0-9a-fA-F][0-9a-fA-F-]{19,}/</code>. If backend ever regresses to <code>result: null</code> on artifact tools, the test flips red immediately rather than silently succeeding on the fallback path. <code>waitForURL</code> uses the same strict pattern.
+  </p>
+  <div class="meta-row">
+    <span><code>e2e/tests/06-artifact-deep-link.spec.js</code></span>
+    <span style="color: var(--amber);">live re-verify blocked (see below)</span>
+  </div>
+</div>
+
+</section>
+
+<section id="blocker">
+<h2>Backend "RLS regression" — resolved (was environmental)</h2>
+
+<div class="callout">
+Coordinator confirmed the code path was healthy — INSERTs against <code>conversation_sessions</code> succeed cleanly with the service_role key. My local backend was misconfigured (running with the anon key, probably from stale env). Restarting with <code>SUPABASE_ENV=test</code> + the reload uvicorn command unblocked greeting + stream. Live traffic on <code>/api/chat/*</code> now 200 across the board (verified in <code>/tmp/beta-polish-backend.log</code>).
+</div>
+
+<div class="callout warn">
+Fresh finding while re-verifying: batch-1 <strong>Item 1 (markdown)</strong> still fails, but for a NEW reason — the LLM system prompt has been hardened to refuse "please repeat back verbatim" test prompts ("<em>I'm your life manager — I'm here to help you, not to talk about how I work internally.</em>"). The MARKDOWN CODE is fine (Item 1 shipped in <code>eb02054</code>, batch-1 was merged to main and works in prod). The <em>test</em> just needs a more resilient prompt (or a mocked stream). Filing as a low-priority followup — not blocking anything in flight.
+</div>
+</section>
+
+<section id="new">
+<h2>Batch-2 progress</h2>
+
+<div class="item">
+  <div class="item-head"><span class="num">F4</span><h3>World interactive highlight — revamped per your feedback</h3><span class="sha">641b176</span></div>
+  <p class="desc">
+    <strong>Reverts vs the first F4 pass (eb96dc4):</strong> opacity ramp deleted — fade-to-0.08 on non-neighbours made the graph feel washed out. Also reverted Item 8's edge-stroke-width scaling.
+  </p>
+  <p class="desc">
+    <strong>New behaviour:</strong> click a node → <strong>additive yellow drop-shadow glow</strong> on that node + its 1° / 2° / 3° neighbours; glow intensity decays by degree. Anything at 4+ hops or disconnected stays <em>completely normal</em> — no dim, no fade. Additive highlight instead of subtractive dim. Panel still opens without a backdrop.
+  </p>
+  <p class="desc">
+    <strong>Replaced edge-scaling with node-size-by-mention-frequency:</strong> bigger dot = more frequently mentioned. Log-scaled, clamped [10, 22], below the "you" anchor (24). Backend didn't need changes — WorldTab piggybacks on the shared vault-cache to enrich world nodes with <code>mention_count</code> client-side.
+  </p>
+  <p class="desc" style="margin-top: 0; color: var(--text-dim);">
+    <strong>Easy revert path per your ask:</strong> flip <code>NODE_SIZE_MODE</code> in <code>src/lib/graph-node-size.js</code> from <code>'frequency'</code> → <code>'fixed'</code> — one constant, restores pre-batch-2 sizing. Glow revert is comparable (drop the highlight useEffect in <code>ForceGraph.jsx</code>).
+  </p>
+  <div class="meta-row">
+    <span><code>graph-highlight.js</code> — glow tiers, 14 vitest cases</span>
+    <span><code>graph-node-size.js</code> (new) — 8 vitest cases</span>
+    <span><code>ForceGraph.jsx</code> — SVG glow filters via <code>&lt;defs&gt;</code></span>
+    <span class="test-result">4 playwright + 22 vitest all green</span>
+  </div>
+  <div class="shot-wrap">
+    <img src="e2e/screenshots/f4-world-glow-active.png" alt="F4 screenshot — glow highlight" />
+    <div class="shot-caption">Alice clicked → yellow glow on her + 1° / 2° / 3° neighbours (decaying). Nodes further out or disconnected: normal, unmodified.</div>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num">F3</span><h3>Edit artifact — shipped</h3><span class="sha">dc37d9f</span></div>
+  <p class="desc">
+    Click Edit on any artifact card. Title becomes an input, content becomes a textarea. Save fires <code>PUT /vault/artifacts/{id}</code> with only the changed fields (so the backend's version-bump logic stays honest — metadata-only edits don't bump). Version pill visible in read + edit modes so you can see it flip v1 → v2 on save. Cancel discards the draft. Delete is hidden in edit mode to avoid destructive-action confusion.
+  </p>
+  <p class="desc" style="margin-top: 0; color: var(--text-dim);">
+    Depends on backend fix (<code>fix/vault-artifacts-update-content</code>) that extends <code>UpdateArtifactRequest</code> to accept <code>content</code>/<code>summary</code> + auto-bumps version. Frontend won't merge to main until backend lands on <code>main</code> + Railway redeploys.
+  </p>
+  <div class="meta-row">
+    <span><code>src/components/vault/artifacts/ArtifactReader.jsx</code></span>
+    <span><code>ArtifactsTab.jsx</code> — new <code>handleUpdate</code> propagates state</span>
+    <span class="test-result">2 playwright tests pass (fixture routed via <code>page.route</code>)</span>
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num" style="background: rgba(245, 158, 11, 0.18); color: var(--amber);">F1</span><h3>List → checklist mode — blocked on backend fields</h3></div>
+  <p class="desc">
+    Path A: <code>lists.is_checklist BOOLEAN DEFAULT false</code> + <code>lists.checked_values TEXT[]</code>. Preserve <code>checked_values</code> on toggle-off (per Q1b). Toggle on list detail page.
+  </p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="num" style="background: rgba(245, 158, 11, 0.18); color: var(--amber);">F2</span><h3>Edit list item — blocked on backend endpoint</h3></div>
+  <p class="desc">
+    No <code>update_list_item</code> today. Need <code>PATCH /vault/lists/&lt;name&gt;/items</code> that takes <code>{old_value, new_value, notes}</code> and updates in place (preserves order + notes).
+  </p>
+</div>
+</section>
+
+<section id="validate-f4">
+<h2>How to validate F4 (world interactive highlight)</h2>
+
+<div class="callout">
+Two ways: quick (mocked fixture, deterministic) or real (live chat data). Both need the batch-2 branch checked out — the code is not on <code>main</code> yet.
+</div>
+
+<h3>Path A — playwright with mocked fixture (30 seconds)</h3>
+<pre><code>cd "/Users/pratik/Projects/uFactorial website/ufactorialcodebase.github.io"
+git checkout product-experience/beta-polish-batch-2
+npx playwright test e2e/tests/f4-world-highlight.spec.js --headed
+</code></pre>
+<p class="desc">
+The <code>--headed</code> flag opens a real Chromium window so you can watch it happen. Two tests: (1) clicks Alice, the panel opens without a backdrop, node opacity ramps by degree (screenshot to <code>e2e/screenshots/f4-world-highlight-active.png</code>); (2) clicks the SVG background, panel closes, all nodes back to full opacity. Fixture graph is 11 nodes / 10 edges hand-drawn to exercise every degree from 1° to 3°.
+</p>
+
+<h3>Path B — real data in the vault (2 minutes)</h3>
+<ol style="color: var(--text-muted); padding-left: 22px; margin-bottom: 20px;">
+  <li>Backend running (already up on port 8000 from the correct env — verified in the report banner).</li>
+  <li>Frontend running: <code>cd "/Users/pratik/Projects/uFactorial website/ufactorialcodebase.github.io" &amp;&amp; git checkout product-experience/beta-polish-batch-2 &amp;&amp; npm run dev</code>.</li>
+  <li>Open <a href="http://localhost:5173/vault/world">http://localhost:5173/vault/world</a> in a signed-in browser. If your <code>pratikcpednekar_test2</code> account has no data (RLS was blocking earlier seeds), send a couple of chat messages first (<a href="http://localhost:5173/vault/chat">/vault/chat</a>) mentioning several people/places — then come back to World.</li>
+  <li><strong>Click any node</strong> that isn't "you". Watch: the clicked node stays fully opaque, its 1° neighbours dim gently, 2° dim more, 3° dim more still, everything else fades to a floor. Details panel opens on the right (desktop) or from the bottom (mobile).</li>
+  <li><strong>Click another node</strong> — highlight re-anchors to that node, panel content updates.</li>
+  <li><strong>Click empty canvas</strong> — highlight clears, panel closes.</li>
+  <li><strong>Press Escape</strong> — panel closes (any time).</li>
+  <li><strong>Mobile eyeball</strong>: open dev tools, toggle device toolbar (⌘⇧M in Chrome), pick iPhone. Click a node — panel slides up from the bottom at ~40% viewport. Drag the grip handle up → snaps to full screen. Drag down → dismisses. World stays interactive behind.</li>
+</ol>
+
+<h3>What to look for (design intent)</h3>
+<ul class="follow">
+  <li><strong>Additive glow, not subtractive dim.</strong> Non-highlighted nodes look exactly the same as they did without any click — no opacity change. Only the highlighted nodes get a yellow halo added.</li>
+  <li><strong>Glow decays by degree.</strong> Clicked node: brightest, biggest halo. 1°: strong. 2°: medium. 3°: subtle. 4°+ and disconnected islands: no halo.</li>
+  <li><strong>Node size by mention frequency.</strong> A person you mention a lot (say Ruchi, if she's in your graph) will render noticeably bigger than someone mentioned once. Capped so no single outlier dominates. The "you" anchor stays at 24px.</li>
+  <li><strong>Edges are uniform width.</strong> Reverted from Item 8's strength-scaled stroke-width. Tie-strength is still subtly signalled via stroke-opacity (heavier ties are slightly more opaque) but every edge is 1px wide.</li>
+  <li><strong>No backdrop over the graph.</strong> Panel opens without dimming anything. People + Artifacts tabs still darken behind their SidePanel — that's kept intentionally.</li>
+  <li><strong>The "you" node.</strong> Clicking a person connected to "you" (through any chain within 3 hops) lights "you" up. If not, the graph data has no you-connection to that node within 3 hops.</li>
+</ul>
+<p style="color: var(--text-dim); font-size: 13px; margin-top: 12px;">
+Not liking any of it? <code>NODE_SIZE_MODE</code> in <code>src/lib/graph-node-size.js</code> flips the size behaviour in one line. Glow is a single useEffect at the bottom of <code>ForceGraph.jsx</code>.
+</p>
+</section>
+
+<section id="validate-f3">
+<h2>How to validate F3 (edit artifact)</h2>
+
+<h3>Playwright (fixture-routed)</h3>
+<pre><code>cd "/Users/pratik/Projects/uFactorial website/ufactorialcodebase.github.io"
+git checkout product-experience/beta-polish-batch-2
+npx playwright test e2e/tests/f3-artifact-edit.spec.js --headed
+</code></pre>
+
+<h3>Real data</h3>
+<ol style="color: var(--text-muted); padding-left: 22px; margin-bottom: 20px;">
+  <li>Requires the F3 backend fix (branch <code>fix/vault-artifacts-update-content</code>) to be running. If your local uvicorn is on that branch with <code>--reload</code>, you're covered — otherwise switch to it and let uvicorn reload.</li>
+  <li>Navigate to <a href="http://localhost:5173/vault/artifacts">/vault/artifacts</a>. Click any artifact card.</li>
+  <li>Click the small <strong>Edit</strong> button (pencil icon, top-right of the panel).</li>
+  <li>Title becomes an input; content becomes a textarea. Version pill shows the current version (e.g. v1).</li>
+  <li>Change either. Click <strong>Save</strong>. On success: panel returns to read mode, version pill bumps (v1 → v2), toast confirms.</li>
+  <li>Click Cancel to discard changes — no PUT fires, version unchanged.</li>
+</ol>
+</section>
+
+</main>
+</body>
+</html>

@@ -114,6 +114,17 @@ export default function ArtifactsTab() {
     }
   }
 
+  const handleUpdate = (updatedArtifact) => {
+    setArtifacts((prev) => {
+      const next = prev.map((a) => (a.id === updatedArtifact.id ? { ...a, ...updatedArtifact } : a))
+      setCached('artifacts', next)
+      return next
+    })
+    setSelectedArtifact((current) =>
+      current?.id === updatedArtifact.id ? { ...current, ...updatedArtifact } : current
+    )
+  }
+
   if (loading) {
     return (
       <div className="p-6 sm:p-8">
@@ -189,6 +200,7 @@ export default function ArtifactsTab() {
               <ArtifactReader
                 artifact={selectedArtifact}
                 onDelete={handleDelete}
+                onUpdate={handleUpdate}
               />
             )
         )}
