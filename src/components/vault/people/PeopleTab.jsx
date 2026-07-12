@@ -12,12 +12,11 @@ import { getEntities, deleteEntity, updateEntity, mergeEntities } from '../../..
 import { normalizeEntity } from './entity-utils'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
 
-// The backend `/vault/entities` endpoint returns raw kg_entities rows —
-// no mention_count, no last_mentioned. Until ISS-230 exposes those fields
-// the People tab can only sort by Recency (falling back to updated_at).
-// When ISS-230 lands, add a { value: 'frequency', label: 'Frequency' }
-// entry here and mirror the TopicsTab sort logic.
+// ISS-230 shipped 2026-07-07: `/vault/entities` hydrates `mention_count`
+// and `last_mentioned` per row. People tab mirrors the Topics-tab sort:
+// Frequency (default) or Recency.
 const ENTITY_SORT_OPTIONS = [
+  { value: 'frequency', label: 'Frequency' },
   { value: 'recency', label: 'Recency' },
 ]
 
@@ -29,7 +28,7 @@ export default function PeopleTab() {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('person')
   const [selectedEntity, setSelectedEntity] = useState(null)
-  const [sort, setSort] = useState('recency')
+  const [sort, setSort] = useState('frequency')
 
   useEffect(() => { if (entityData) setEntities(entityData) }, [entityData])
 
@@ -47,14 +46,19 @@ export default function PeopleTab() {
         return name.includes(q) || aliases.includes(q) || attrs.includes(q)
       })
     }
-    // Recency = last_mentioned desc, falling back to updated_at when the
-    // backend hasn't populated last_mentioned yet (ISS-230). Nulls sort last.
     const sorted = [...list]
-    sorted.sort((a, b) => {
-      const ta = new Date(a.last_mentioned || a.updated_at || 0).getTime()
-      const tb = new Date(b.last_mentioned || b.updated_at || 0).getTime()
-      return tb - ta
-    })
+    if (sort === 'frequency') {
+      // mention_count desc (ISS-230). Nulls sort last.
+      sorted.sort((a, b) => (b.mention_count || 0) - (a.mention_count || 0))
+    } else {
+      // Recency = last_mentioned desc, falling back to updated_at for
+      // entities with no mentions yet.
+      sorted.sort((a, b) => {
+        const ta = new Date(a.last_mentioned || a.updated_at || 0).getTime()
+        const tb = new Date(b.last_mentioned || b.updated_at || 0).getTime()
+        return tb - ta
+      })
+    }
     return sorted
   }, [entities, typeFilter, search, sort])
 
