@@ -1,28 +1,54 @@
 // src/components/demo/PersonaOnboarding.jsx
 import { useState } from 'react'
 
-const ALEX_CONTEXT = {
-  name: 'Alex Chen',
-  subtitle: '34-year-old Senior Product Manager. Alex has been using his HridAI for 6 months — talking through personal milestones, life decisions, office challenges, and to feel like he isn\'t managing his life alone.',
-  cards: [
-    { emoji: '👨‍👩‍👦', label: 'Family', color: '#60a5fa', text: 'Wife Sarah (pregnant), son Max (5), Mom Linda in Phoenix' },
-    { emoji: '🏠', label: 'Big Decision', color: '#14b8a6', text: 'Planning a move from SF to Phoenix — closer to Mom, more space for the baby' },
-    { emoji: '💼', label: 'Work', color: '#f59e0b', text: 'Just promoted to Senior PM. Navigating remote work approval & Q2 roadmap stress' },
-    { emoji: '🏃', label: 'Personal', color: '#ec4899', text: 'Training for a half marathon. Uses running to decompress from work & life stress' },
-  ],
-  vault: [
-    { emoji: '👥', stat: '40 Entities', text: 'People, places & organizations from Alex\'s life — many interconnected' },
-    { emoji: '✅', stat: '48 Todos', text: 'Baby prep, move logistics, work handoffs — auto-created from conversation' },
-    { emoji: '💬', stat: '96 Topics', text: 'Life threads tracked across career, family, health, and decisions' },
-    { emoji: '📅', stat: 'Key Dates', text: 'Birthdays, deadlines, baby due date — surfaced proactively' },
-    { emoji: '📄', stat: '10 Artifacts', text: 'Plans, lists & documents created by HridAI — easy to access' },
-    { emoji: '🌐', stat: 'World Graph', text: 'Visual map of how Alex\'s people, topics, and life connect' },
-  ],
+const PERSONA_CONTEXTS = {
+  alex: {
+    name: 'Alex Chen',
+    image: '/images/alex-persona.png',
+    fallbackEmoji: '👨‍💼',
+    duration: '6 months',
+    subtitle: '34-year-old Senior Product Manager. Alex has been using his HridAI for 6 months — talking through personal milestones, life decisions, office challenges, and to feel like he isn\'t managing his life alone.',
+    cards: [
+      { emoji: '👨‍👩‍👦', label: 'Family', color: '#60a5fa', text: 'Wife Sarah (pregnant), son Max (5), Mom Linda in Phoenix' },
+      { emoji: '🏠', label: 'Big Decision', color: '#14b8a6', text: 'Planning a move from SF to Phoenix — closer to Mom, more space for the baby' },
+      { emoji: '💼', label: 'Work', color: '#f59e0b', text: 'Just promoted to Senior PM. Navigating remote work approval & Q2 roadmap stress' },
+      { emoji: '🏃', label: 'Personal', color: '#ec4899', text: 'Training for a half marathon. Uses running to decompress from work & life stress' },
+    ],
+    vault: [
+      { emoji: '👥', stat: '40 Entities', text: 'People, places & organizations from Alex\'s life — many interconnected' },
+      { emoji: '✅', stat: '48 Todos', text: 'Baby prep, move logistics, work handoffs — auto-created from conversation' },
+      { emoji: '💬', stat: '96 Topics', text: 'Life threads tracked across career, family, health, and decisions' },
+      { emoji: '📅', stat: 'Key Dates', text: 'Birthdays, deadlines, baby due date — surfaced proactively' },
+      { emoji: '📄', stat: '10 Artifacts', text: 'Plans, lists & documents created by HridAI — easy to access' },
+      { emoji: '🌐', stat: 'World Graph', text: 'Visual map of how Alex\'s people, topics, and life connect' },
+    ],
+  },
+  bruce: {
+    name: 'Bruce Wayne',
+    image: '/images/bruce_image.png',
+    fallbackEmoji: '🦇',
+    duration: '7 months',
+    subtitle: 'CEO of Wayne Enterprises, chairs the Wayne Foundation, and — quietly — the vigilante. Seven months of memory: a corporate expansion fight won, the Court of Owls investigation shelved and reawakened, Alfred through cardiac surgery, Damian growing up in real time.',
+    cards: [
+      { emoji: '👨‍👦', label: 'Family', color: '#60a5fa', text: 'Alfred (butler, post-cardiac), Damian (son, 13, current Robin), Dick and Tim (grown wards)' },
+      { emoji: '🦉', label: 'The Big Case', color: '#f59e0b', text: 'Court of Owls — shelved April, reawakened in July when Talon-forged steel surfaces on a Grand Ave crew' },
+      { emoji: '🏢', label: 'Wayne Enterprises', color: '#14b8a6', text: 'R&D pivot to city-resilience tech — five-month board fight won April 15, Tokyo office next' },
+      { emoji: '🌹', label: 'The Foundation', color: '#ec4899', text: 'Wayne Foundation $2.3M spring gala; conditional grant to Pamela Isley for Robinson Park restoration' },
+    ],
+    vault: [
+      { emoji: '👥', stat: '68 Entities', text: 'People, orgs & places Bruce holds in his head — connected across cape and civilian lives' },
+      { emoji: '✅', stat: '73 Todos', text: 'From "trace the Kosov ledger" to "attend Damian\'s fencing tournament" — everything he\'s tracking' },
+      { emoji: '💬', stat: '52 Topics', text: 'Life threads across investigations, board work, Foundation, family — resolved, dormant, or live' },
+      { emoji: '📅', stat: 'Key Dates', text: 'Board vote, gala, fencing tournament, cardiology follow-up, silent anniversaries' },
+      { emoji: '📄', stat: '10 Artifacts', text: 'Board memos, threat assessments, Court-ledger briefs, cardiac-care plans, spec artifacts' },
+      { emoji: '🌐', stat: 'World Graph', text: 'How Alfred, Damian, Selina, the Court, and Wayne Enterprises all connect' },
+    ],
+  },
 }
 
 export default function PersonaOnboarding({ personaId, personaName, isLoading, error, onEnter, onBack }) {
   const [slide, setSlide] = useState(0)
-  const ctx = ALEX_CONTEXT
+  const ctx = PERSONA_CONTEXTS[personaId] || PERSONA_CONTEXTS.alex
 
   if (error) {
     return (
@@ -69,8 +95,8 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
                 </div>
                 <div className="flex-[3] flex items-start justify-center self-stretch">
                   <img
-                    src="/images/alex-persona.png"
-                    alt="Alex Chen"
+                    src={ctx.image}
+                    alt={ctx.name}
                     className="w-auto max-w-full object-contain"
                     style={{ height: '115%' }}
                     onError={(e) => {
@@ -83,7 +109,7 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
                     background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                     fontSize: 40,
                     boxShadow: '0 8px 24px rgba(99,102,241,0.25)',
-                  }}>👨‍💼</div>
+                  }}>{ctx.fallbackEmoji}</div>
                 </div>
               </div>
 
@@ -108,7 +134,7 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
               onNext={() => setSlide(1)}
               onEnter={onEnter}
               nextLabel="What's in his vault? →"
-              enterLabel="Chat as Alex"
+              enterLabel={`Chat as ${ctx.name.split(' ')[0]}`}
             />
           </div>
         )}
@@ -123,7 +149,7 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
                 What's inside {ctx.name.split(' ')[0]}'s Vault
               </h1>
               <p className="text-xs mb-4 md:mb-5" style={{ color: '#5a6478', lineHeight: 1.6 }}>
-                This demo was created by simulating {ctx.name.split(' ')[0]}'s conversations with his HridAI, turn by turn — the same way a real user would. Here's what his HridAI built from 6 months of talking.
+                This demo was created by simulating {ctx.name.split(' ')[0]}'s conversations with his HridAI, turn by turn — the same way a real user would. Here's what his HridAI built from {ctx.duration} of talking.
               </p>
             </div>
 
@@ -156,8 +182,8 @@ export default function PersonaOnboarding({ personaId, personaName, isLoading, e
               onPrev={() => setSlide(0)}
               onNext={null}
               onEnter={onEnter}
-              prevLabel="← Meet Alex"
-              enterLabel="Chat as Alex & Explore his Vault"
+              prevLabel={`← Meet ${ctx.name.split(' ')[0]}`}
+              enterLabel={`Chat as ${ctx.name.split(' ')[0]} & Explore his Vault`}
             />
           </div>
         )}

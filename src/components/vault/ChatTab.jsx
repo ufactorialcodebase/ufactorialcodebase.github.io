@@ -25,6 +25,13 @@ const ALEX_PROMPTS = [
   "I wonder how Max is going to handle all these changes",
 ]
 
+const BRUCE_PROMPTS = [
+  "Show me everything we had on the Owls",
+  "What's overdue that I've been dodging?",
+  "Walk me through the whole board fight from December",
+  "Alfred's medication schedule — read it back",
+]
+
 const DEFAULT_DEMO_PROMPTS = [
   "Just checking in - what's on my plate?",
   "What should I focus on today?",
@@ -37,6 +44,23 @@ const ALEX_GREETINGS = [
   "Hey Alex! I see Max's school orientation is next week. Also, your mom mentioned wanting to video call — it's been a couple weeks. What's on your mind today?",
   "Hey Alex! Quick heads up — you've got a few things converging this month. The baby prep list has some pending items, and I noticed the half marathon training plan could use an update. What would you like to tackle first?",
 ]
+
+const BRUCE_GREETINGS = [
+  "Welcome back. Gordon pulled Talon-forged steel off a Grand Ave crew earlier this week — the Court's waking up. The financials review is queued through August; Barbara starts network mapping in the morning. What are you working?",
+  "Welcome back. Alfred cleared his June cardiology follow-up — regimen stepped down to maintenance. Damian's in Blüdhaven with Dick for the summer plan you signed off on. Duke's first daytime training block is underway. Anything else surfacing?",
+  "Welcome back. Selina's ledger page from the memorial window is now operational evidence — the Kosov thread ties into the new Talon-steel network. Owls file is active again. Where do you want to start?",
+  "Welcome back. Shareholder meeting is July 23, Tokyo review is August 3 — both on the calendar. The own-checkup you've been deferring since April is still open. What's the plan for the day?",
+]
+
+const PERSONA_PROMPTS = {
+  alex: ALEX_PROMPTS,
+  bruce: BRUCE_PROMPTS,
+}
+
+const PERSONA_GREETINGS = {
+  alex: ALEX_GREETINGS,
+  bruce: BRUCE_GREETINGS,
+}
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -63,8 +87,9 @@ export default function ChatTab() {
 
   let chatElement
   if (demo?.isDemo) {
-    const prompts = demo.personaId === 'alex' ? ALEX_PROMPTS : DEFAULT_DEMO_PROMPTS
-    const greeting = demo.personaId === 'alex' ? pickRandom(ALEX_GREETINGS) : null
+    const prompts = PERSONA_PROMPTS[demo.personaId] || DEFAULT_DEMO_PROMPTS
+    const greetingList = PERSONA_GREETINGS[demo.personaId]
+    const greeting = greetingList ? pickRandom(greetingList) : null
     const handleDemoExit = () => {
       setDemoMode(false)
       clearCache()
