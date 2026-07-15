@@ -112,25 +112,21 @@ test.describe.serial('ISS-236: signup + auth-callback regression suite', () => {
     await ensureAccessCode(request)
   })
 
-  test('baseline-01-try-hridai-button-scrolls-not-opens', async ({ page }) => {
+  test('baseline-01-try-hridai-button-goes-directly-to-signup', async ({ page }) => {
     await page.goto('/')
     const heroTry = page.locator('a', { hasText: 'Try HridAI' }).first()
     await expect(heroTry).toBeVisible()
 
-    const scrollBefore = await page.evaluate(() => window.scrollY)
     await heroTry.click()
-    await page.waitForTimeout(1000) // allow smooth-scroll to settle
 
-    // BROKEN TODAY: the hero CTA is <a href="#explore"> — it scrolls the
-    // landing page instead of taking the user to the signup form.
-    expect(page.url()).toContain('#explore')
-    expect(page.url()).not.toContain('/signup')
-    const scrollAfter = await page.evaluate(() => window.scrollY)
-    expect(scrollAfter).toBeGreaterThan(scrollBefore)
-    // No signup form fields anywhere after the click.
-    await expect(page.locator('#access-code')).toHaveCount(0)
+    // FIXED: the hero CTA now navigates straight to /signup — no
+    // scroll-then-hunt-for-a-second-button. Whichever "Try HridAI" button
+    // the user clicks (hero or the Explore section further down), they land
+    // on the signup form directly.
+    await page.waitForURL(/\/signup/, { timeout: 10_000 })
+    await expect(page.locator('#access-code')).toBeVisible()
 
-    await page.screenshot({ path: `${SHOT_DIR}/baseline-01-try-hridai-scrolled.png`, fullPage: false })
+    await page.screenshot({ path: `${SHOT_DIR}/baseline-01-try-hridai-goes-to-signup.png`, fullPage: false })
   })
 
   test('baseline-02-signup-submit-lands-in-app', async ({ page }) => {
@@ -229,5 +225,23 @@ test.describe.serial('ISS-236: signup + auth-callback regression suite', () => {
     await expect(page.locator('#login-password')).toHaveValue('')
 
     await page.screenshot({ path: `${SHOT_DIR}/baseline-05-signin-requires-reentry.png` })
+  })
+
+  test('baseline-06-join-the-waitlist-lands-on-waitlist-section', async ({ page }) => {
+    await page.goto('/signup')
+    await page.getByRole('link', { name: 'Join the waitlist' }).click()
+
+    // FIXED: this is a plain <a href="/#waitlist"> — a full page load of "/"
+    // with a hash. ScrollToTop used to unconditionally force scroll to (0,0)
+    // on every route change, fighting the browser's native anchor-scroll and
+    // always winning, so the user landed at the top of the homepage and had
+    // to find + click ANOTHER "Join the waitlist" link to actually get there.
+    await page.waitForURL(/\/#waitlist/, { timeout: 10_000 })
+    await expect(page.getByRole('heading', { name: 'Join the waitlist' })).toBeInViewport({ timeout: 10_000 })
+
+    const scrollY = await page.evaluate(() => window.scrollY)
+    expect(scrollY).toBeGreaterThan(0) // not stuck at the top of the page
+
+    await page.screenshot({ path: `${SHOT_DIR}/baseline-06-waitlist-section-reached.png` })
   })
 })
