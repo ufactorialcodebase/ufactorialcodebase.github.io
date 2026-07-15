@@ -38,6 +38,21 @@ const PERSONAS = [
     shadowColor: 'shadow-violet-500/25',
   },
   {
+    id: 'bruce',
+    name: 'Bruce Wayne',
+    bio: 'CEO of Wayne Enterprises, chairs the Wayne Foundation, and — quietly — the vigilante. Seven months of memory: a corporate expansion fight, a Court of Owls investigation shelved and reawakened, Alfred through cardiac surgery.',
+    relationships: [
+      { name: 'Alfred', relationship: 'Butler', note: 'father figure, post-cardiac surgery' },
+      { name: 'Damian', relationship: 'Son (13)', note: 'current Robin; summer in Blüdhaven with Dick' },
+      { name: 'Lucius Fox', relationship: 'WE COO', note: 'quartermaster; knows, never says' },
+      { name: 'Selina Kyle', relationship: 'Catwoman', note: 'the unresolved question' },
+    ],
+    topics: ['Court of Owls', 'R&D expansion', 'Alfred cardiac', 'Wayne Foundation gala', 'Damian training'],
+    isAvailable: true,
+    gradient: 'from-slate-800 to-zinc-900',
+    shadowColor: 'shadow-slate-900/40',
+  },
+  {
     id: 'maya',
     name: 'Maya Rodriguez',
     bio: 'Freelance designer who recently relocated to a new city, building her client base while exploring her new home.',
