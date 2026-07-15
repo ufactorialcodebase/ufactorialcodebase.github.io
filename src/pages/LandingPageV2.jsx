@@ -118,9 +118,9 @@ function Hero() {
             It builds memories continuously and connects them to your questions and conversations, making every response truly personal. The same intelligence you've come to expect, but focused around you.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-            <Button href="#explore">
+            <LightButton to="/signup">
               Try HridAI <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            </LightButton>
             <Button variant="secondary" href="#waitlist">
               Join the waitlist
             </Button>
