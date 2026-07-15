@@ -8,10 +8,20 @@ import { formatMessageTime, formatDateRibbon, localDayKey } from '../../lib/form
 // the existing chat mute palette (slate-100/800 pill) so it reads as a
 // section header without shouting. `sticky top-2` keeps the current-day
 // label pinned as the user scrolls — same feel as iMessage / WhatsApp.
+//
+// Overlap fix: CSS `position: sticky` on multiple siblings all use the
+// same offset, which means every day boundary ends up with N ribbons
+// stacked at the top row simultaneously. If the pill has any
+// transparency, previous-day ribbons show through the newer one and
+// read as ghosted duplicates. Fixed by (a) making the pill fully
+// opaque so the newer (later-in-DOM) ribbon completely covers the
+// older, and (b) tightening the shadow + adding a hairline border so
+// the pill has enough visual weight to sit on top of the messages
+// beneath it without the frosted-glass effect.
 function DateRibbon({ text }) {
   return (
     <div className="flex justify-center sticky top-2 z-10 pointer-events-none" data-testid="date-ribbon">
-      <div className="px-3 py-1 rounded-full text-[11px] font-medium bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur text-slate-500 dark:text-slate-400 shadow-sm">
+      <div className="px-3 py-1 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 shadow-md shadow-slate-900/5 dark:shadow-black/20">
         {text}
       </div>
     </div>
