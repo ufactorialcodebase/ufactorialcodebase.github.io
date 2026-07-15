@@ -226,4 +226,22 @@ test.describe.serial('ISS-236: signup + auth-callback regression suite', () => {
 
     await page.screenshot({ path: `${SHOT_DIR}/baseline-05-signin-requires-reentry.png` })
   })
+
+  test('baseline-06-join-the-waitlist-lands-on-waitlist-section', async ({ page }) => {
+    await page.goto('/signup')
+    await page.getByRole('link', { name: 'Join the waitlist' }).click()
+
+    // FIXED: this is a plain <a href="/#waitlist"> — a full page load of "/"
+    // with a hash. ScrollToTop used to unconditionally force scroll to (0,0)
+    // on every route change, fighting the browser's native anchor-scroll and
+    // always winning, so the user landed at the top of the homepage and had
+    // to find + click ANOTHER "Join the waitlist" link to actually get there.
+    await page.waitForURL(/\/#waitlist/, { timeout: 10_000 })
+    await expect(page.getByRole('heading', { name: 'Join the waitlist' })).toBeInViewport({ timeout: 10_000 })
+
+    const scrollY = await page.evaluate(() => window.scrollY)
+    expect(scrollY).toBeGreaterThan(0) // not stuck at the top of the page
+
+    await page.screenshot({ path: `${SHOT_DIR}/baseline-06-waitlist-section-reached.png` })
+  })
 })
