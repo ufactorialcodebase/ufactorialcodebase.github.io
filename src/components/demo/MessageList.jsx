@@ -3,6 +3,7 @@ import { User, Bot, Loader2, Sparkles, Brain } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import ToolCallCard, { shouldShowToolCall } from './ToolCallCard';
 import { formatMessageTime, formatDateRibbon, localDayKey } from '../../lib/format-utils';
+import { useNow } from '../../hooks/useNow';
 
 // Sticky ribbon between messages from different local days. Visually matches
 // the existing chat mute palette (slate-100/800 pill) so it reads as a
@@ -53,7 +54,7 @@ const MARKDOWN_COMPONENTS = {
 /**
  * Individual message bubble
  */
-function MessageBubble({ message, mode }) {
+function MessageBubble({ message, mode, now }) {
   const isUser = message.role === 'user';
   const isStreaming = message.isStreaming;
   const isError = message.isError;
@@ -128,7 +129,7 @@ function MessageBubble({ message, mode }) {
                         : 'text-slate-400 dark:text-slate-500'
                   }`}
                 >
-                  {formatMessageTime(message.timestamp)}
+                  {formatMessageTime(message.timestamp, now)}
                 </div>
               )}
             </>
@@ -158,6 +159,9 @@ function MessageBubble({ message, mode }) {
 export default function MessageList({ messages, isLoading, isInitializing = false, mode = 'try_it_out' }) {
   const bottomRef = useRef(null);
   const isAlexMode = mode === 'alex';
+  // ISS-248: single "now" reference for the whole list — persona
+  // anchor in demo mode, real Date.now() for real users.
+  const now = useNow();
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -217,24 +221,25 @@ export default function MessageList({ messages, isLoading, isInitializing = fals
         const dayKey = localDayKey(message.timestamp);
         const showRibbon = dayKey && dayKey !== prevDayKey;
         prevDayKey = dayKey;
-        const ribbonText = showRibbon ? formatDateRibbon(message.timestamp) : null;
+        const ribbonText = showRibbon ? formatDateRibbon(message.timestamp, now) : null;
         return (
           <React.Fragment key={message.id || idx}>
             {showRibbon && <DateRibbon text={ribbonText} />}
-            <MessageBubble message={message} mode={mode} />
+            <MessageBubble message={message} mode={mode} now={now} />
           </React.Fragment>
         );
       })}
       
       {/* Loading indicator */}
       {isLoading && (
-        <MessageBubble 
-          message={{ 
-            role: 'assistant', 
-            content: '', 
-            isStreaming: true 
+        <MessageBubble
+          message={{
+            role: 'assistant',
+            content: '',
+            isStreaming: true
           }}
           mode={mode}
+          now={now}
         />
       )}
       

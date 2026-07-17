@@ -6,6 +6,7 @@ import { useDemo } from './DemoContext'
 import { clearCache, setDemoMode } from '../../lib/vault-cache'
 import { useFeatureFlag } from '../../hooks/useFeatureFlag'
 import { useAuth } from '../../hooks/useAuth'
+import { useNow } from '../../hooks/useNow'
 import WelcomeStrip from './WelcomeStrip'
 import { getWelcomeCounts } from '../../lib/api/vault-counts'
 import { getLastSeen } from '../../lib/api/vault-last-seen'
@@ -74,6 +75,8 @@ export default function ChatTab() {
   const { user } = useAuth()
   const [counts, setCounts] = useState(null)
   const [lastSeen, setLastSeen] = useState(undefined) // undefined=loading, null=unavailable, ISO=present
+  // ISS-248: persona anchor in demo, real Date.now() otherwise.
+  const now = useNow()
 
   useEffect(() => {
     if (!flagOn) return
@@ -136,7 +139,7 @@ export default function ChatTab() {
     if (lastSeen && counts && Array.isArray(counts._rawTopics) && Array.isArray(counts._rawEntities)) {
       const cutoff = new Date(lastSeen).getTime()
       if (!Number.isNaN(cutoff)) {
-        daysSince = Math.max(0, Math.floor((Date.now() - cutoff) / 86400000))
+        daysSince = Math.max(0, Math.floor((now.getTime() - cutoff) / 86400000))
         deltas = {
           newPeople: counts._rawEntities.filter(e => new Date(e.first_mentioned_at || e.created_at || 0).getTime() > cutoff).length,
           newThreads: counts._rawTopics.filter(t => new Date(t.first_mentioned || t.created_at || 0).getTime() > cutoff).length,

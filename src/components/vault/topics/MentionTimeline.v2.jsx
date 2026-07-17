@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getTopicMentions } from '../../../lib/api/vault-topic-mentions'
 import { getEpisode } from '../../../lib/api/vault-episodes'
+import { useNow } from '../../../hooks/useNow'
 
 const SENTIMENT_COLOR = {
   positive: 'bg-[color:#4f6b4f]',
@@ -16,13 +17,15 @@ function dotColor(s) {
   return SENTIMENT_COLOR[(s || 'neutral').toLowerCase()] || SENTIMENT_COLOR.neutral
 }
 
-function formatWhen(iso) {
+// ISS-248: accept `now` so persona-demo callers can substitute the
+// story-time anchor for real Date.now() when labeling "Today" / "Yesterday".
+function formatWhen(iso, now) {
   if (!iso) return ''
   const d = new Date(iso)
   if (isNaN(d)) return ''
-  const now = new Date()
-  const sameDay = d.toDateString() === now.toDateString()
-  const y = new Date(now)
+  const nowDate = now || new Date()
+  const sameDay = d.toDateString() === nowDate.toDateString()
+  const y = new Date(nowDate)
   y.setDate(y.getDate() - 1)
   const isYesterday = d.toDateString() === y.toDateString()
   const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase().replace(' ', '')
@@ -97,7 +100,7 @@ function EpisodeDetails({ episode, aiInput }) {
   )
 }
 
-function MentionCard({ mention }) {
+function MentionCard({ mention, now }) {
   const [episodeOpen, setEpisodeOpen] = useState(false)
   const [episode, setEpisode] = useState(null)
   const [episodeFetched, setEpisodeFetched] = useState(false)
@@ -123,7 +126,7 @@ function MentionCard({ mention }) {
           title={mention.topic_sentiment || 'neutral'}
         />
         <time className="text-[11px] text-[var(--text-tertiary)]">
-          {formatWhen(mention.conversation_at)}
+          {formatWhen(mention.conversation_at, now)}
         </time>
         {mention.attributed_to && mention.attributed_to !== 'user' && (
           <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
@@ -164,6 +167,8 @@ export default function MentionTimelineV2({ topicId }) {
   const [offset, setOffset] = useState(0)
   const [total, setTotal] = useState(null)
   const [loadingMore, setLoadingMore] = useState(false)
+  // ISS-248: persona anchor in demo, real Date.now() otherwise.
+  const now = useNow()
 
   useEffect(() => {
     if (!topicId) {
@@ -231,7 +236,7 @@ export default function MentionTimelineV2({ topicId }) {
     <div>
       <div className="md:border-l md:border-[var(--border-subtle)]">
         {mentions.map((m) => (
-          <MentionCard key={m.id} mention={m} />
+          <MentionCard key={m.id} mention={m} now={now} />
         ))}
       </div>
       {!atEnd && (

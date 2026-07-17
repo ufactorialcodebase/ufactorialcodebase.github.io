@@ -1,6 +1,7 @@
 // src/components/vault/todos/TodayPanel.jsx
 import { useState, useRef } from 'react'
 import { Sun, GripVertical, X, Check, Circle, Maximize2, Minimize2, Calendar } from 'lucide-react'
+import { useNow } from '../../../hooks/useNow'
 
 const PRIORITY_STYLES = {
   high: { bg: 'rgba(248,113,113,0.15)', text: '#f87171' },
@@ -8,11 +9,14 @@ const PRIORITY_STYLES = {
   low: { bg: 'rgba(139,149,168,0.15)', text: '#8b95a8' },
 }
 
-function formatDue(d) {
+// ISS-248: accept `now` so persona-demo callers can substitute the
+// story-time anchor for real Date.now() when computing OVERDUE / Today.
+function formatDue(d, now) {
   if (!d) return null
   const date = new Date(d + 'T00:00:00')
-  const now = new Date(); now.setHours(0, 0, 0, 0)
-  const diff = Math.floor((date - now) / 86400000)
+  const nowStart = now ? new Date(now.getTime()) : new Date()
+  nowStart.setHours(0, 0, 0, 0)
+  const diff = Math.floor((date - nowStart) / 86400000)
   const label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   if (diff < 0) return { label: 'OVERDUE', cls: 'text-red-400 font-medium' }
   if (diff === 0) return { label: 'Today', cls: 'text-[var(--accent-amber)] font-medium' }
@@ -36,8 +40,10 @@ export default function TodayPanel({ todos, tags, onComplete, onUpdate, onSetTag
   const [dragOverId, setDragOverId] = useState(null)
   const [dragPosition, setDragPosition] = useState(null)
   const dragRef = useRef(null)
+  // ISS-248: persona anchor in demo, real Date.now() otherwise.
+  const now = useNow()
 
-  const todayDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  const todayDate = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
   const total = todos.length
 
   const handleDragStart = (e, id) => {
@@ -123,7 +129,7 @@ export default function TodayPanel({ todos, tags, onComplete, onUpdate, onSetTag
       {/* List */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
         {todos.map((todo, i) => {
-          const due = formatDue(todo.due_date)
+          const due = formatDue(todo.due_date, now)
           const tag = getTagObj(todo)
           const p = (todo.priority || 'medium').toLowerCase()
           const pStyle = PRIORITY_STYLES[p] || PRIORITY_STYLES.medium

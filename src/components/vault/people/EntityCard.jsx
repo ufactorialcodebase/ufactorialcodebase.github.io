@@ -1,6 +1,7 @@
 // src/components/vault/people/EntityCard.jsx
 import { getTypeColor, getTypeLabel } from './entity-utils'
 import { timeAgo } from '../../../lib/format-utils'
+import { useNow } from '../../../hooks/useNow'
 
 export default function EntityCard({ entity, onClick }) {
   const color = getTypeColor(entity.type)
@@ -11,7 +12,9 @@ export default function EntityCard({ entity, onClick }) {
     .filter(([k]) => !['id', 'entity_id', 'type', 'user_id', 'name'].includes(k))
     .slice(0, 3)
     .map(([k, v]) => `${v}`)
-  const lastMentioned = timeAgo(entity.last_mentioned || entity.updated_at)
+  // ISS-248: use persona anchor in demo, real Date.now() otherwise.
+  const now = useNow()
+  const lastMentioned = timeAgo(entity.last_mentioned || entity.updated_at, now)
 
   return (
     <div

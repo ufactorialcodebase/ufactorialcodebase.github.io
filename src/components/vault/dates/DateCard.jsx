@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { Trash2 } from 'lucide-react'
 import { daysUntilDate as daysUntil } from '../../../lib/format-utils'
+import { useNow } from '../../../hooks/useNow'
 
 const TYPE_ICONS = {
   birthday: '🎂', anniversary: '📌', deadline: '⏰',
@@ -42,6 +43,8 @@ function parseMonthDay(monthDay) {
 
 export default function DateCard({ date, isPast, onUpdate, onDelete, onOpenDetail }) {
   const [hovered, setHovered] = useState(false)
+  // ISS-248: story-time now in persona demo, real Date.now() otherwise.
+  const now = useNow()
   const { month, day } = parseMonthDay(date.month_day)
   const importance = (date.importance || 'medium').toLowerCase()
   const pBadge = PRIORITY_BADGE_COLORS[importance] || PRIORITY_BADGE_COLORS.medium
@@ -51,7 +54,7 @@ export default function DateCard({ date, isPast, onUpdate, onDelete, onOpenDetai
   const typeIcon = TYPE_ICONS[typeKey] || '📅'
   const isAnnual = date.recurs === 'annual'
 
-  const rawDays = daysUntil(date.month_day)
+  const rawDays = daysUntil(date.month_day, now)
   let countdown = ''
   let countdownCls = 'text-[var(--text-tertiary)]'
   if (isPast && !isAnnual) {

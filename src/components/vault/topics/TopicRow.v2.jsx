@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Trash2, ChevronDown } from 'lucide-react'
 import { timeAgo } from '../../../lib/format-utils'
+import { useNow } from '../../../hooks/useNow'
 import { motion, AnimatePresence } from 'framer-motion'
 import InlineEdit from '../InlineEdit'
 import MentionTimelineV2 from './MentionTimeline.v2'
@@ -32,6 +33,8 @@ const STATUS_CYCLE = ['active', 'resolved', 'dormant']
 export default function TopicRowV2({ topic, onUpdate, onDelete, entityLookup = {} }) {
   const [expanded, setExpanded] = useState(false)
   const [hovered, setHovered] = useState(false)
+  // ISS-248: persona anchor in demo, real Date.now() otherwise.
+  const now = useNow()
   const status = (topic.current_status || 'active').toLowerCase()
   const style = STATUS_STYLES[status] || STATUS_STYLES.active
   const category = (topic.category || '').toLowerCase()
@@ -83,7 +86,7 @@ export default function TopicRowV2({ topic, onUpdate, onDelete, entityLookup = {
         </button>
         {topic.last_mentioned && (
           <span className="text-[var(--text-tertiary)] text-[10px] shrink-0 hidden sm:block">
-            {timeAgo(topic.last_mentioned)}
+            {timeAgo(topic.last_mentioned, now)}
           </span>
         )}
         {hovered && (

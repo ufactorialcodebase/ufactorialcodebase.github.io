@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react'
 import { Trash2, CheckCircle, Circle, Check } from 'lucide-react'
 import InlineEdit from '../InlineEdit'
+import { useNow } from '../../../hooks/useNow'
 
 const PRIORITY_STYLES = {
   high: { bg: 'rgba(248,113,113,0.15)', text: '#f87171' },
@@ -9,12 +10,15 @@ const PRIORITY_STYLES = {
   low: { bg: 'rgba(139,149,168,0.15)', text: '#8b95a8' },
 }
 
-function formatDueDate(d) {
+// ISS-248: accept `now` so persona-demo callers can substitute the
+// story-time anchor for real Date.now() and see the correct
+// OVERDUE/Today/Tomorrow signal.
+function formatDueDate(d, now) {
   if (!d) return null
   const date = new Date(d + 'T00:00:00')
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  const diff = Math.floor((date - now) / 86400000)
+  const nowStart = now ? new Date(now.getTime()) : new Date()
+  nowStart.setHours(0, 0, 0, 0)
+  const diff = Math.floor((date - nowStart) / 86400000)
   const label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   if (diff < 0) return { label: 'OVERDUE', overdue: true }
   if (diff === 0) return { label: 'Due today', overdue: false, today: true }
@@ -28,7 +32,9 @@ export default function TodoItem({ todo, tags, onComplete, onUpdate, onDelete, o
   const isCompleted = todo.status === 'completed'
   const priority = (todo.priority || 'medium').toLowerCase()
   const pStyle = PRIORITY_STYLES[priority] || PRIORITY_STYLES.medium
-  const due = formatDueDate(todo.due_date)
+  // ISS-248: persona anchor in demo, real Date.now() otherwise.
+  const now = useNow()
+  const due = formatDueDate(todo.due_date, now)
   const isInToday = todo.in_today
 
   const sourceLabel = todo.source === 'ai_manager' ? 'from chat' : 'from UI'

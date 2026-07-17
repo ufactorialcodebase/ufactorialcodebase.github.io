@@ -21,6 +21,10 @@ export default function DemoSimulatedVault() {
   const [chatReady, setChatReady] = useState(false)
   const [error, setError] = useState(null)
   const [showOverlay, setShowOverlay] = useState(true)
+  // ISS-248: persona's frozen story-time anchor from /vault/demo/{persona}.
+  // Passed to DemoProvider so useNow() returns this instead of real Date.now()
+  // for every relative-date render in the demo vault.
+  const [demoNow, setDemoNow] = useState(null)
   const initStarted = useRef(false)
 
   // Load vault data + start persona session in parallel
@@ -44,6 +48,10 @@ export default function DemoSimulatedVault() {
         setCached('artifacts', data.artifacts || [])
         setCached('lists', data.lists || [])
         setCached('world', data.world || { nodes: [], edges: [] })
+        // ISS-248: demo_now is the persona's frozen anchor. If backend
+        // hasn't shipped the field yet, demoNow stays null and useNow()
+        // falls through to real Date.now() — same as pre-fix.
+        if (data.demo_now) setDemoNow(data.demo_now)
         setDemoMode(true)
         setVaultReady(true)
       } catch (err) {
@@ -132,7 +140,7 @@ export default function DemoSimulatedVault() {
   const isChatActive = location.pathname === `${basePath}/chat`
 
   return (
-    <DemoProvider personaId={personaId} personaName={personaName}>
+    <DemoProvider personaId={personaId} personaName={personaName} demoNow={demoNow}>
       {/* Mirrors VaultLayout structure exactly: flex-col on mobile, flex-row on desktop */}
       <div className="vault-theme h-dvh flex flex-col md:flex-row bg-[var(--bg-primary)]">
 
