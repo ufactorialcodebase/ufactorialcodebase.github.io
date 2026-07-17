@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { getDates, createDate, deleteDate } from '../../../lib/api/vault-dates'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
 import { daysUntilDate } from '../../../lib/format-utils'
+import { useNow } from '../../../hooks/useNow'
 
 const FILTER_TYPES = [
   { key: 'all', label: 'All' },
@@ -28,6 +29,8 @@ export default function DatesTab() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [filter, setFilter] = useState('all')
   const [detailDate, setDetailDate] = useState(null)
+  // ISS-248: story-time now in persona demo, real Date.now() otherwise.
+  const now = useNow()
 
   useEffect(() => { if (dateData) setDates(dateData) }, [dateData])
 
@@ -38,11 +41,11 @@ export default function DatesTab() {
     const up = []
     const pa = []
     for (const d of filtered) {
-      const days = daysUntilDate(d.month_day)
+      const days = daysUntilDate(d.month_day, now)
       // For annual dates, days is always >= 0 (next occurrence)
       // For one-time past dates, days wraps to next year — check if year is in the past
       const isOnetime = d.recurs === 'once'
-      const isPast = isOnetime && d.year && new Date(`${d.year}-${d.month_day}`) < new Date()
+      const isPast = isOnetime && d.year && new Date(`${d.year}-${d.month_day}`) < now
 
       if (isPast) {
         pa.push({ ...d, _isPast: true })
@@ -52,7 +55,7 @@ export default function DatesTab() {
     }
     up.sort((a, b) => a._daysUntil - b._daysUntil)
     return { upcoming: up, past: pa }
-  }, [dates, filter])
+  }, [dates, filter, now])
 
   const handleCreate = async (data) => {
     try {

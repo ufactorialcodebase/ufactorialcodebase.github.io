@@ -1,10 +1,13 @@
 // src/components/vault/artifacts/ArtifactCard.jsx
 import { timeAgo } from '../../../lib/format-utils'
 import { getContentTypeStyle } from './artifact-utils'
+import { useNow } from '../../../hooks/useNow'
 
 export default function ArtifactCard({ artifact, onClick }) {
   const style = getContentTypeStyle(artifact.content_type)
-  const updated = timeAgo(artifact.updated_at || artifact.created_at)
+  // ISS-248: persona anchor in demo, real Date.now() otherwise.
+  const now = useNow()
+  const updated = timeAgo(artifact.updated_at || artifact.created_at, now)
 
   return (
     <div
