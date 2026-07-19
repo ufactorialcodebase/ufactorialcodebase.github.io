@@ -90,7 +90,10 @@ export default function WorldTab() {
     ))
   }, [worldData, mentionCountMap])
 
-  const rawEdges = worldData?.edges || []
+  // Memoize to keep the reference stable across renders — three
+  // downstream useMemos depend on it (BFS distances, connections list,
+  // filtered `nodes`/`edges` view).
+  const rawEdges = useMemo(() => worldData?.edges || [], [worldData])
 
   // "Entities only" hides topic nodes (topic node type == 'topic') and any
   // edge that references one. "you" always stays so the graph keeps its
@@ -123,6 +126,55 @@ export default function WorldTab() {
       bridgeExcluded: DEFAULT_BRIDGE_EXCLUDED,
     })
   }, [selectedNode, rawEdges])
+
+  // Fast id→node lookup for resolving the "other end" of each edge into
+  // a human label when building the Connections list for the panel.
+  const nodesById = useMemo(() => {
+    const m = new Map()
+    for (const n of rawNodes) m.set(n.id, n)
+    return m
+  }, [rawNodes])
+
+  // Relations touching the selected node — every edge where selectedNode
+  // is either endpoint. Kept intentionally unopinionated about direction
+  // (we don't render arrows): the relation LABEL already carries the
+  // semantics (`spouse`, `works_at`, `mentioned_in`), and mixing arrows
+  // in with topic ↔ entity `mentioned_in` edges reads noisier than the
+  // label alone. Deduped by (other, label) so a rare double-persisted
+  // edge doesn't show twice.
+  const selectedConnections = useMemo(() => {
+    if (!selectedNode) return []
+    const out = []
+    const seen = new Set()
+    for (const e of rawEdges) {
+      const isSource = e.source === selectedNode.id
+      const isTarget = e.target === selectedNode.id
+      if (!isSource && !isTarget) continue
+      const otherId = isSource ? e.target : e.source
+      const other = nodesById.get(otherId)
+      if (!other) continue
+      const label = (e.label || e.type || 'related').replace(/_/g, ' ')
+      const key = `${otherId}::${label}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      out.push({
+        otherId,
+        otherLabel: other.label || otherId,
+        otherType: other.type,
+        otherColor: other.color,
+        relation: label,
+      })
+    }
+    // Stable ordering: `you` first (most important context), then by
+    // other-node label so the list feels alphabetical rather than
+    // insertion-order random.
+    out.sort((a, b) => {
+      if (a.otherId === 'you' && b.otherId !== 'you') return -1
+      if (b.otherId === 'you' && a.otherId !== 'you') return 1
+      return a.otherLabel.localeCompare(b.otherLabel)
+    })
+    return out
+  }, [selectedNode, rawEdges, nodesById])
 
   // Overlay content shown inside the always-mounted container
   const overlay = loading ? (
@@ -215,12 +267,36 @@ export default function WorldTab() {
               <span className="text-[var(--text-secondary)] text-xs capitalize">{selectedNode.type}</span>
             </div>
             <div className="text-[var(--text-primary)] text-lg font-semibold mb-2">{selectedNode.label}</div>
-            {selectedNode.relationship && (
-              <div className="text-[var(--text-tertiary)] text-sm mb-2">Relationship: {selectedNode.relationship}</div>
-            )}
             {selectedNode.status && (
-              <div className="text-[var(--text-tertiary)] text-sm">Status: {selectedNode.status}</div>
+              <div className="text-[var(--text-tertiary)] text-sm mb-3">Status: {selectedNode.status}</div>
             )}
+
+            <div className="mt-4 pt-3 border-t border-[var(--border-subtle)]" data-testid="world-node-connections">
+              <div className="text-[var(--text-secondary)] text-xs uppercase tracking-wide mb-2">
+                Connections{selectedConnections.length > 0 ? ` (${selectedConnections.length})` : ''}
+              </div>
+              {selectedConnections.length === 0 ? (
+                <div className="text-[var(--text-tertiary)] text-sm italic">
+                  No connections recorded yet.
+                </div>
+              ) : (
+                <ul className="space-y-2">
+                  {selectedConnections.map((c) => (
+                    <li key={`${c.otherId}-${c.relation}`} className="flex items-start gap-2 text-sm">
+                      <span
+                        className="mt-1.5 w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: c.otherColor || 'var(--text-tertiary)' }}
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[var(--text-primary)] truncate">{c.otherLabel}</div>
+                        <div className="text-[var(--text-tertiary)] text-xs">{c.relation}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         )}
       </WorldNodePanel>
