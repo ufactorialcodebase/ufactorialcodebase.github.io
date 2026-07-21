@@ -7,30 +7,41 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { MessageCircle, User, Globe, Brain, Settings } from 'lucide-react'
 import RailClusterPopover from './RailClusterPopover'
 
+// Cluster grouping refactored for onboarding clarity + parallel labels
+// (Memory / Notebook are semantically paired: what I've learned about you
+// vs. what I keep for you).
+//
+//   Memory (User icon)  → Self · Network · Threads
+//   Notebook (Brain icon) → Dates · Todos · Lists · Artifacts
+//
+// Threads moved from the Brain cluster into Memory (they're narrative,
+// not action items). Dates + Todos moved from the User cluster into
+// Notebook (they're time-anchored things you produce and act on, not
+// facets of identity).
 const CLUSTERS = (base) => [
   {
     key: 'chat', label: 'Chat', icon: MessageCircle,
     items: [{ path: `${base}/chat`, label: 'Chat' }],
   },
   {
-    key: 'you', label: 'You', icon: User,
+    key: 'memory', label: 'Memory', icon: User,
     items: [
       { path: `${base}/self`, label: 'Self' },
-      { path: `${base}/dates`, label: 'Dates' },
-      { path: `${base}/todos`, label: 'Todos' },
       { path: `${base}/people`, label: 'Network' },
+      { path: `${base}/topics`, label: 'Threads' },
     ],
   },
   {
-    key: 'memory', label: 'Your Memory', icon: Brain,
+    key: 'notebook', label: 'Notebook', icon: Brain,
     items: [
-      { path: `${base}/topics`, label: 'Threads' },
+      { path: `${base}/dates`, label: 'Dates' },
+      { path: `${base}/todos`, label: 'Todos' },
       { path: `${base}/lists`, label: 'Lists' },
       { path: `${base}/artifacts`, label: 'Artifacts' },
     ],
   },
   {
-    key: 'world', label: 'Your World', icon: Globe,
+    key: 'world', label: 'World', icon: Globe,
     items: [{ path: `${base}/world`, label: 'Graph' }],
   },
 ]

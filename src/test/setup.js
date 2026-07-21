@@ -5,5 +5,9 @@ import { cleanup } from '@testing-library/react'
 
 afterEach(() => {
   cleanup()
-  localStorage.clear()
+  // Some test environments hand back a partial localStorage stub
+  // without `.clear()`. Guard so the afterEach never crashes the run.
+  if (typeof globalThis.localStorage?.clear === 'function') {
+    globalThis.localStorage.clear()
+  }
 })
