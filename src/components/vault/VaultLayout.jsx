@@ -8,6 +8,7 @@ import ChatTab from './ChatTab'
 import BetaWelcome from './BetaWelcome'
 import AcceptanceGate from './AcceptanceGate'
 import OnboardingTour, { ONBOARDING_KEY } from './OnboardingTour'
+import SpotlightTour from './SpotlightTour'
 import { useAuth } from '../../hooks/useAuth'
 import { getCached, setCached } from '../../lib/vault-cache'
 import { getWorld } from '../../lib/api/vault-world'
@@ -80,6 +81,9 @@ export default function VaultLayout() {
         <AcceptanceGate />
         <BetaWelcome />
         <OnboardingTour onComplete={() => setTourDone(true)} />
+        {/* Spotlight sequence chains off the welcome tour; only meaningful
+            on the chat tab where the composer anchor is visible. */}
+        <SpotlightTour enabled={tourDone && isChatActive} />
         {toast && (
           <div className="fixed top-4 right-4 z-50 px-4 py-3 rounded-lg bg-emerald-600 text-white text-sm font-medium shadow-lg">
             {toast}

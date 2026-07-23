@@ -76,6 +76,7 @@ export default function IconRailV2({ basePath = '/vault' }) {
           <div key={cluster.key} className="relative">
             <button
               aria-label={cluster.label}
+              data-tour-anchor={cluster.key}
               onClick={() => onClusterClick(cluster)}
               className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
                 active ? 'bg-[var(--bg-tertiary)] text-[var(--accent-indigo)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'

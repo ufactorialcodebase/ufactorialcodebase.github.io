@@ -9,7 +9,8 @@
 // tab's own content lands first.
 import { useState, useEffect } from 'react'
 
-export const tabHintKey = (tab) => `hridai_tab_hint_${tab}`
+export const TAB_HINT_KEY_PREFIX = 'hridai_tab_hint_'
+const tabHintKey = (tab) => `${TAB_HINT_KEY_PREFIX}${tab}`
 
 const COPY = {
   people: {

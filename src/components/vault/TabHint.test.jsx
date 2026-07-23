@@ -1,7 +1,9 @@
 // src/components/vault/TabHint.test.jsx
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
-import TabHint, { tabHintKey } from './TabHint'
+import TabHint, { TAB_HINT_KEY_PREFIX } from './TabHint'
+
+const tabHintKey = (tab) => `${TAB_HINT_KEY_PREFIX}${tab}`
 
 describe('TabHint', () => {
   beforeEach(() => {
