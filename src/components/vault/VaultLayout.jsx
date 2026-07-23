@@ -7,6 +7,7 @@ import MobileTopBar from './MobileTopBar'
 import ChatTab from './ChatTab'
 import BetaWelcome from './BetaWelcome'
 import AcceptanceGate from './AcceptanceGate'
+import OnboardingTour, { ONBOARDING_KEY } from './OnboardingTour'
 import { useAuth } from '../../hooks/useAuth'
 import { getCached, setCached } from '../../lib/vault-cache'
 import { getWorld } from '../../lib/api/vault-world'
@@ -23,6 +24,12 @@ export default function VaultLayout() {
   const { refreshSubscription } = useAuth()
   const [toast, setToast] = useState(null)
   const [mobileContextOpen, setMobileContextOpen] = useState(false)
+  // Tracked as state (not read from localStorage at point of use) so the
+  // spotlight tour can start in the same session the moment the welcome
+  // tour finishes — localStorage alone isn't reactive.
+  const [tourDone, setTourDone] = useState(
+    () => localStorage.getItem(ONBOARDING_KEY) === 'true'
+  )
   // Theme matrix:
   //   flag ON  + dark pref OFF -> 'vault-theme-warm'  (warm cream, redesigned layout)
   //   flag ON  + dark pref ON  -> 'vault-theme'       (dark navy palette, redesigned layout) +
@@ -72,6 +79,7 @@ export default function VaultLayout() {
       <div className={`${themeClass} h-dvh flex flex-col md:flex-row bg-[var(--bg-primary)]`}>
         <AcceptanceGate />
         <BetaWelcome />
+        <OnboardingTour onComplete={() => setTourDone(true)} />
         {toast && (
           <div className="fixed top-4 right-4 z-50 px-4 py-3 rounded-lg bg-emerald-600 text-white text-sm font-medium shadow-lg">
             {toast}
