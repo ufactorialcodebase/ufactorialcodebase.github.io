@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { User, Bot, Loader2, Sparkles, Brain } from 'lucide-react';
+import { User, Bot, Loader2, Sparkles, Brain, Square, X, Clock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import ToolCallCard, { shouldShowToolCall } from './ToolCallCard';
 import { formatMessageTime, formatDateRibbon, localDayKey } from '../../lib/format-utils';
@@ -52,19 +52,34 @@ const MARKDOWN_COMPONENTS = {
 };
 
 /**
- * Individual message bubble
+ * Individual message bubble.
+ *
+ * Two extra message shapes on top of user / assistant:
+ *
+ *   `message.stopped === true` (assistant role) — a small green bubble that
+ *   the AI says after the user hits Stop. Shares the emerald/teal avatar
+ *   gradient with normal AI messages so the voice reads as continuous; the
+ *   Square icon (rather than Sparkles) signals "response was cut here."
+ *
+ *   `message.pending === true` (user role) — a queued user message that
+ *   hasn't been dispatched yet. Renders dimmed with a small × cancel button
+ *   so the user can retract a queued follow-up before it fires. When the
+ *   parent drains the queue it removes the pending flag and the same bubble
+ *   becomes an ordinary user message.
  */
-function MessageBubble({ message, mode, now }) {
+function MessageBubble({ message, mode, now, onCancelQueued }) {
   const isUser = message.role === 'user';
   const isStreaming = message.isStreaming;
   const isError = message.isError;
-  
+  const isStopped = message.stopped;
+  const isPending = message.pending;
+
   return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''} ${isPending ? 'opacity-55' : ''}`}>
       {/* Avatar */}
       <div className={`
         flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm
-        ${isUser 
+        ${isUser
           ? 'bg-gradient-to-br from-slate-700 to-slate-900 dark:from-slate-500 dark:to-slate-700 text-white'
           : mode === 'alex'
             ? 'bg-gradient-to-br from-violet-500 to-indigo-600 text-white'
@@ -73,6 +88,8 @@ function MessageBubble({ message, mode, now }) {
       `}>
         {isUser ? (
           <User className="w-4 h-4" />
+        ) : isStopped ? (
+          <Square className="w-3.5 h-3.5 fill-current" />
         ) : mode === 'alex' ? (
           <Brain className="w-4 h-4" />
         ) : (
@@ -93,14 +110,30 @@ function MessageBubble({ message, mode, now }) {
         
         {/* Text content */}
         <div className={`
-          inline-block px-4 py-3 
-          ${isUser 
+          inline-block px-4 py-3 relative
+          ${isUser
             ? 'bg-gradient-to-br from-slate-700 to-slate-900 text-white rounded-2xl rounded-br-md shadow-lg shadow-slate-900/10'
             : isError
               ? 'bg-red-50 dark:bg-red-950 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800 rounded-2xl rounded-bl-md'
-              : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-2xl rounded-bl-md shadow-sm'
+              : isStopped
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 rounded-2xl rounded-bl-md shadow-sm'
+                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-2xl rounded-bl-md shadow-sm'
           }
         `}>
+          {isPending && onCancelQueued && (
+            // × affordance on queued user messages so the user can retract a
+            // follow-up before the current turn finishes. Positioned outside
+            // the bubble corner so it never overlaps the content.
+            <button
+              type="button"
+              onClick={onCancelQueued}
+              aria-label="Cancel queued message"
+              className="absolute -top-2 -left-2 w-5 h-5 rounded-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-500 dark:hover:border-slate-400 flex items-center justify-center shadow-sm transition-colors"
+              title="Cancel queued message"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
           {message.content ? (
             <>
               {isUser ? (
@@ -126,10 +159,19 @@ function MessageBubble({ message, mode, now }) {
                       ? 'text-white/60'
                       : isError
                         ? 'text-red-600/70 dark:text-red-400/70'
-                        : 'text-slate-400 dark:text-slate-500'
+                        : isStopped
+                          ? 'text-emerald-700/60 dark:text-emerald-300/60'
+                          : 'text-slate-400 dark:text-slate-500'
                   }`}
                 >
-                  {formatMessageTime(message.timestamp, now)}
+                  {isPending ? (
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      queued
+                    </span>
+                  ) : (
+                    formatMessageTime(message.timestamp, now)
+                  )}
                 </div>
               )}
             </>
@@ -156,7 +198,17 @@ function MessageBubble({ message, mode, now }) {
 /**
  * Message list component with auto-scroll
  */
-export default function MessageList({ messages, isLoading, isInitializing = false, mode = 'try_it_out' }) {
+export default function MessageList({
+  messages,
+  isLoading,
+  isInitializing = false,
+  mode = 'try_it_out',
+  // Queued (pending) user messages typed while the AI was processing.
+  // Rendered as dimmed ghost bubbles AT THE END of the list so the user
+  // can see them lined up. `onCancelQueued(index)` removes one.
+  queuedMessages = [],
+  onCancelQueued,
+}) {
   const bottomRef = useRef(null);
   const isAlexMode = mode === 'alex';
   // ISS-248: single "now" reference for the whole list — persona
@@ -242,7 +294,26 @@ export default function MessageList({ messages, isLoading, isInitializing = fals
           now={now}
         />
       )}
-      
+
+      {/* Queued (pending) messages — dimmed ghost user bubbles that will
+          fire back-to-back once the current turn completes or is stopped.
+          Each has a small × affordance so the user can retract before it
+          leaves the client. */}
+      {queuedMessages.map((text, idx) => (
+        <MessageBubble
+          key={`queued-${idx}`}
+          message={{
+            role: 'user',
+            content: text,
+            pending: true,
+            timestamp: new Date().toISOString(),
+          }}
+          mode={mode}
+          now={now}
+          onCancelQueued={onCancelQueued ? () => onCancelQueued(idx) : undefined}
+        />
+      ))}
+
       {/* Scroll anchor */}
       <div ref={bottomRef} />
     </div>

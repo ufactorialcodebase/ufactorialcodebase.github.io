@@ -20,6 +20,28 @@ function generateId() {
 }
 
 /**
+ * Copy shown in the green "stopped" bubble after the user hits stop.
+ * Randomly picked with anti-repeat guard so a rapid double-stop doesn't
+ * surface the same wording twice in a row (would read as canned).
+ */
+const STOPPED_VARIANTS = [
+  "Got it, stopped there. What did you want instead?",
+  "OK, holding off. What did you want to do instead?",
+  "Stopped. What would you like me to do instead?",
+  "Alright, dropping that. Where should we go instead?",
+  "Sure, pausing there. What did you have in mind?",
+  "Understood — stopped. What did you want to do?",
+];
+
+function pickStoppedVariant(lastIndex) {
+  let idx;
+  do {
+    idx = Math.floor(Math.random() * STOPPED_VARIANTS.length);
+  } while (idx === lastIndex && STOPPED_VARIANTS.length > 1);
+  return { text: STOPPED_VARIANTS[idx], index: idx };
+}
+
+/**
  * Main chat container component
  */
 export default function Chat({
@@ -48,6 +70,17 @@ export default function Chat({
   const [currentRetrievalTrace, setCurrentRetrievalTrace] = useState(null);
   const [isRetrieving, setIsRetrieving] = useState(false);
   const [abortFn, setAbortFn] = useState(null);
+  // Messages typed while the AI was processing. Drained back-to-back as
+  // fresh turns once the current turn completes OR the user hits stop.
+  const [queuedMessages, setQueuedMessages] = useState([]);
+  // Ref keeps the last-shown stopped-variant index stable across renders
+  // without triggering a re-render on update — used to prevent immediate
+  // repeats when the user stops twice in a row.
+  const lastStoppedIndexRef = useRef(null);
+  // Guard against re-firing the drain effect on the same transition.
+  // Without this, React's batching could result in two dispatches for one
+  // isLoading→false event under StrictMode's double-invoke.
+  const drainingRef = useRef(false);
   const [usedPrompts, setUsedPrompts] = useState(new Set());
   // session-carryover (ISS-113) — resumption hints surfaced by the backend greeting
   const [sessionMeta, setSessionMeta] = useState({
@@ -291,6 +324,77 @@ export default function Chat({
     
     setAbortFn(() => abort);
   }, [activateDailyLimit]);
+
+  /**
+   * Enqueue a follow-up message the user typed while the AI is still
+   * processing. It fires as a fresh turn after the current one completes
+   * (via the drain effect below) or after the user hits Stop.
+   */
+  const handleQueue = useCallback((text) => {
+    setQueuedMessages((prev) => [...prev, text]);
+  }, []);
+
+  /**
+   * Retract a queued message that hasn't been dispatched yet. Bound to the
+   * × affordance on each pending user bubble.
+   */
+  const handleCancelQueued = useCallback((idx) => {
+    setQueuedMessages((prev) => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  /**
+   * User clicked Stop mid-response.
+   *
+   * Client-only abort per Q3: close the SSE stream on the client and mark
+   * the turn as terminated visually. The backend will continue running
+   * until its next `yield` hits the closed socket, then unwind — any tool
+   * calls it dispatched before we aborted complete normally in the vault.
+   *
+   * The partial AI response (whatever streamed before the click) stays
+   * visible per Q2. A short green "stopped" bubble is appended below it.
+   *
+   * Queue drain kicks in via the drain effect once isLoading flips false.
+   */
+  const handleStop = useCallback(() => {
+    abortFn?.();
+    setIsLoading(false);
+    setIsRetrieving(false);
+    const { text, index } = pickStoppedVariant(lastStoppedIndexRef.current);
+    lastStoppedIndexRef.current = index;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: generateId(),
+        role: 'assistant',
+        content: text,
+        stopped: true,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+  }, [abortFn]);
+
+  /**
+   * Drain the queue back-to-back once the current turn ends (naturally
+   * via `done` OR by user-initiated stop). The `drainingRef` guard
+   * prevents React StrictMode's double-invoke of this effect from
+   * dispatching the same message twice.
+   *
+   * Uses microtask deferral so the state update from setQueuedMessages
+   * commits BEFORE handleSend fires — otherwise handleSend's own
+   * setIsLoading(true) would race with the still-in-flight state batch.
+   */
+  useEffect(() => {
+    if (isLoading || isInitializing) return;
+    if (queuedMessages.length === 0) return;
+    if (drainingRef.current) return;
+    drainingRef.current = true;
+    const next = queuedMessages[0];
+    setQueuedMessages((prev) => prev.slice(1));
+    Promise.resolve().then(() => {
+      drainingRef.current = false;
+      handleSend(next);
+    });
+  }, [isLoading, isInitializing, queuedMessages, handleSend]);
 
   // loadStaticIntro removed - all modes now use loadGreeting()
   // Backend handles new vs returning user logic and returns appropriate messages
@@ -692,6 +796,8 @@ export default function Chat({
               isLoading={isLoading && messages.length > 0}
               isInitializing={isInitializing}
               mode={mode}
+              queuedMessages={queuedMessages}
+              onCancelQueued={handleCancelQueued}
             />
             {dailyLimit.isBlocked && (
               <DailyLimitCard
@@ -754,7 +860,17 @@ export default function Chat({
         <MessageInput
           ref={messageInputRef}
           onSend={handleSend}
-          disabled={isLoading || isInitializing || (isFreeUser && conversationsRemaining <= 0) || dailyLimit.isBlocked}
+          onQueue={handleQueue}
+          onStop={handleStop}
+          // Hard-block only for states where nothing should be typeable
+          // (initializing, free-tier exhausted, daily cap). isLoading is
+          // NOT a hard block anymore — the textarea stays enabled during
+          // processing so the user can type follow-ups that get queued
+          // via handleQueue and drained back-to-back once the current
+          // turn ends (either normally or via stop).
+          disabled={isInitializing || (isFreeUser && conversationsRemaining <= 0) || dailyLimit.isBlocked}
+          isProcessing={isLoading}
+          queuedCount={queuedMessages.length}
           placeholder={(isAlexMode || isSimulatedMode) ? `Chat as ${personaName}...` : "Type a message..."}
           footer={dailyLimit.isBlocked
             ? `Daily limit reached — resets in ${dailyLimit.remainingText}`
