@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import PageHeader from '../PageHeader'
+import TabHint from '../TabHint'
 import EmptyState from '../EmptyState'
 import SidePanel from '../SidePanel'
 import FilterBar from './FilterBar'
@@ -147,6 +148,7 @@ export default function PeopleTab() {
     return (
       <div className="p-6 sm:p-8">
         <PageHeader title="Your Network" subtitle="People, places, and organizations in your life" />
+        <TabHint tab="people" />
         <EmptyState
           icon="👥"
           message="No people or places stored yet. As you mention people in conversation, HridAI will remember them here."
@@ -160,6 +162,7 @@ export default function PeopleTab() {
   return (
     <div className="p-6 sm:p-8">
       <PageHeader title="Your Network" subtitle="People, places, and organizations in your life" />
+      <TabHint tab="people" count={entities.length} />
       <FilterBar
         search={search}
         onSearchChange={setSearch}

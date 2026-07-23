@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import PageHeader from '../PageHeader'
+import TabHint from '../TabHint'
 import EmptyState from '../EmptyState'
 import TopicFilters from './TopicFilters'
 import TopicRowContainer from './TopicRowContainer'
@@ -122,6 +123,7 @@ export default function TopicsTab() {
     return (
       <div className="p-6 sm:p-8">
         <PageHeader title="Your Topics" subtitle="Themes and threads in your life" />
+        <TabHint tab="topics" />
         <EmptyState icon="💡"
           message="No topics tracked yet. After a few conversations, HridAI will identify the themes in your life and track them here."
           ctaLabel="Go to Chat" ctaPath="/vault/chat" />
@@ -132,6 +134,7 @@ export default function TopicsTab() {
   return (
     <div className="p-6 sm:p-8 max-w-3xl">
       <PageHeader title="Your Topics" subtitle="Themes and threads in your life" />
+      <TabHint tab="topics" count={topics.length} />
       <TopicFilters
         statusFilter={statusFilter} onStatusFilterChange={setStatusFilter}
         categoryFilter={categoryFilter} onCategoryFilterChange={setCategoryFilter}

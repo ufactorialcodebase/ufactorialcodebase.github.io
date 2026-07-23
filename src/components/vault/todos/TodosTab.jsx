@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
 import { Plus, ChevronDown, Maximize2, Minimize2 } from 'lucide-react'
 import PageHeader from '../PageHeader'
+import TabHint from '../TabHint'
 import EmptyState from '../EmptyState'
 import TodoItem from './TodoItem'
 import CreateTodoForm from './CreateTodoForm'
@@ -255,6 +256,8 @@ export default function TodosTab() {
             </button>
           </div>
         </div>
+
+        <TabHint tab="todos" count={todos.length} />
 
         {/* Create form */}
         {showCreateForm && (

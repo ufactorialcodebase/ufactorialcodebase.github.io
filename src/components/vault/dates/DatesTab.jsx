@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Plus } from 'lucide-react'
 import PageHeader from '../PageHeader'
+import TabHint from '../TabHint'
 import EmptyState from '../EmptyState'
 import DateCard from './DateCard'
 import CreateDateForm from './CreateDateForm'
@@ -124,6 +125,7 @@ export default function DatesTab() {
     return (
       <div className="p-6 sm:p-8">
         <PageHeader title="Your Dates" subtitle="Birthdays, milestones, and important dates" />
+        <TabHint tab="dates" />
         <EmptyState icon="📅"
           message="No important dates tracked yet. Mention birthdays, deadlines, or milestones in conversation — or add them here." />
         <div className="flex justify-center mt-2">
@@ -145,6 +147,8 @@ export default function DatesTab() {
           <Plus size={14} /> Add
         </button>
       </div>
+
+      <TabHint tab="dates" count={dates.length} />
 
       {showCreateForm && <CreateDateForm onSubmit={handleCreate} onCancel={() => setShowCreateForm(false)} />}
 

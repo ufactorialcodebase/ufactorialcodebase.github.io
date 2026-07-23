@@ -1,6 +1,7 @@
 // src/components/vault/world/WorldTab.jsx
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import PageHeader from '../PageHeader'
+import TabHint from '../TabHint'
 import EmptyState from '../EmptyState'
 import WorldNodePanel from './WorldNodePanel'
 import ForceGraph from './ForceGraph'
@@ -207,6 +208,7 @@ export default function WorldTab() {
     <div className="h-full flex flex-col">
       <div className="p-6 pb-0">
         <PageHeader title="Your World" subtitle="Your life, visualized" />
+        <TabHint tab="world" count={nodes.length > 1 ? nodes.length : 0} />
       </div>
       {/* Node filter — chip strip matching FilterBar / TopicFilters pattern. */}
       {hasGraph && (
