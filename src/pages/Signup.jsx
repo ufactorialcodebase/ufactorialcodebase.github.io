@@ -5,6 +5,7 @@ import { signUp, signIn, signInWithMagicLink, resetPassword } from '../lib/auth'
 import { validateAccessCode } from '../lib/api/index.js'
 import { supabase } from '../lib/supabase'
 import OAuthButtons from '../components/auth/OAuthButtons'
+import { setFeatureFlag } from '../hooks/useFeatureFlag'
 
 const ACCEPTANCE_VERSION = '2026-04-29'
 
@@ -130,7 +131,12 @@ function SignupForm() {
           await logAcceptance(userId)
         }
 
-        // 4. Navigate to vault
+        // 4. New accounts start on the redesigned vault (warm light theme,
+        // Memory/Notebook rail) — the onboarding tour + spotlights are built
+        // against it. Existing users keep whatever they chose in Profile.
+        setFeatureFlag('vault_redesign', true)
+
+        // 5. Navigate to vault
         window.location.href = '/vault/chat'
       } catch {
         // Sign-in failed — most likely email confirmation is required

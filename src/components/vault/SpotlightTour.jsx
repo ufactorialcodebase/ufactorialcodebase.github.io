@@ -20,7 +20,8 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 export const SPOTLIGHT_KEY = 'hridai_spotlight_tour_complete'
 
 const HEADING_FONT = { fontFamily: "'Space Grotesk', system-ui, sans-serif" }
-const RING = '0 0 0 3px rgba(201,127,58,0.85), 0 0 0 9999px rgba(43,33,26,0.72)'
+const RING = '0 0 0 3px rgba(201,127,58,0.85)'
+const DIM = 'rgba(43,33,26,0.72)'
 
 function Snapshot({ label, children }) {
   return (
@@ -217,8 +218,12 @@ export default function SpotlightTour({ enabled }) {
       setRect(measureAnchor(STEPS[step].anchor))
     }
     // First measurement waits for the welcome modal to unmount and layout to
-    // settle; step-to-step remeasures are immediate.
-    const t = setTimeout(measure, measuredOnceRef.current ? 0 : 350)
+    // settle. Step-to-step remeasures run synchronously — a delayed timer
+    // here re-arms on every step change (cleanup clears it before it fires
+    // for fast clickers), leaving the ring one step behind.
+    let t
+    if (measuredOnceRef.current) measure()
+    else t = setTimeout(measure, 350)
     window.addEventListener('resize', measure)
     return () => {
       clearTimeout(t)
@@ -244,20 +249,31 @@ export default function SpotlightTour({ enabled }) {
   const pos = cardPosition(s, rect, cardWidth)
   const PAD = 5
 
+  const holeTop = rect.top - PAD
+  const holeLeft = rect.left - PAD
+  const holeW = rect.width + PAD * 2
+  const holeH = rect.height + PAD * 2
+
   return (
     <div data-testid="spotlight-tour">
-      {/* Click shield — blocks interaction with the page while touring */}
-      <div className="fixed inset-0 z-[59]" />
+      {/* Page dim: four rects around the hole. (A single 9999px box-shadow
+          spread — the mockup's trick — silently fails to paint in Chromium,
+          which drops very large shadow spreads; four plain rects are
+          deterministic.) They also double as the click shield. */}
+      <div data-testid="spotlight-dim" className="fixed z-[59]" style={{ top: 0, left: 0, right: 0, height: Math.max(0, holeTop), background: DIM }} />
+      <div className="fixed z-[59]" style={{ top: holeTop + holeH, left: 0, right: 0, bottom: 0, background: DIM }} />
+      <div className="fixed z-[59]" style={{ top: holeTop, left: 0, width: Math.max(0, holeLeft), height: holeH, background: DIM }} />
+      <div className="fixed z-[59]" style={{ top: holeTop, left: holeLeft + holeW, right: 0, height: holeH, background: DIM }} />
 
-      {/* The spotlight hole: ring + full-page dim in one box-shadow */}
+      {/* The spotlight ring around the anchor */}
       <div
         data-testid="spotlight-hole"
         className="fixed z-[60] rounded-[10px] pointer-events-none transition-all duration-300"
         style={{
-          top: rect.top - PAD,
-          left: rect.left - PAD,
-          width: rect.width + PAD * 2,
-          height: rect.height + PAD * 2,
+          top: holeTop,
+          left: holeLeft,
+          width: holeW,
+          height: holeH,
           boxShadow: RING,
         }}
       />

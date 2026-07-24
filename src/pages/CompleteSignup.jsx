@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { setFeatureFlag } from '../hooks/useFeatureFlag'
 
 // Mirrors Signup.jsx's logAcceptance — kept local rather than extracted to
 // a shared module to keep this fix minimal (two small, independent call
@@ -58,6 +59,9 @@ export default function CompleteSignup() {
     if (userId) {
       await logAcceptance(userId)
     }
+    // New accounts start on the redesigned vault (see Signup.jsx — same seed
+    // on the email/password path).
+    setFeatureFlag('vault_redesign', true)
     navigate('/vault/chat')
   }
 

@@ -82,8 +82,10 @@ export default function VaultLayout() {
         <BetaWelcome />
         <OnboardingTour onComplete={() => setTourDone(true)} />
         {/* Spotlight sequence chains off the welcome tour; only meaningful
-            on the chat tab where the composer anchor is visible. */}
-        <SpotlightTour enabled={tourDone && isChatActive} />
+            on the chat tab where the composer anchor is visible, and only
+            with the redesigned rail (v1 rail lacks the Memory/Notebook
+            cluster anchors steps 2-4 point at). */}
+        <SpotlightTour enabled={tourDone && isChatActive && flagOn} />
         {toast && (
           <div className="fixed top-4 right-4 z-50 px-4 py-3 rounded-lg bg-emerald-600 text-white text-sm font-medium shadow-lg">
             {toast}
