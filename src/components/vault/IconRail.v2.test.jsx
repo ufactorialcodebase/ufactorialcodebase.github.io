@@ -6,19 +6,19 @@ import { MemoryRouter } from 'react-router-dom'
 import IconRailV2 from './IconRail.v2'
 
 describe('IconRailV2', () => {
-  it('renders 4 cluster icons (Chat, Memory, Notebook, World) + Settings', () => {
+  it('renders 4 cluster icons (Chat, Memories, Notebook, World) + Settings', () => {
     render(<MemoryRouter><IconRailV2 basePath="/vault" /></MemoryRouter>)
     expect(screen.getByLabelText('Chat')).toBeInTheDocument()
-    expect(screen.getByLabelText('Memory')).toBeInTheDocument()
+    expect(screen.getByLabelText('Memories')).toBeInTheDocument()
     expect(screen.getByLabelText('Notebook')).toBeInTheDocument()
     expect(screen.getByLabelText('World')).toBeInTheDocument()
     expect(screen.getByLabelText('Settings')).toBeInTheDocument()
   })
 
-  it('clicking "Memory" opens a popover with Self, Network, Threads', async () => {
+  it('clicking "Memories" opens a popover with Self, Network, Threads', async () => {
     const user = userEvent.setup()
     render(<MemoryRouter><IconRailV2 basePath="/vault" /></MemoryRouter>)
-    await user.click(screen.getByLabelText('Memory'))
+    await user.click(screen.getByLabelText('Memories'))
     expect(screen.getByText('Self')).toBeInTheDocument()
     expect(screen.getByText('Network')).toBeInTheDocument()
     expect(screen.getByText('Threads')).toBeInTheDocument()

@@ -30,7 +30,7 @@ describe('OnboardingTour', () => {
   it('pane 2 shows the four vault sections', () => {
     render(<OnboardingTour />)
     fireEvent.click(screen.getByText("See what's inside →"))
-    for (const name of ['Chat', 'World', 'Memory', 'Notebook']) {
+    for (const name of ['Chat', 'World', 'Memories', 'Notebook']) {
       expect(screen.getByText(name)).toBeInTheDocument()
     }
   })

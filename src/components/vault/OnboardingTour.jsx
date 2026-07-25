@@ -44,8 +44,8 @@ const PANE1_CARDS = [
 const PANE2_TILES = [
   { emoji: '💬', name: 'Chat', text: 'Your primary way to talk to HridAI — anything on your mind.' },
   { emoji: '🌐', name: 'World', text: 'A visual map of everyone and everything in your life, connected.' },
-  { emoji: '👤', name: 'Memory', text: "Self · Network · Threads — what I've learned about your world." },
-  { emoji: '🧠', name: 'Notebook', text: 'Dates · Todos · Lists · Artifacts — what I keep for you.' },
+  { emoji: '🧠', name: 'Memories', text: "Self · Network · Threads — what I've learned about your world." },
+  { emoji: '📖', name: 'Notebook', text: 'Dates · Todos · Lists · Artifacts — what I keep for you.' },
 ]
 
 export default function OnboardingTour({ onComplete }) {
@@ -121,8 +121,8 @@ export default function OnboardingTour({ onComplete }) {
               </h1>
               <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed mb-5 max-w-[640px]">
                 Your vault has four sections. Chat is where we talk. World is your life
-                visualized. Memory is what I've learned about you. Notebook is what I
-                keep for you.
+                visualized. Memories are what I've learned about you. Notebook is what
+                I keep for you.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 px-8 pb-4">

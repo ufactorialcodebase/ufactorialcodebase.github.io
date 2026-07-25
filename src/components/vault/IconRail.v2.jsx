@@ -4,27 +4,26 @@
 // (deferred — add after beta feedback indicates discoverability is an issue).
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { MessageCircle, User, Globe, Brain, Settings } from 'lucide-react'
+import { MessageCircle, Globe, Brain, BookOpen, Settings } from 'lucide-react'
 import RailClusterPopover from './RailClusterPopover'
 
 // Cluster grouping refactored for onboarding clarity + parallel labels
-// (Memory / Notebook are semantically paired: what I've learned about you
+// (Memories / Notebook are semantically paired: what I've learned about you
 // vs. what I keep for you).
 //
-//   Memory (User icon)  → Self · Network · Threads
-//   Notebook (Brain icon) → Dates · Todos · Lists · Artifacts
+//   Memories (Brain icon)   → Self · Network · Threads
+//   Notebook (BookOpen icon) → Dates · Todos · Lists · Artifacts
 //
-// Threads moved from the Brain cluster into Memory (they're narrative,
-// not action items). Dates + Todos moved from the User cluster into
-// Notebook (they're time-anchored things you produce and act on, not
-// facets of identity).
+// Threads moved into Memories (they're narrative, not action items).
+// Dates + Todos moved into Notebook (they're time-anchored things you
+// produce and act on, not facets of identity).
 const CLUSTERS = (base) => [
   {
     key: 'chat', label: 'Chat', icon: MessageCircle,
     items: [{ path: `${base}/chat`, label: 'Chat' }],
   },
   {
-    key: 'memory', label: 'Memory', icon: User,
+    key: 'memory', label: 'Memories', icon: Brain,
     items: [
       { path: `${base}/self`, label: 'Self' },
       { path: `${base}/people`, label: 'Network' },
@@ -32,7 +31,7 @@ const CLUSTERS = (base) => [
     ],
   },
   {
-    key: 'notebook', label: 'Notebook', icon: Brain,
+    key: 'notebook', label: 'Notebook', icon: BookOpen,
     items: [
       { path: `${base}/dates`, label: 'Dates' },
       { path: `${base}/todos`, label: 'Todos' },
@@ -64,7 +63,7 @@ export default function IconRailV2({ basePath = '/vault' }) {
   const isActiveCluster = (cluster) => cluster.items.some((it) => pathname.startsWith(it.path))
 
   return (
-    <nav className="w-12 flex-shrink-0 h-full bg-[var(--bg-secondary)] border-r border-[var(--border-subtle)] flex flex-col items-center py-3 gap-1">
+    <nav className="w-14 flex-shrink-0 h-full bg-[var(--bg-secondary)] border-r border-[var(--border-subtle)] flex flex-col items-center py-3 gap-1.5">
       <span className="text-[9px] font-semibold uppercase tracking-widest text-[var(--accent-warm)] mb-2 select-none">
         Beta
       </span>
@@ -78,11 +77,12 @@ export default function IconRailV2({ basePath = '/vault' }) {
               aria-label={cluster.label}
               data-tour-anchor={cluster.key}
               onClick={() => onClusterClick(cluster)}
-              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+              className={`w-12 py-1.5 rounded-lg flex flex-col items-center gap-0.5 transition-colors ${
                 active ? 'bg-[var(--bg-tertiary)] text-[var(--accent-indigo)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
               }`}
             >
               <Icon size={18} />
+              <span className="text-[8px] font-medium leading-none">{cluster.label}</span>
             </button>
             <RailClusterPopover
               open={openKey === cluster.key && cluster.items.length > 1}
