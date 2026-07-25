@@ -15,19 +15,19 @@ describe('IconRailV2', () => {
     expect(screen.getByLabelText('Settings')).toBeInTheDocument()
   })
 
-  it('clicking "Memories" opens a popover with Self, Network, Threads', async () => {
+  it('clicking "Memories" opens a popover with Self, Network, Topics', async () => {
     const user = userEvent.setup()
     render(<MemoryRouter><IconRailV2 basePath="/vault" /></MemoryRouter>)
     await user.click(screen.getByLabelText('Memories'))
     expect(screen.getByText('Self')).toBeInTheDocument()
     expect(screen.getByText('Network')).toBeInTheDocument()
-    expect(screen.getByText('Threads')).toBeInTheDocument()
+    expect(screen.getByText('Topics')).toBeInTheDocument()
     // Dates + Todos moved to Notebook.
     expect(screen.queryAllByText('Dates')).toHaveLength(0)
     expect(screen.queryAllByText('Todos')).toHaveLength(0)
   })
 
-  it('clicking "Notebook" opens a popover with Dates, Todos, Lists, Artifacts (no Threads)', async () => {
+  it('clicking "Notebook" opens a popover with Dates, Todos, Lists, Artifacts (no Topics)', async () => {
     const user = userEvent.setup()
     render(<MemoryRouter><IconRailV2 basePath="/vault" /></MemoryRouter>)
     await user.click(screen.getByLabelText('Notebook'))
@@ -35,8 +35,8 @@ describe('IconRailV2', () => {
     expect(screen.getByText('Todos')).toBeInTheDocument()
     expect(screen.getByText('Lists')).toBeInTheDocument()
     expect(screen.getByText('Artifacts')).toBeInTheDocument()
-    // Threads belongs to Memory now, not Notebook.
-    expect(screen.queryAllByText('Threads')).toHaveLength(0)
+    // Topics belongs to Memories now, not Notebook.
+    expect(screen.queryAllByText('Topics')).toHaveLength(0)
   })
 
   it('"World" does NOT open a popover (single sub-item)', async () => {

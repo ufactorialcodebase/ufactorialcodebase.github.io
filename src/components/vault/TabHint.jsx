@@ -39,12 +39,12 @@ const COPY = {
   },
   topics: {
     icon: '💬',
-    headline: 'The threads of your life — I keep them straight.',
+    headline: 'The topics of your life — I keep them straight.',
     empty:
       'Anything that keeps coming up in our chats becomes a topic. Open one to see the timeline of times we\'ve discussed it.',
     populated: (n) => (
       <>
-        <b>{n} threads</b> I'm following. Open any to see the full history.
+        <b>{n} topics</b> I'm following. Open any to see the full history.
       </>
     ),
   },

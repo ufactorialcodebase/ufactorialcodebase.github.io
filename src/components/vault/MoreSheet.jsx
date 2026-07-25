@@ -4,7 +4,7 @@
 // - Swipe/drag down anywhere to close (touch + mouse)
 import { useRef } from 'react'
 
-export default function MoreSheet({ pages, onNavigate, onClose }) {
+export default function MoreSheet({ pages, onNavigate, onClose, cols = 3 }) {
   const sheetRef = useRef(null)
   const startY = useRef(null)
   const delta = useRef(0)
@@ -43,7 +43,7 @@ export default function MoreSheet({ pages, onNavigate, onClose }) {
         onMouseLeave={() => { if (startY.current !== null) handleEnd() }}
       >
         <div className="w-9 h-1 rounded-full bg-[var(--border-active)] mx-auto mb-4 cursor-grab" />
-        <div className="grid grid-cols-3 gap-3">
+        <div className={`grid gap-3 ${cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
           {pages.map((page) => (
             <button
               key={page.path}

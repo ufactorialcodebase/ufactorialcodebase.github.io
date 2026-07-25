@@ -12,7 +12,7 @@ describe('WelcomeStrip — totals variant', () => {
 
   it('renders all four counts in totals wording', () => {
     render(<WelcomeStrip name="Pratik" counts={{ people: 118, threads: 139, decisions: 92, openQuestions: 122 }} />)
-    expect(screen.getByText(/139 threads/)).toBeInTheDocument()
+    expect(screen.getByText(/139 topics/)).toBeInTheDocument()
     expect(screen.getByText(/92/)).toBeInTheDocument()
     expect(screen.getByText(/122/)).toBeInTheDocument()
     expect(screen.getByText(/118 people/)).toBeInTheDocument()

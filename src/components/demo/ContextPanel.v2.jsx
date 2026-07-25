@@ -251,10 +251,10 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
       <div className="h-full overflow-y-auto">
         <div className="sticky top-0 bg-[var(--bg-secondary)] border-b border-[var(--border-subtle)] px-4 py-3 z-10">
           <span className="text-sm font-semibold text-[var(--text-primary)]">Context</span>
-          <p className="text-xs text-[var(--text-tertiary)]">Recent threads, people, and moments — switches as you talk.</p>
+          <p className="text-xs text-[var(--text-tertiary)]">Recent topics, people, and moments — switches as you talk.</p>
         </div>
         {recent.topics.length > 0 && (
-          <Section title="Recent threads" icon={Tag} defaultOpen count={recent.topics.length}>
+          <Section title="Recent topics" icon={Tag} defaultOpen count={recent.topics.length}>
             {[...recent.topics].sort((a, b) => {
               const ap = isPinned(a.id) ? 0 : 1
               const bp = isPinned(b.id) ? 0 : 1
@@ -304,7 +304,7 @@ export default function ContextPanel({ retrievalTrace, isLoading }) {
                 ].filter(Boolean).slice(0, 4).join(' · ')}
               </p>
             ) : (
-              <p className="text-xs text-[var(--text-tertiary)]">Recent threads, people, and moments — switches as you talk.</p>
+              <p className="text-xs text-[var(--text-tertiary)]">Recent topics, people, and moments — switches as you talk.</p>
             )}
           </div>
         </div>

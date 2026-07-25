@@ -44,7 +44,7 @@ const PANE1_CARDS = [
 const PANE2_TILES = [
   { emoji: '💬', name: 'Chat', text: 'Your primary way to talk to HridAI — anything on your mind.' },
   { emoji: '🌐', name: 'World', text: 'A visual map of everyone and everything in your life, connected.' },
-  { emoji: '🧠', name: 'Memories', text: "Self · Network · Threads — what I've learned about your world." },
+  { emoji: '🧠', name: 'Memories', text: "Self · Network · Topics — what I've learned about your world." },
   { emoji: '📖', name: 'Notebook', text: 'Dates · Todos · Lists · Artifacts — what I keep for you.' },
 ]
 

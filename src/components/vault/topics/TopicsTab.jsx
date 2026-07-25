@@ -98,7 +98,7 @@ export default function TopicsTab() {
   if (loading) {
     return (
       <div className="p-6 sm:p-8">
-        <PageHeader title="Your Topics" subtitle="Themes and threads in your life" />
+        <PageHeader title="Your Topics" subtitle="What keeps coming up in your life" />
         <div className="animate-pulse space-y-2">
           {[1, 2, 3, 4].map((i) => <div key={i} className="h-14 bg-[var(--bg-secondary)] rounded-xl" />)}
         </div>
@@ -109,7 +109,7 @@ export default function TopicsTab() {
   if (error) {
     return (
       <div className="p-6 sm:p-8">
-        <PageHeader title="Your Topics" subtitle="Themes and threads in your life" />
+        <PageHeader title="Your Topics" subtitle="What keeps coming up in your life" />
         <div className="text-center py-12">
           <p className="text-red-400 text-sm">{error}</p>
           <button onClick={() => refetch()}
@@ -122,7 +122,7 @@ export default function TopicsTab() {
   if (topics.length === 0) {
     return (
       <div className="p-6 sm:p-8">
-        <PageHeader title="Your Topics" subtitle="Themes and threads in your life" />
+        <PageHeader title="Your Topics" subtitle="What keeps coming up in your life" />
         <TabHint tab="topics" />
         <EmptyState icon="💡"
           message="No topics tracked yet. After a few conversations, HridAI will identify the themes in your life and track them here."
@@ -133,7 +133,7 @@ export default function TopicsTab() {
 
   return (
     <div className="p-6 sm:p-8 max-w-3xl">
-      <PageHeader title="Your Topics" subtitle="Themes and threads in your life" />
+      <PageHeader title="Your Topics" subtitle="What keeps coming up in your life" />
       <TabHint tab="topics" count={topics.length} />
       <TopicFilters
         statusFilter={statusFilter} onStatusFilterChange={setStatusFilter}

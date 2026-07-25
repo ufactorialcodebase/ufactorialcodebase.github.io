@@ -11,10 +11,10 @@ import RailClusterPopover from './RailClusterPopover'
 // (Memories / Notebook are semantically paired: what I've learned about you
 // vs. what I keep for you).
 //
-//   Memories (Brain icon)   → Self · Network · Threads
+//   Memories (Brain icon)   → Self · Network · Topics
 //   Notebook (BookOpen icon) → Dates · Todos · Lists · Artifacts
 //
-// Threads moved into Memories (they're narrative, not action items).
+// Topics moved into Memories (they're narrative, not action items).
 // Dates + Todos moved into Notebook (they're time-anchored things you
 // produce and act on, not facets of identity).
 const CLUSTERS = (base) => [
@@ -27,7 +27,7 @@ const CLUSTERS = (base) => [
     items: [
       { path: `${base}/self`, label: 'Self' },
       { path: `${base}/people`, label: 'Network' },
-      { path: `${base}/topics`, label: 'Threads' },
+      { path: `${base}/topics`, label: 'Topics' },
     ],
   },
   {

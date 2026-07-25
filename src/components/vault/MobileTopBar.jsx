@@ -1,21 +1,23 @@
 // src/components/vault/MobileTopBar.jsx
 // Mobile-only: "HridAI BETA" bar with context panel and gear
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Settings, Brain } from 'lucide-react'
+import { Settings, PanelRightOpen, ArrowLeft } from 'lucide-react'
 
 export default function MobileTopBar({ showContext, onToggleContext, basePath = '/vault', onExit }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const isChat = pathname === `${basePath}/chat`
+  const isProfile = pathname === `${basePath}/profile`
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2.5 bg-[var(--bg-secondary)] border-b border-[var(--border-subtle)] shrink-0 sticky top-0 z-30">
+    <div data-testid="mobile-top-bar" className="flex items-center gap-2 px-4 py-2.5 bg-[var(--bg-secondary)] border-b border-[var(--border-subtle)] shrink-0 sticky top-0 z-30">
       <span className="text-[17px] font-bold tracking-tight text-[var(--text-primary)]">HridAI</span>
       <span className="px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider bg-[rgba(245,158,11,0.15)] text-[var(--accent-amber)]">BETA</span>
       <div className="flex-1" />
       {/* Context panel toggle — only on chat page */}
       {isChat && onToggleContext && (
         <button
+          aria-label="Toggle context panel"
           onClick={onToggleContext}
           className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
             showContext
@@ -23,10 +25,13 @@ export default function MobileTopBar({ showContext, onToggleContext, basePath = 
               : 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
           }`}
         >
-          <Brain size={14} />
+          {/* PanelRightOpen matches the desktop chat header's context toggle;
+              Brain now belongs to the Memories nav cluster. */}
+          <PanelRightOpen size={14} />
         </button>
       )}
-      {/* Settings or Exit (demo mode) */}
+      {/* Settings gear — or Exit (demo mode), or back-to-chat when already
+          on the settings screen (a second gear there is a dead end). */}
       {onExit ? (
         <button
           onClick={onExit}
@@ -34,8 +39,17 @@ export default function MobileTopBar({ showContext, onToggleContext, basePath = 
         >
           Exit
         </button>
+      ) : isProfile ? (
+        <button
+          aria-label="Back to chat"
+          onClick={() => navigate(`${basePath}/chat`)}
+          className="px-2.5 py-1.5 rounded-full bg-[var(--bg-tertiary)] flex items-center gap-1 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors text-[10px] font-medium"
+        >
+          <ArrowLeft size={12} /> Chat
+        </button>
       ) : (
         <button
+          aria-label="Settings"
           onClick={() => navigate('/vault/profile')}
           className="w-8 h-8 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
         >

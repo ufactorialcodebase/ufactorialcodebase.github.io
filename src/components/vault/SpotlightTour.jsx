@@ -3,7 +3,7 @@
 // Four sequential spotlights shown once, right after the welcome tour:
 //   1. Chat composer   — sample conversation preview
 //   2. World rail icon — mini graph preview
-//   3. Memory cluster  — Self / Network / Threads tiles (wide card)
+//   3. Memories cluster — Self / Network / Topics tiles (wide card)
 //   4. Notebook cluster — Dates / Todos / Lists / Artifacts tiles (wide card)
 //
 // Anchors are real DOM elements tagged with data-tour-anchor (IconRail.v2
@@ -100,7 +100,7 @@ const STEPS = [
     anchor: 'memory',
     wide: true,
     headline: 'Everything I remember about your world.',
-    body: "Who you are, who's in your life, and the ongoing threads across it. All auto-organized from our chats.",
+    body: "Who you are, who's in your life, and the topics that keep coming up. All auto-organized from our chats.",
     preview: (
       <Snapshot label="What lives here">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
@@ -121,8 +121,8 @@ const STEPS = [
             examples={['Sarah · spouse', 'Acme · work']}
           />
           <ClusterTile
-            icon="💭" name="Threads"
-            body="The ongoing stories, followed over time."
+            icon="💭" name="Topics"
+            body="What keeps coming up, followed over time."
             examples={['Baby prep · active', 'Phoenix move · active']}
           />
         </div>

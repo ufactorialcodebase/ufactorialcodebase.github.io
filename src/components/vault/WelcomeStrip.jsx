@@ -26,11 +26,11 @@ export default function WelcomeStrip({ name, counts, daysSince = null, deltas = 
       </h2>
       {hasDiff ? (
         <p className="mt-2 text-sm text-[var(--text-secondary)] leading-6 max-w-2xl">
-          It's been <Num>{daysSince} days</Num> since we last talked. While you were away I learned about <Num>{deltas.newPeople ?? 0} new people</Num> and opened <Num>{deltas.newThreads ?? 0} new threads</Num>. <Num>{decisions}</Num> decisions, <Num>{openQuestions}</Num> open questions across everything I'm holding.
+          It's been <Num>{daysSince} days</Num> since we last talked. While you were away I learned about <Num>{deltas.newPeople ?? 0} new people</Num> and opened <Num>{deltas.newThreads ?? 0} new topics</Num>. <Num>{decisions}</Num> decisions, <Num>{openQuestions}</Num> open questions across everything I'm holding.
         </p>
       ) : (
         <p className="mt-2 text-sm text-[var(--text-secondary)] leading-6 max-w-2xl">
-          I'm holding <Num>{threads} threads</Num> for you right now — <Num>{decisions}</Num> with a decision you've captured, <Num>{openQuestions}</Num> with something still open. <Num>{people} people</Num> across them.
+          I'm holding <Num>{threads} topics</Num> for you right now — <Num>{decisions}</Num> with a decision you've captured, <Num>{openQuestions}</Num> with something still open. <Num>{people} people</Num> across them.
         </p>
       )}
     </section>

@@ -1,73 +1,83 @@
 // src/components/vault/BottomNav.jsx
-// Mobile-only bottom navigation bar (hidden on md+ via parent)
+// Mobile-only bottom navigation bar (hidden on md+ via parent).
+// Mirrors the desktop IconRail.v2 clusters: Chat and World navigate
+// directly; Memories and Notebook open a small sheet listing their group.
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { MessageCircle, Users, CheckSquare, Globe, MoreHorizontal } from 'lucide-react'
+import { MessageCircle, Brain, BookOpen, Globe } from 'lucide-react'
 import MoreSheet from './MoreSheet'
 
-function buildTabs(base) {
-  return [
-    { path: `${base}/chat`, icon: MessageCircle, label: 'Chat' },
-    { path: `${base}/people`, icon: Users, label: 'Entities' },
-    { path: `${base}/todos`, icon: CheckSquare, label: 'Todos' },
-    { path: `${base}/world`, icon: Globe, label: 'World' },
-  ]
-}
-
-function buildMorePages(base) {
-  return [
-    { path: `${base}/self`, icon: '👤', label: 'Self', sub: 'Identity & goals' },
-    { path: `${base}/dates`, icon: '📅', label: 'Dates', sub: 'Key dates' },
-    { path: `${base}/lists`, icon: '📋', label: 'Lists', sub: 'Collections' },
-    { path: `${base}/topics`, icon: '💡', label: 'Topics', sub: 'Conversations' },
-    { path: `${base}/artifacts`, icon: '📄', label: 'Artifacts', sub: 'Documents' },
-  ]
-}
+const CLUSTERS = (base) => [
+  { key: 'chat', label: 'Chat', icon: MessageCircle, path: `${base}/chat` },
+  {
+    key: 'memory', label: 'Memories', icon: Brain,
+    pages: [
+      { path: `${base}/self`, icon: '👤', label: 'Self', sub: 'Identity & goals' },
+      { path: `${base}/people`, icon: '👥', label: 'Network', sub: 'People, places, orgs' },
+      { path: `${base}/topics`, icon: '💡', label: 'Topics', sub: 'What keeps coming up' },
+    ],
+  },
+  {
+    key: 'notebook', label: 'Notebook', icon: BookOpen,
+    pages: [
+      { path: `${base}/dates`, icon: '📅', label: 'Dates', sub: 'Key dates' },
+      { path: `${base}/todos`, icon: '✅', label: 'Todos', sub: 'Tasks & action items' },
+      { path: `${base}/lists`, icon: '📋', label: 'Lists', sub: 'Collections' },
+      { path: `${base}/artifacts`, icon: '📄', label: 'Artifacts', sub: 'Documents' },
+    ],
+  },
+  { key: 'world', label: 'World', icon: Globe, path: `${base}/world` },
+]
 
 export default function BottomNav({ basePath = '/vault' }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const [showMore, setShowMore] = useState(false)
+  const [openKey, setOpenKey] = useState(null)
 
-  const TABS = buildTabs(basePath)
-  const MORE_PAGES = buildMorePages(basePath)
-  const isMorePageActive = MORE_PAGES.some((p) => pathname.startsWith(p.path))
+  const clusters = CLUSTERS(basePath)
+  const openCluster = clusters.find((c) => c.key === openKey && c.pages)
+
+  const isActive = (cluster) =>
+    cluster.path
+      ? pathname.startsWith(cluster.path)
+      : cluster.pages.some((p) => pathname.startsWith(p.path))
+
+  const onClusterClick = (cluster) => {
+    if (cluster.path) {
+      setOpenKey(null)
+      navigate(cluster.path)
+      return
+    }
+    setOpenKey(openKey === cluster.key ? null : cluster.key)
+  }
 
   return (
     <>
-      {showMore && (
+      {openCluster && (
         <MoreSheet
-          pages={MORE_PAGES}
-          onNavigate={(path) => { navigate(path); setShowMore(false) }}
-          onClose={() => setShowMore(false)}
+          pages={openCluster.pages}
+          cols={openCluster.pages.length === 4 ? 2 : 3}
+          onNavigate={(path) => { navigate(path); setOpenKey(null) }}
+          onClose={() => setOpenKey(null)}
         />
       )}
-      <nav className="flex items-center justify-around bg-[var(--bg-secondary)] border-t border-[var(--border-subtle)] px-1 pb-[env(safe-area-inset-bottom)] shrink-0">
-        {TABS.map((tab) => {
-          const Icon = tab.icon
-          const isActive = pathname.startsWith(tab.path)
+      <nav aria-label="Bottom navigation" className="flex items-center justify-around bg-[var(--bg-secondary)] border-t border-[var(--border-subtle)] px-1 pb-[env(safe-area-inset-bottom)] shrink-0">
+        {clusters.map((cluster) => {
+          const Icon = cluster.icon
+          const active = isActive(cluster) || openKey === cluster.key
           return (
             <button
-              key={tab.path}
-              onClick={() => { setShowMore(false); navigate(tab.path) }}
+              key={cluster.key}
+              onClick={() => onClusterClick(cluster)}
               className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-lg transition-colors ${
-                isActive ? 'text-[var(--accent-indigo)]' : 'text-[var(--text-tertiary)]'
+                active ? 'text-[var(--accent-indigo)]' : 'text-[var(--text-tertiary)]'
               }`}
             >
               <Icon size={20} />
-              <span className="text-[8px] font-medium">{tab.label}</span>
+              <span className="text-[8px] font-medium">{cluster.label}</span>
             </button>
           )
         })}
-        <button
-          onClick={() => setShowMore(!showMore)}
-          className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-lg transition-colors ${
-            showMore || isMorePageActive ? 'text-[var(--accent-indigo)]' : 'text-[var(--text-tertiary)]'
-          }`}
-        >
-          <MoreHorizontal size={20} />
-          <span className="text-[8px] font-medium">More</span>
-        </button>
       </nav>
     </>
   )
