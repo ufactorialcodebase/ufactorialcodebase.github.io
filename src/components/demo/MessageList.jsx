@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { User, Bot, Loader2, Sparkles, Brain, Square, X, Clock } from 'lucide-react';
+import { User, Bot, Loader2, Sparkles, Brain, Square, X, Clock, WifiOff } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import ToolCallCard, { shouldShowToolCall } from './ToolCallCard';
 import { formatMessageTime, formatDateRibbon, localDayKey } from '../../lib/format-utils';
@@ -67,6 +67,43 @@ const MARKDOWN_COMPONENTS = {
  *   parent drains the queue it removes the pending flag and the same bubble
  *   becomes an ordinary user message.
  */
+/**
+ * ISS-257 C4 — live text inside the streaming indicator bubble.
+ *
+ *   null / 'working'  → "Thinking..." (the pre-ISS-257 default)
+ *   'connecting'      → before the first backend frame or phase "starting"
+ *   'tool' + label    → named in-flight tool ("Updating 'Q3 plan'…")
+ *   'stalled'         → >15s with no frame (backend guarantees ≤5s cadence)
+ *                       — the turn is still running server-side, say so
+ *                       instead of silently hanging.
+ */
+function StreamingStatus({ status }) {
+  if (status?.kind === 'stalled') {
+    return (
+      <span
+        data-testid="stream-status-stalled"
+        className="flex items-center gap-2 text-amber-600 dark:text-amber-400"
+      >
+        <WifiOff className="w-4 h-4 flex-shrink-0" />
+        <span className="text-sm">Connection lost — your message is still being processed.</span>
+      </span>
+    );
+  }
+  const label =
+    status?.kind === 'tool' && status.label ? `${status.label}…`
+    : status?.kind === 'connecting' ? 'Connecting…'
+    : 'Thinking...';
+  return (
+    <span
+      data-testid="stream-status"
+      className="flex items-center gap-2 text-slate-400 dark:text-slate-500"
+    >
+      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+      <span className="text-sm">{label}</span>
+    </span>
+  );
+}
+
 function MessageBubble({ message, mode, now, onCancelQueued }) {
   const isUser = message.role === 'user';
   const isStreaming = message.isStreaming;
@@ -176,10 +213,7 @@ function MessageBubble({ message, mode, now, onCancelQueued }) {
               )}
             </>
           ) : isStreaming ? (
-            <span className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm">Thinking...</span>
-            </span>
+            <StreamingStatus status={message.streamStatus} />
           ) : null}
         </div>
         
@@ -208,6 +242,9 @@ export default function MessageList({
   // can see them lined up. `onCancelQueued(index)` removes one.
   queuedMessages = [],
   onCancelQueued,
+  // ISS-257 C4 — live streaming status ({kind, label?}) driven by the
+  // backend's heartbeat/tool frames; null renders plain "Thinking...".
+  streamStatus = null,
 }) {
   const bottomRef = useRef(null);
   const isAlexMode = mode === 'alex';
@@ -282,13 +319,14 @@ export default function MessageList({
         );
       })}
       
-      {/* Loading indicator */}
+      {/* Loading indicator — carries the live stream status (ISS-257) */}
       {isLoading && (
         <MessageBubble
           message={{
             role: 'assistant',
             content: '',
-            isStreaming: true
+            isStreaming: true,
+            streamStatus,
           }}
           mode={mode}
           now={now}

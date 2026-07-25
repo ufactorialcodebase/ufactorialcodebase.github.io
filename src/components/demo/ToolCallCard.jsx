@@ -96,13 +96,21 @@ const TOOL_DISPLAY = {
  * Check if a tool call should be displayed.
  * Only successful write tools in the whitelist are shown.
  * Returns false for: read-only tools, failed tools, unknown tools.
+ *
+ * ISS-257 D1: pending tools with `revealed: false` stay hidden — that flag
+ * is set for slow_expected:false tools until either the ~2.5s threshold
+ * fires or the tool completes (fast tools skip the flicker and go straight
+ * to the completion receipt). `revealed` undefined (legacy/non-stream
+ * paths) keeps the old always-show behavior.
  */
 export function shouldShowToolCall(toolCall) {
   // Not in our display whitelist — hide (covers all read-only tools)
   if (!TOOL_DISPLAY[toolCall.name]) return false;
   // Failed — hide
   if (toolCall.success === false) return false;
-  // Pending (still loading) or succeeded — show
+  // Pending but below the reveal threshold — hide (fast-tool flicker guard)
+  if (toolCall.success === null && toolCall.revealed === false) return false;
+  // Pending (revealed) or succeeded — show
   return true;
 }
 
@@ -126,7 +134,9 @@ export default function ToolCallCard({ toolCall }) {
       )}
       <span className="text-sm text-emerald-700 dark:text-emerald-300 truncate">
         {isPending
-          ? config.loading
+          // ISS-257: prefer the backend's display-ready label ("Updating
+          // 'Q3 plan'") over the generic per-tool loading string.
+          ? (toolCall.label || config.loading)
           : (config.render
               ? config.render(input, toolCall.result)
               : config.message(input))}

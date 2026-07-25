@@ -52,6 +52,31 @@ export async function getGreeting() {
   }
 }
 
+/**
+ * Route one parsed SSE event to its callback (ISS-257: exported so the
+ * dispatch table is unit-testable without a fetch/ReadableStream harness).
+ * Unknown event types fall through silently — forward-compatible with new
+ * backend frames.
+ */
+export function routeStreamEvent(eventType, parsed, callbacks) {
+  switch (eventType) {
+    case 'retrieval_trace': callbacks.onRetrievalTrace?.(parsed); break
+    case 'tool_calls': callbacks.onToolCalls?.(parsed.tool_calls || []); break
+    case 'tool_start': callbacks.onToolStart?.(parsed); break
+    case 'tool_complete': callbacks.onToolComplete?.(parsed); break
+    // ISS-257: liveness frames — first frame of every stream (phase
+    // "starting"), then whenever the stream would otherwise be silent >5s.
+    // `parsed.tool` names the in-flight tool (display-ready label) or null.
+    case 'heartbeat': callbacks.onHeartbeat?.(parsed); break
+    case 'content': callbacks.onContent?.(parsed.delta || ''); break
+    case 'done':
+      if (parsed.session_id) setSessionId(parsed.session_id)
+      callbacks.onDone?.(parsed)
+      break
+    case 'error': callbacks.onError?.(parsed.error || 'Stream error'); break
+  }
+}
+
 export function sendMessageStream(message, callbacks) {
   const controller = new AbortController();
 
@@ -116,18 +141,7 @@ export function sendMessageStream(message, callbacks) {
           if (!data) continue
           try {
             const parsed = JSON.parse(data)
-            switch (eventType) {
-              case 'retrieval_trace': callbacks.onRetrievalTrace?.(parsed); break
-              case 'tool_calls': callbacks.onToolCalls?.(parsed.tool_calls || []); break
-              case 'tool_start': callbacks.onToolStart?.(parsed); break
-              case 'tool_complete': callbacks.onToolComplete?.(parsed); break
-              case 'content': callbacks.onContent?.(parsed.delta || ''); break
-              case 'done':
-                if (parsed.session_id) setSessionId(parsed.session_id)
-                callbacks.onDone?.(parsed)
-                break
-              case 'error': callbacks.onError?.(parsed.error || 'Stream error'); break
-            }
+            routeStreamEvent(eventType, parsed, callbacks)
           } catch (e) { console.warn('Failed to parse SSE event:', e) }
         }
       }

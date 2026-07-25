@@ -6,6 +6,7 @@ import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanelContainer';
 import DailyLimitCard from './DailyLimitCard';
 import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting, createCheckoutSession } from '../../lib/api/index.js';
+import { createStallWatchdog } from '../../lib/stream-activity.js';
 import { signOut } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
@@ -77,6 +78,23 @@ export default function Chat({
   // without triggering a re-render on update — used to prevent immediate
   // repeats when the user stops twice in a row.
   const lastStoppedIndexRef = useRef(null);
+  // ISS-257 C4 — streaming progress state driven by the backend's frame
+  // contract (heartbeat / tool_start / tool_complete): {kind, label?} where
+  // kind ∈ 'connecting' | 'working' | 'tool' | 'stalled'. Rendered inside
+  // the streaming indicator bubble; null falls back to plain "Thinking...".
+  const [streamStatus, setStreamStatus] = useState(null);
+  // Stall watchdog for the open stream (backend guarantees ≤5s frame
+  // cadence; >15s of silence = genuinely stuck connection).
+  const stallRef = useRef(null);
+  // Pending reveal timers for the 2.5s slow_expected:false threshold.
+  const revealTimersRef = useRef(new Set());
+
+  // Cancel timers if the chat unmounts mid-stream.
+  useEffect(() => () => {
+    stallRef.current?.stop();
+    revealTimersRef.current.forEach((t) => clearTimeout(t));
+    revealTimersRef.current.clear();
+  }, []);
   // Guard against re-firing the drain effect on the same transition.
   // Without this, React's batching could result in two dispatches for one
   // isLoading→false event under StrictMode's double-invoke.
@@ -144,7 +162,20 @@ export default function Chat({
     setIsLoading(true);
     setIsRetrieving(true);
     setCurrentRetrievalTrace(null);
-    
+
+    // ISS-257: arm the stall watchdog for this stream and show the
+    // pre-first-frame state. Every frame below bumps the watchdog; the
+    // backend's first heartbeat arrives before any DB/LLM work.
+    stallRef.current?.stop();
+    const watchdog = createStallWatchdog(() => setStreamStatus({ kind: 'stalled' }));
+    stallRef.current = watchdog;
+    watchdog.bump();
+    setStreamStatus({ kind: 'connecting' });
+    const endStreamUI = () => {
+      watchdog.stop();
+      setStreamStatus(null);
+    };
+
     // Create placeholder for assistant message
     const assistantId = generateId();
     let assistantContent = '';
@@ -161,10 +192,25 @@ export default function Chat({
     // Start streaming
     const abort = sendMessageStream(text, {
       onRetrievalTrace: (trace) => {
+        watchdog.bump();
         setCurrentRetrievalTrace(trace);
         setIsRetrieving(false);
       },
-      
+
+      // ISS-257: liveness frames. Phase "starting" = server accepted the
+      // request but no work has begun; `tool` names the in-flight tool
+      // while one executes (keeps long tool runs visibly alive).
+      onHeartbeat: (hb) => {
+        watchdog.bump();
+        if (hb.tool) {
+          setStreamStatus({ kind: 'tool', label: hb.tool.label || hb.tool.name });
+        } else if (hb.phase === 'starting') {
+          setStreamStatus({ kind: 'connecting' });
+        } else {
+          setStreamStatus({ kind: 'working' });
+        }
+      },
+
       onToolCalls: (calls) => {
         // Legacy handler (not used by current backend)
         toolCalls = calls;
@@ -182,19 +228,39 @@ export default function Chat({
       },
       
       onToolStart: (toolData) => {
+        watchdog.bump();
         // Mark the boundary so the next content delta gets a space when the
         // pre-tool buffer ended mid-sentence.
         toolBoundaryPending = true;
-        // Tool execution starting - add to list with pending state
+        // ISS-257 D1: slow_expected tools show named progress IMMEDIATELY;
+        // everything else only reveals its pending card after ~2.5s (fast
+        // tools complete before that and go straight to the receipt).
+        const slowExpected = !!toolData.slow_expected;
         const newTool = {
-          id: toolData.tool_id || `tool_${Date.now()}`,
+          id: toolData.id || toolData.tool_id || `tool_${Date.now()}`,
           name: toolData.name,
+          label: toolData.label,
           input: toolData.input || {},
           success: null, // Pending
           duration_ms: null,
+          slowExpected,
+          revealed: slowExpected,
         };
         toolCalls = [...toolCalls, newTool];
-        
+        setStreamStatus({ kind: 'tool', label: toolData.label || toolData.name });
+        if (!slowExpected) {
+          const tid = setTimeout(() => {
+            revealTimersRef.current.delete(tid);
+            toolCalls = toolCalls.map(tc =>
+              tc.id === newTool.id && tc.success === null ? { ...tc, revealed: true } : tc
+            );
+            setMessages(prev => prev.map(m =>
+              m.id === assistantId ? { ...m, toolCalls: [...toolCalls] } : m
+            ));
+          }, 2500);
+          revealTimersRef.current.add(tid);
+        }
+
         // Update message with new tool call
         setMessages(prev => {
           const lastMessage = prev[prev.length - 1];
@@ -218,6 +284,7 @@ export default function Chat({
       },
       
       onToolComplete: (toolData) => {
+        watchdog.bump();
         // Re-arm the boundary — some backends emit tool_complete without a
         // preceding tool_start (bulk-execute path), and content that resumes
         // after tool_complete still needs the space fix.
@@ -226,11 +293,15 @@ export default function Chat({
         // `result` when the backend sends it (currently absent from the
         // tool_complete SSE payload; ISS-231 will populate it so artifact
         // deep-links can prefer id-based routing over title-based).
+        // ISS-257: `revealed: true` — the completion receipt ALWAYS shows
+        // for whitelisted tools regardless of the 2.5s pending threshold
+        // (the receipt is the retry-loop breaker).
         toolCalls = toolCalls.map(tc =>
           tc.name === toolData.name && tc.success === null
-            ? { ...tc, success: toolData.success, duration_ms: toolData.duration_ms, error: toolData.error, result: toolData.result }
+            ? { ...tc, success: toolData.success, duration_ms: toolData.duration_ms, error: toolData.error, result: toolData.result, label: toolData.label || tc.label, revealed: true }
             : tc
         );
+        setStreamStatus({ kind: 'working' });
         
         // Update message with completed tool
         setMessages(prev => prev.map(m =>
@@ -241,6 +312,8 @@ export default function Chat({
       },
       
       onContent: (delta) => {
+        watchdog.bump();
+        setStreamStatus(null);
         if (toolBoundaryPending && assistantContent.length > 0 && delta.length > 0) {
           const lastChar = assistantContent.charAt(assistantContent.length - 1);
           const firstChar = delta.charAt(0);
@@ -278,10 +351,11 @@ export default function Chat({
       },
       
       onDone: (data) => {
+        endStreamUI();
         responseTimeMs = data.response_time_ms;
         setIsLoading(false);
         setIsRetrieving(false);
-        
+
         // Update final message with response time
         setMessages(prev => prev.map(m => 
           m.id === assistantId 
@@ -291,18 +365,24 @@ export default function Chat({
       },
       
       onError: (error) => {
+        endStreamUI();
         console.error('Chat error:', error);
         setIsLoading(false);
         setIsRetrieving(false);
 
-        // Clear session to force fresh start (backend clears corrupted orchestrator)
-        clearSessionId();
+        // ISS-257 Task 3: do NOT clear the session id here. The old
+        // "clear to force fresh start" behavior meant every connection
+        // blip made the next retry POST session_id:null — observed as 5
+        // sessions in 13 min for one message (full context reload each,
+        // duplicate turns billed). The backend recovers stale/unknown
+        // session ids itself; only Reset and Sign-off start a genuinely
+        // new conversation.
 
         // Add error message
         setMessages(prev => [...prev, {
           id: generateId(),
           role: 'assistant',
-          content: `Sorry, there was an error: ${error}. The session has been reset - please try again.`,
+          content: `Sorry, there was an error: ${error}. Your conversation is preserved — please try again.`,
           isError: true,
           timestamp: new Date().toISOString(),
         }]);
@@ -315,6 +395,7 @@ export default function Chat({
       // bubble — the user's message stays in the thread and the
       // DailyLimitCard renders below it.
       onDailyLimit: ({ resetsAt, message }) => {
+        endStreamUI();
         setIsLoading(false);
         setIsRetrieving(false);
         activateDailyLimit(resetsAt, message, 'message');
@@ -357,6 +438,8 @@ export default function Chat({
    */
   const handleStop = useCallback(() => {
     abortFn?.();
+    stallRef.current?.stop();
+    setStreamStatus(null);
     setIsLoading(false);
     setIsRetrieving(false);
     const { text, index } = pickStoppedVariant(lastStoppedIndexRef.current);
@@ -798,6 +881,7 @@ export default function Chat({
               mode={mode}
               queuedMessages={queuedMessages}
               onCancelQueued={handleCancelQueued}
+              streamStatus={streamStatus}
             />
             {dailyLimit.isBlocked && (
               <DailyLimitCard
