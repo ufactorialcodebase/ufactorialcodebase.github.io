@@ -88,6 +88,18 @@ test.describe.serial('Mobile: cluster nav + top bar', () => {
     await page.waitForURL(/\/vault\/chat/)
     await expect(page.getByLabel('Toggle context panel')).toBeVisible()
 
+    // Context panel drops down from the top on mobile (full width, top ≈ 0)
+    await page.getByLabel('Toggle context panel').click()
+    const panel = page.getByTestId('context-panel')
+    await expect(panel).toBeVisible()
+    const panelBox = await panel.boundingBox()
+    expect(panelBox.y).toBeLessThan(2)
+    expect(panelBox.width).toBeGreaterThan(380) // full 390px viewport width
+    await page.waitForTimeout(400)
+    await page.screenshot({ path: `${SHOT_DIR}/mob-05-context-dropdown.png` })
+    await page.getByLabel('Close context panel').click()
+    await expect(panel).toHaveCount(0)
+
     // ── Settings: gear opens profile; gear is replaced by back-to-chat ──
     const topBar = page.getByTestId('mobile-top-bar')
     await topBar.getByLabel('Settings').click()
@@ -95,6 +107,9 @@ test.describe.serial('Mobile: cluster nav + top bar', () => {
     await expect(topBar.getByLabel('Settings')).toHaveCount(0)
     const back = topBar.getByLabel('Back to chat')
     await expect(back).toBeVisible()
+    // The page's own "Back to chat" is desktop-only — exactly one back
+    // control on the mobile settings screen.
+    await expect(page.getByText('Back to chat', { exact: true })).toBeHidden()
     await page.screenshot({ path: `${SHOT_DIR}/mob-04-profile-back.png` })
     await back.click()
     await page.waitForURL(/\/vault\/chat/)

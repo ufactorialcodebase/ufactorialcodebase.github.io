@@ -15,9 +15,12 @@ export default function SettingsHome({ s, onNavigate, onBack }) {
         >
           Settings
         </h1>
+        {/* Hidden on mobile — the mobile top bar already shows "← Chat"
+            (two back buttons on one screen). Desktop has no top bar, so
+            it stays. */}
         <button
           onClick={onBack}
-          className="text-[13px] text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="hidden md:block text-[13px] text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           Back to chat
         </button>

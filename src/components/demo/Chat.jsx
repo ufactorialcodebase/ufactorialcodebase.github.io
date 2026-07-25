@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Moon, Sun, Zap, RefreshCw } from 'lucide-react';
+import { PanelRightOpen, PanelRightClose, RotateCcw, LogOut, Sparkles, Brain, Moon, Sun, Zap, RefreshCw, X } from 'lucide-react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanelContainer';
@@ -890,21 +890,24 @@ export default function Chat({
             onClick={() => setShowContextPanel(false)}
           />
           
-          {/* Sidebar panel */}
-          <aside className={`
-            fixed lg:relative inset-y-0 right-0 z-50
-            w-[85vw] sm:w-96 lg:w-96
-            border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900
+          {/* Context panel: drop-down sheet from the top on mobile,
+              right sidebar on desktop (lg+). */}
+          <aside data-testid="context-panel" className={`
+            fixed lg:relative inset-x-0 top-0 lg:inset-x-auto lg:inset-y-0 lg:right-0 z-50
+            w-full lg:w-96 h-[70dvh] lg:h-auto
+            rounded-b-2xl lg:rounded-none overflow-hidden
+            border-b lg:border-b-0 lg:border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900
             shadow-2xl lg:shadow-lg lg:shadow-slate-200/50 dark:lg:shadow-slate-950/50
             transform transition-transform duration-300 ease-out
-            ${showContextPanel ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+            ${showContextPanel ? 'translate-y-0' : '-translate-y-full lg:translate-y-0'}
           `}>
             {/* Mobile close button */}
             <button
+              aria-label="Close context panel"
               onClick={() => setShowContextPanel(false)}
-              className="lg:hidden absolute top-4 left-4 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors z-10"
+              className="lg:hidden absolute top-3 right-3 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors z-10"
             >
-              <PanelRightClose className="w-5 h-5" />
+              <X className="w-5 h-5" />
             </button>
             
             <ContextPanel 
