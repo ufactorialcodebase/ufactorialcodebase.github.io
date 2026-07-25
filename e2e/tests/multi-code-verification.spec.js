@@ -66,28 +66,36 @@ async function mintBetaStyleCode(request) {
   return code
 }
 
-async function fillAndSubmitSignup(page, { code, email, password, skipCode = false }) {
+async function fillAndSubmitSignup(page, { code, email, password }) {
   // A real user pauses between actions; the vault view (once landed)
   // continues its own background polling for a beat before a person would
   // realistically start a second, unrelated signup. Give that a moment to
   // settle rather than firing the next request back-to-back.
   await page.waitForTimeout(1_500)
   await page.goto('/signup')
-  if (!skipCode) {
-    await page.fill('#access-code', code)
-    const validateResponse = page.waitForResponse(
-      (resp) => resp.url().includes('/auth/validate') && resp.request().method() === 'POST',
-      { timeout: 10_000 }
-    ).catch(() => null)
-    await page.fill('#signup-email', email)
-    await validateResponse
-  } else {
-    await page.fill('#signup-email', email)
-  }
-  await page.fill('#signup-password', password)
+  // Code-first flow: code + consent boxes come first; checking the first box
+  // blurs the code field and fires the /api/auth/validate call.
+  await page.fill('#access-code', code)
+  const validateResponse = page.waitForResponse(
+    (resp) => resp.url().includes('/auth/validate') && resp.request().method() === 'POST',
+    { timeout: 10_000 }
+  ).catch(() => null)
   await page.locator('input[type="checkbox"]').nth(0).check()
+  await validateResponse
   await page.locator('input[type="checkbox"]').nth(1).check()
+
+  // If validation rejected the code, the form stays locked and the error is
+  // already on screen — there is nothing to submit.
+  const unlocked = await page.locator('#signup-email:enabled')
+    .waitFor({ timeout: 5_000 })
+    .then(() => true)
+    .catch(() => false)
+  if (!unlocked) return { submitted: false }
+
+  await page.fill('#signup-email', email)
+  await page.fill('#signup-password', password)
   await page.locator('form').getByRole('button', { name: 'Create account' }).click()
+  return { submitted: true }
 }
 
 /**
@@ -175,39 +183,42 @@ test.describe.serial('ISS-236 (3b): multi-code UX happy path', () => {
     expect(uniqueUserIds.size).toBe(rows.length) // every redemption gets a unique user_id
   })
 
-  test('mc-03-expired-code-shows-clean-error', async ({ page }) => {
-    await fillAndSubmitSignup(page, {
+  test('mc-03-expired-code-shows-clean-error-and-stays-locked', async ({ page }) => {
+    // Code-first gating: an expired code is rejected at blur-validation time
+    // — the error shows immediately and email/password/Google never unlock.
+    const { submitted } = await fillAndSubmitSignup(page, {
       code: CODE_EXPIRED, email: `e2e.mc03.${RUN_ID}@e2e.ufactorial.com`, password: `E2eMc03!${RUN_ID}`,
     })
+    expect(submitted).toBe(false)
     await expect(page.getByText(/expired/i)).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator('#signup-email')).toBeDisabled()
     await page.screenshot({ path: `${SHOT_DIR}/mc-03-expired-code.png` })
   })
 
-  test('mc-04-invalid-code-shows-clean-error', async ({ page }) => {
-    // Regression lock: owner already confirmed this manually on prod via
-    // screenshot with BETA-MADEUP-CODE.
-    await fillAndSubmitSignup(page, {
+  test('mc-04-invalid-code-shows-clean-error-and-stays-locked', async ({ page }) => {
+    // Regression lock: owner already confirmed the invalid-code error
+    // manually on prod. Under code-first gating it now fires at
+    // blur-validation time and the rest of the form never unlocks.
+    const { submitted } = await fillAndSubmitSignup(page, {
       code: 'E2E-MC-NONEXISTENT-XYZ', email: `e2e.mc04.${RUN_ID}@e2e.ufactorial.com`, password: `E2eMc04!${RUN_ID}`,
     })
-    await expect(page.getByText(/invalid access code/i)).toBeVisible({ timeout: 15_000 })
+    expect(submitted).toBe(false)
+    await expect(page.getByText(/invalid access code|does not exist/i)).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator('#signup-email')).toBeDisabled()
     await page.screenshot({ path: `${SHOT_DIR}/mc-04-invalid-code.png` })
   })
 
-  test('mc-05-empty-code-shows-validation-error-not-submitted', async ({ page }) => {
+  test('mc-05-empty-code-keeps-signup-locked', async ({ page }) => {
+    // With no code at all, checking both consent boxes is not enough — every
+    // signup method stays disabled.
     await page.goto('/signup')
-    await page.fill('#signup-email', `e2e.mc05.${RUN_ID}@e2e.ufactorial.com`)
-    await page.fill('#signup-password', `E2eMc05!${RUN_ID}`)
     await page.locator('input[type="checkbox"]').nth(0).check()
     await page.locator('input[type="checkbox"]').nth(1).check()
-    await page.locator('form').getByRole('button', { name: 'Create account' }).click()
 
-    // Native `required` validation blocks submission — no network call, no
-    // navigation away from /signup, and the browser shows its own
-    // validation UI on the empty field.
-    await page.waitForTimeout(500)
-    expect(page.url()).toContain('/signup')
-    const isInvalid = await page.locator('#access-code').evaluate((el) => !el.validity.valid)
-    expect(isInvalid).toBeTruthy()
-    await page.screenshot({ path: `${SHOT_DIR}/mc-05-empty-code-validation.png` })
+    await expect(page.locator('#signup-email')).toBeDisabled()
+    await expect(page.locator('#signup-password')).toBeDisabled()
+    await expect(page.getByRole('button', { name: /continue with google/i })).toBeDisabled()
+    await expect(page.locator('form').getByRole('button', { name: 'Create account' })).toBeDisabled()
+    await page.screenshot({ path: `${SHOT_DIR}/mc-05-empty-code-locked.png` })
   })
 })

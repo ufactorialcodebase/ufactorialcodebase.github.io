@@ -6,6 +6,7 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { signupViaUI } from './_helpers.js'
 
 test.use({
   storageState: { cookies: [], origins: [] },
@@ -40,19 +41,8 @@ test.describe.serial('Mobile: cluster nav + top bar', () => {
   })
 
   test('bottom-nav clusters, sheets, and settings back button', async ({ page }) => {
-    // ── Fresh signup ──
-    await page.goto('/signup')
-    await page.fill('#access-code', ACCESS_CODE)
-    const validateResponse = page.waitForResponse(
-      (resp) => resp.url().includes('/auth/validate') && resp.request().method() === 'POST',
-      { timeout: 10_000 }
-    )
-    await page.fill('#signup-email', EMAIL)
-    await validateResponse
-    await page.fill('#signup-password', PASSWORD)
-    await page.locator('input[type="checkbox"]').nth(0).check()
-    await page.locator('input[type="checkbox"]').nth(1).check()
-    await page.locator('form').getByRole('button', { name: 'Create account' }).click()
+    // ── Fresh signup (code-first flow) ──
+    await signupViaUI(page, { code: ACCESS_CODE, email: EMAIL, password: PASSWORD })
     await page.waitForURL(/\/vault\/chat/, { timeout: 20_000 })
 
     // ── Dismiss beta notice + welcome tour ──

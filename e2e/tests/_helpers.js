@@ -3,7 +3,33 @@
 // on the test Supabase project). Auth is loaded from the shared storageState
 // so tests never hit the login screen themselves.
 
+import { expect } from '@playwright/test'
+
 const FEATURE_FLAGS = { vault_redesign: true }
+
+/**
+ * Drive the code-first signup form the way a real user does now:
+ * access code and consent boxes come first; email/password (and Google)
+ * stay disabled until the code validates AND both boxes are checked.
+ * Checking the first box moves focus off the code field, firing the
+ * blur-triggered /api/auth/validate call.
+ */
+export async function signupViaUI(page, { code, email, password }) {
+  await page.goto('/signup')
+  await page.fill('#access-code', code)
+  const validateResponse = page.waitForResponse(
+    (resp) => resp.url().includes('/auth/validate') && resp.request().method() === 'POST',
+    { timeout: 10_000 }
+  )
+  await page.locator('input[type="checkbox"]').nth(0).check()
+  await validateResponse
+  await page.locator('input[type="checkbox"]').nth(1).check()
+  // The gated fields unlock once the validation state lands.
+  await expect(page.locator('#signup-email')).toBeEnabled({ timeout: 5_000 })
+  await page.fill('#signup-email', email)
+  await page.fill('#signup-password', password)
+  await page.locator('form').getByRole('button', { name: 'Create account' }).click()
+}
 
 export async function primeVault(page) {
   await page.addInitScript((flags) => {

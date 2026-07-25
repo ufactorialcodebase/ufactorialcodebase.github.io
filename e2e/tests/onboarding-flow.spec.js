@@ -15,6 +15,7 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { signupViaUI } from './_helpers.js'
 
 // Fresh, unauthenticated browser state — never the shared signed-in profile.
 test.use({ storageState: { cookies: [], origins: [] } })
@@ -81,19 +82,8 @@ test.describe.serial('Onboarding: tour + spotlights + tab hints for a fresh sign
   })
 
   test('full new-user onboarding chain', async ({ page }) => {
-    // ── Signup as a brand-new user ──
-    await page.goto('/signup')
-    await page.fill('#access-code', ACCESS_CODE)
-    const validateResponse = page.waitForResponse(
-      (resp) => resp.url().includes('/auth/validate') && resp.request().method() === 'POST',
-      { timeout: 10_000 }
-    )
-    await page.fill('#signup-email', EMAIL)
-    await validateResponse
-    await page.fill('#signup-password', PASSWORD)
-    await page.locator('input[type="checkbox"]').nth(0).check()
-    await page.locator('input[type="checkbox"]').nth(1).check()
-    await page.locator('form').getByRole('button', { name: 'Create account' }).click()
+    // ── Signup as a brand-new user (code-first flow) ──
+    await signupViaUI(page, { code: ACCESS_CODE, email: EMAIL, password: PASSWORD })
     await page.waitForURL(/\/vault\/chat/, { timeout: 20_000 })
 
     // Signup seeds vault_redesign → warm light theme + v2 rail

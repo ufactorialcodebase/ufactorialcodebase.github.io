@@ -29,6 +29,7 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { signupViaUI } from './_helpers.js'
 
 // Fresh, unauthenticated browser state — the repo-wide config preloads a
 // signed-in session from /tmp/hridai-e2e-state.json, which would mask the
@@ -129,29 +130,9 @@ test.describe.serial('ISS-236: signup + auth-callback regression suite', () => {
     await page.screenshot({ path: `${SHOT_DIR}/baseline-01-try-hridai-goes-to-signup.png`, fullPage: false })
   })
 
-  test('baseline-02-signup-submit-lands-in-app', async ({ page }) => {
-    await page.goto('/signup')
-    await page.fill('#access-code', ACCESS_CODE)
-
-    // A real user sees the access-code field settle (border color reacts to
-    // the blur-triggered /api/auth/validate call) before moving on to fill
-    // email/password and hit submit — nobody fills a form faster than the
-    // field-level feedback it's giving them. Wait for that call to resolve
-    // here so the test mirrors realistic human pacing rather than racing
-    // ahead of it.
-    const validateResponse = page.waitForResponse(
-      (resp) => resp.url().includes('/auth/validate') && resp.request().method() === 'POST',
-      { timeout: 10_000 }
-    )
-    await page.fill('#signup-email', EMAIL) // moves focus off access-code, firing blur
-    await validateResponse
-
-    await page.fill('#signup-password', PASSWORD)
-    await page.locator('input[type="checkbox"]').nth(0).check()
-    await page.locator('input[type="checkbox"]').nth(1).check()
-    // The tab toggle and the submit button share the "Create account" label —
-    // scope to the form to hit the submit.
-    await page.locator('form').getByRole('button', { name: 'Create account' }).click()
+  test('baseline-02-signup-submit-lands-in-app', async ({ page, request }) => {
+    // Code-first flow: access code + consent boxes unlock email/password.
+    await signupViaUI(page, { code: ACCESS_CODE, email: EMAIL, password: PASSWORD })
 
     // TEST Supabase has "Confirm email" OFF (coordinator-confirmed via
     // screenshot 2026-07-10): signUp() immediately followed by signIn()
@@ -161,6 +142,19 @@ test.describe.serial('ISS-236: signup + auth-callback regression suite', () => {
     // covered by the OAuth-callback correctness check, not this test.)
     await page.waitForURL(/\/vault\/chat/, { timeout: 20_000 })
     await expect(page.getByRole('heading', { name: 'Your HridAI' })).toBeVisible()
+
+    // Consent captured at signup must land in acceptance_log — exactly the
+    // 3 required document types for this brand-new user.
+    const userRows = await request.get(
+      `${SUPABASE_URL}/rest/v1/users?email=eq.${EMAIL}&select=user_id`,
+      { headers: adminHeaders() }
+    ).then((r) => r.json())
+    expect(userRows[0]?.user_id).toBeTruthy()
+    const accRows = await request.get(
+      `${SUPABASE_URL}/rest/v1/acceptance_log?user_id=eq.${userRows[0].user_id}&select=document_type`,
+      { headers: adminHeaders() }
+    ).then((r) => r.json())
+    expect(accRows.map((r) => r.document_type).sort()).toEqual(['age_18_plus', 'privacy', 'tos'])
 
     await page.screenshot({ path: `${SHOT_DIR}/baseline-02-signup-success-vault.png` })
   })
