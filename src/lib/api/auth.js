@@ -37,7 +37,12 @@ export async function validateAccessCode(code) {
       return { valid: false, error: error.detail || 'Invalid access code' }
     }
     const data = await response.json()
-    return { valid: true, mode: data.mode, userId: data.user_id }
+    // /api/auth/validate always responds HTTP 200 — validity lives in the
+    // body's is_valid field, not the HTTP status.
+    if (!data.is_valid) {
+      return { valid: false, error: data.error_message || 'Invalid access code' }
+    }
+    return { valid: true, mode: data.mode }
   } catch (error) {
     console.error('Access code validation error:', error)
     return { valid: false, error: 'Network error. Please try again.' }

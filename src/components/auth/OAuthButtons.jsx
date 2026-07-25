@@ -13,9 +13,12 @@ function GoogleIcon() {
   )
 }
 
-export default function OAuthButtons({ disabled = false }) {
+export default function OAuthButtons({ disabled = false, onBeforeRedirect }) {
   const handleGoogleSignIn = async () => {
     if (!supabase) return
+    // Runs before the page navigates away to Google — the signup flow uses
+    // this to stash the validated access code + consent for /auth/callback.
+    onBeforeRedirect?.()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback` },

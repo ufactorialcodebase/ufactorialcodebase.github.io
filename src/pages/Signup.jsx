@@ -1,27 +1,14 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { signUp, signIn, signInWithMagicLink, resetPassword } from '../lib/auth'
 import { validateAccessCode } from '../lib/api/index.js'
-import { supabase } from '../lib/supabase'
+import { logAcceptance } from '../lib/acceptance'
+import { stashSignupIntent } from '../lib/signup-intent'
 import OAuthButtons from '../components/auth/OAuthButtons'
 import { setFeatureFlag } from '../hooks/useFeatureFlag'
 
-const ACCEPTANCE_VERSION = '2026-04-29'
-
-async function logAcceptance(userId) {
-  if (!supabase) return
-  const rows = [
-    { user_id: userId, document_type: 'tos', version_identifier: ACCEPTANCE_VERSION, version_date: ACCEPTANCE_VERSION },
-    { user_id: userId, document_type: 'privacy', version_identifier: ACCEPTANCE_VERSION, version_date: ACCEPTANCE_VERSION },
-    { user_id: userId, document_type: 'age_18_plus', version_identifier: ACCEPTANCE_VERSION, version_date: ACCEPTANCE_VERSION },
-  ]
-  const { error } = await supabase.from('acceptance_log').insert(rows)
-  if (error) console.error('Acceptance log failed:', error)
-}
-
 export default function AuthPage() {
-  const navigate = useNavigate()
   const [tab, setTab] = useState('signup') // 'signup' | 'login'
 
   return (
@@ -63,13 +50,6 @@ export default function AuthPage() {
           </button>
         </div>
 
-        <OAuthButtons />
-        <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 h-px bg-white/10" />
-          <span className="text-xs text-white/40">Or continue with email</span>
-          <div className="flex-1 h-px bg-white/10" />
-        </div>
-
         {tab === 'signup' ? (
           <SignupForm />
         ) : (
@@ -87,18 +67,25 @@ export default function AuthPage() {
 }
 
 function SignupForm() {
+  const [searchParams] = useSearchParams()
   const [accessCode, setAccessCode] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
-  const [error, setError] = useState(null)
+  // oauth_error carries the reason when AuthCallback couldn't finish a
+  // Google signup (missing/invalid access code) and sent the user back here.
+  const [error, setError] = useState(() => searchParams.get('oauth_error'))
   const [message, setMessage] = useState(null)
   const [loading, setLoading] = useState(false)
   const [codeValid, setCodeValid] = useState(null) // null = not checked, true/false
   const [showPassword, setShowPassword] = useState(false)
 
-  const canSubmit = ageConfirmed && termsAccepted && !loading
+  // Code + consent come first: until the access code validates AND both
+  // consent boxes are checked, every signup method (Google and
+  // email/password) stays locked.
+  const unlocked = codeValid === true && ageConfirmed && termsAccepted
+  const canSubmit = unlocked && !loading
 
   const handleCodeBlur = async () => {
     if (!accessCode.trim()) { setCodeValid(null); return }
@@ -113,7 +100,7 @@ function SignupForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!ageConfirmed || !termsAccepted) return
+    if (!unlocked) return
     setError(null)
     setMessage(null)
     setLoading(true)
@@ -160,24 +147,8 @@ function SignupForm() {
             codeValid === true ? 'border-emerald-500' : codeValid === false ? 'border-red-400' : 'border-white/10 focus:border-emerald-500'
           }`} placeholder="DEMO-XXXX-XXXX" />
       </div>
-      <div>
-        <label htmlFor="signup-email" className="block text-sm text-white/60 mb-1">Email</label>
-        <input id="signup-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-          required className="w-full px-4 py-3 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none" placeholder="you@example.com" />
-      </div>
-      <div>
-        <label htmlFor="signup-password" className="block text-sm text-white/60 mb-1">Password</label>
-        <div className="relative">
-          <input id="signup-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
-            required minLength={8} className="w-full px-4 py-3 pr-11 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none" placeholder="At least 8 characters" />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors">
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
-        </div>
-      </div>
 
-      {/* Acceptance checkboxes */}
+      {/* Acceptance checkboxes — checked here once, for both signup methods */}
       <div className="space-y-3 pt-1">
         <label className="flex items-start gap-3 cursor-pointer group">
           <input type="checkbox" checked={ageConfirmed} onChange={(e) => setAgeConfirmed(e.target.checked)}
@@ -196,6 +167,41 @@ function SignupForm() {
             <a href="https://ufactorial.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Privacy Policy</a>
           </span>
         </label>
+      </div>
+
+      {!unlocked && (
+        <p className="text-xs text-white/40">
+          Enter your access code and accept the terms above to unlock sign-up.
+        </p>
+      )}
+
+      <OAuthButtons
+        disabled={!unlocked}
+        onBeforeRedirect={() => stashSignupIntent(accessCode.trim().toUpperCase())}
+      />
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-white/10" />
+        <span className="text-xs text-white/40">Or continue with email</span>
+        <div className="flex-1 h-px bg-white/10" />
+      </div>
+
+      <div>
+        <label htmlFor="signup-email" className="block text-sm text-white/60 mb-1">Email</label>
+        <input id="signup-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+          required disabled={!unlocked}
+          className="w-full px-4 py-3 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed" placeholder="you@example.com" />
+      </div>
+      <div>
+        <label htmlFor="signup-password" className="block text-sm text-white/60 mb-1">Password</label>
+        <div className="relative">
+          <input id="signup-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
+            required minLength={8} disabled={!unlocked}
+            className="w-full px-4 py-3 pr-11 rounded-lg bg-white/5 text-white border border-white/10 focus:border-emerald-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed" placeholder="At least 8 characters" />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors">
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
       </div>
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -268,6 +274,16 @@ function LoginForm({ onSuccess }) {
 
   return (
     <>
+      {/* Returning users sign straight in with Google — no code/consent gate.
+          A brand-new identity landing here is bounced back to the signup tab
+          by AuthCallback with an explanation. */}
+      <OAuthButtons />
+      <div className="flex items-center gap-3 my-6">
+        <div className="flex-1 h-px bg-white/10" />
+        <span className="text-xs text-white/40">Or sign in with email</span>
+        <div className="flex-1 h-px bg-white/10" />
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="login-email" className="block text-sm text-white/60 mb-1">Email</label>
