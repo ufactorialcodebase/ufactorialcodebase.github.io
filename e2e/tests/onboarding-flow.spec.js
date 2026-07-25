@@ -61,9 +61,11 @@ async function ensureAccessCode(request) {
   expect(insert.ok()).toBeTruthy()
 }
 
-/** Assert the spotlight hole is ringed around the given anchor (±6px pad). */
+/** Assert the spotlight hole is ringed around the given anchor (±6px pad).
+ * Anchors exist in both the desktop rail and mobile bottom nav — :visible
+ * picks the one for the current layout. */
 async function expectHoleOnAnchor(page, anchorName) {
-  const anchorBox = await page.locator(`[data-tour-anchor="${anchorName}"]`).boundingBox()
+  const anchorBox = await page.locator(`[data-tour-anchor="${anchorName}"]:visible`).boundingBox()
   await expect(async () => {
     const holeBox = await page.getByTestId('spotlight-hole').boundingBox()
     expect(Math.abs(holeBox.y - (anchorBox.y - 5))).toBeLessThan(3)

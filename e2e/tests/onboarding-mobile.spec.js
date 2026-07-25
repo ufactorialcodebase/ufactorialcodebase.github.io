@@ -22,6 +22,17 @@ const PASSWORD = `E2eMobile!${RUN_ID}`
 
 const SHOT_DIR = 'e2e/screenshots'
 
+/** Assert the spotlight hole rings the given anchor; :visible picks the
+ * mobile bottom-nav candidate over the hidden desktop-rail one. */
+async function expectHoleOnAnchor(page, anchorName) {
+  const anchorBox = await page.locator(`[data-tour-anchor="${anchorName}"]:visible`).boundingBox()
+  await expect(async () => {
+    const holeBox = await page.getByTestId('spotlight-hole').boundingBox()
+    expect(Math.abs(holeBox.y - (anchorBox.y - 5))).toBeLessThan(3)
+    expect(Math.abs(holeBox.x - (anchorBox.x - 5))).toBeLessThan(3)
+  }).toPass({ timeout: 5_000 })
+}
+
 test.describe.serial('Mobile: cluster nav + top bar', () => {
   test.beforeAll(() => {
     expect(SERVICE_KEY, 'E2E_SUPABASE_SERVICE_KEY must be set (SUPABASE_KEY from backend .env.test)').toBeTruthy()
@@ -44,11 +55,26 @@ test.describe.serial('Mobile: cluster nav + top bar', () => {
     await page.locator('form').getByRole('button', { name: 'Create account' }).click()
     await page.waitForURL(/\/vault\/chat/, { timeout: 20_000 })
 
-    // ── Dismiss beta notice + welcome tour; spotlights must NOT run on mobile ──
+    // ── Dismiss beta notice + welcome tour ──
     await page.getByRole('button', { name: 'Got it' }).click()
     await expect(page.getByText('Welcome to your HridAI')).toBeVisible()
     await page.getByRole('button', { name: 'Skip tour' }).click()
-    await page.waitForTimeout(600)
+
+    // ── Spotlights run on mobile too, ringing the bottom-nav clusters ──
+    await expect(page.getByText('This is your chat.')).toBeVisible({ timeout: 10_000 })
+    await expectHoleOnAnchor(page, 'composer')
+    await page.screenshot({ path: `${SHOT_DIR}/mob-06-spotlight-composer.png` })
+    await page.getByRole('button', { name: 'Next →' }).click()
+    await expect(page.getByText('Your world, visualized.')).toBeVisible()
+    await expectHoleOnAnchor(page, 'world')
+    await page.getByRole('button', { name: 'Next →' }).click()
+    await expect(page.getByText('Everything I remember about your world.')).toBeVisible()
+    await expectHoleOnAnchor(page, 'memory')
+    await page.screenshot({ path: `${SHOT_DIR}/mob-07-spotlight-memories.png` })
+    await page.getByRole('button', { name: 'Next →' }).click()
+    await expect(page.getByText('The things I keep for you.')).toBeVisible()
+    await expectHoleOnAnchor(page, 'notebook')
+    await page.getByRole('button', { name: "Let's start →" }).click()
     await expect(page.getByTestId('spotlight-tour')).toHaveCount(0)
 
     // ── Bottom nav: 4 clusters, no "More" ──

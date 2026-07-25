@@ -68,6 +68,7 @@ export default function BottomNav({ basePath = '/vault' }) {
           return (
             <button
               key={cluster.key}
+              data-tour-anchor={cluster.key}
               onClick={() => onClusterClick(cluster)}
               className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-lg transition-colors ${
                 active ? 'text-[var(--accent-indigo)]' : 'text-[var(--text-tertiary)]'

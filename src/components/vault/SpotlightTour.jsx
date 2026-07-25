@@ -6,15 +6,13 @@
 //   3. Memories cluster — Self / Network / Topics tiles (wide card)
 //   4. Notebook cluster — Dates / Todos / Lists / Artifacts tiles (wide card)
 //
-// Anchors are real DOM elements tagged with data-tour-anchor (IconRail.v2
-// cluster buttons + the chat composer form). The spotlight is drawn by a
-// fixed "hole" div positioned over the anchor whose box-shadow paints both
-// the accent ring and the 9999px page dim in one layer — no z-index
-// mutation of the target, no portal, works over any layout.
-//
-// Desktop only: the icon rail (3 of the 4 anchors) is hidden on mobile.
-// On mobile we render nothing and leave the flag unset, so a later desktop
-// visit still gets the tour.
+// Anchors are real DOM elements tagged with data-tour-anchor. The same
+// anchor names exist twice — IconRail.v2 cluster buttons (desktop) and
+// BottomNav cluster buttons (mobile) — plus the chat composer form, which
+// both layouts share. measureAnchor picks whichever candidate is actually
+// visible, so the tour runs identically in both views: ring on the side
+// rail on desktop, ring on the bottom nav on mobile (cards flip above
+// bottom-anchored targets).
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 export const SPOTLIGHT_KEY = 'hridai_spotlight_tour_complete'
@@ -164,28 +162,41 @@ const STEPS = [
 ]
 
 // Rects are plain objects (not DOMRect) so tests can stub them easily.
+// Anchor names exist in both the desktop rail and the mobile bottom nav;
+// pick the candidate that is actually laid out (hidden ones are 0x0).
 function measureAnchor(anchor) {
-  const el = document.querySelector(`[data-tour-anchor="${anchor}"]`)
-  if (!el) return null
-  const r = el.getBoundingClientRect()
-  if (r.width === 0 && r.height === 0) return null
-  return { top: r.top, left: r.left, width: r.width, height: r.height, right: r.right, bottom: r.bottom }
+  const els = document.querySelectorAll(`[data-tour-anchor="${anchor}"]`)
+  for (const el of els) {
+    const r = el.getBoundingClientRect()
+    if (r.width > 0 && r.height > 0) {
+      return { top: r.top, left: r.left, width: r.width, height: r.height, right: r.right, bottom: r.bottom }
+    }
+  }
+  return null
 }
 
 function cardPosition(step, rect, cardWidth) {
   const vw = window.innerWidth
   const vh = window.innerHeight
   const EST_H = 440 // rough card height for clamping; card also max-h clamps
+  const effW = Math.min(cardWidth, vw - 32) // card's real width after maxWidth clamp
   if (step.anchor === 'composer') {
     // Above the composer, nudged right of the rail
     return {
-      left: Math.max(16, Math.min(rect.left + 120, vw - cardWidth - 16)),
+      left: Math.max(16, Math.min(rect.left + 120, vw - effW - 16)),
       bottom: Math.min(vh - 16, vh - rect.top + 14),
     }
   }
-  // Rail icons: card sits to the right of the rail, near the icon
+  if (rect.top > vh * 0.6) {
+    // Bottom-nav anchor (mobile): card above the button, centered on it
+    return {
+      left: Math.max(16, Math.min(rect.left + rect.width / 2 - effW / 2, vw - effW - 16)),
+      bottom: Math.min(vh - 16, vh - rect.top + 14),
+    }
+  }
+  // Side-rail anchor (desktop): card sits to the right of the rail
   return {
-    left: Math.max(16, Math.min(rect.right + 18, vw - cardWidth - 16)),
+    left: Math.max(16, Math.min(rect.right + 18, vw - effW - 16)),
     top: Math.max(16, Math.min(rect.top - 60, vh - EST_H - 16)),
   }
 }
@@ -196,15 +207,9 @@ export default function SpotlightTour({ enabled }) {
   )
   const [step, setStep] = useState(0)
   const [rect, setRect] = useState(null)
-  // Rail anchors only exist on desktop; check once per mount.
-  const [desktop] = useState(
-    () => typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(min-width: 768px)').matches
-  )
   const measuredOnceRef = useRef(false)
 
-  const active = enabled && !dismissed && desktop
+  const active = enabled && !dismissed
 
   const finish = useCallback(() => {
     localStorage.setItem(SPOTLIGHT_KEY, 'true')
