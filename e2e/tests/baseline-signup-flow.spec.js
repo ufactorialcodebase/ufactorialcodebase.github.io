@@ -141,7 +141,9 @@ test.describe.serial('ISS-236: signup + auth-callback regression suite', () => {
     // around. (PROD's email-confirmation posture may differ; that path is
     // covered by the OAuth-callback correctness check, not this test.)
     await page.waitForURL(/\/vault\/chat/, { timeout: 20_000 })
-    await expect(page.getByRole('heading', { name: 'Your HridAI' })).toBeVisible()
+    // exact: true — the onboarding tour's "Welcome to your HridAI" heading
+    // also substring-matches and trips strict mode.
+    await expect(page.getByRole('heading', { name: 'Your HridAI', exact: true })).toBeVisible()
 
     // Consent captured at signup must land in acceptance_log — exactly the
     // 3 required document types for this brand-new user.
