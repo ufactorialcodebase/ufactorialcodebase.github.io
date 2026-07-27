@@ -901,11 +901,14 @@ export default function Chat({
             transform transition-transform duration-300 ease-out
             ${showContextPanel ? 'translate-y-0' : '-translate-y-full lg:translate-y-0'}
           `}>
-            {/* Mobile close button */}
+            {/* Mobile close button. z-20: ContextPanel's sticky section
+                header is z-10 and later in DOM — at z-10 it painted OVER
+                this button once real data loaded (unclickable X, only
+                visible while "Loading…"). */}
             <button
               aria-label="Close context panel"
               onClick={() => setShowContextPanel(false)}
-              className="lg:hidden absolute top-3 right-3 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors z-10"
+              className="lg:hidden absolute top-3 right-3 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors z-20"
             >
               <X className="w-5 h-5" />
             </button>

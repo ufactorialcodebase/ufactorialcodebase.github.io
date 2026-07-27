@@ -11,7 +11,7 @@
 // The Escape key closes the panel from either variant.
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useDragControls } from 'framer-motion'
 import { X, GripHorizontal } from 'lucide-react'
 
 const BREAKPOINT_PX = 640  // sm — matches tailwind's sm breakpoint
@@ -61,14 +61,28 @@ function DesktopPanel({ open, onClose, title, children }) {
   )
 }
 
+// Approximate header height (grip row + title row) used to size the
+// scrollable content area per snap state.
+const SHEET_HEADER_PX = 88
+
 function MobileSheet({ open, onClose, title, children }) {
   // y = 0 → fully open at top; y = 60vh → partial; y = 100vh → dismissed.
   const y = useMotionValue('60vh')
+  // Which snap the sheet is resting at — sizes the content area so ALL
+  // content is reachable by scrolling within the VISIBLE part of the
+  // sheet. (The old version was a full-screen element translated down
+  // 60vh: at the partial snap its bottom 60% lived below the viewport,
+  // so long connection lists were cut off and unscrollable.)
+  const [snap, setSnap] = useState('partial')
+  // Drag starts from the header only — a whole-sheet drag listener
+  // swallowed touch scrolls inside the content area.
+  const dragControls = useDragControls()
 
   // When `open` toggles on/off, animate to the appropriate snap point.
   useEffect(() => {
     if (open) {
       y.set('60vh')  // partial on open — user can drag up for full
+      setSnap('partial')
     } else {
       y.set('100vh')
     }
@@ -83,10 +97,16 @@ function MobileSheet({ open, onClose, title, children }) {
       onClose()
     } else if (info.velocity.y < -300 || currentFrac < 0.3) {
       y.set('0vh')  // snap to full open
+      setSnap('full')
     } else {
       y.set('60vh')  // partial
+      setSnap('partial')
     }
   }
+
+  const contentHeight = snap === 'full'
+    ? `calc(100vh - ${SHEET_HEADER_PX}px)`
+    : `calc(40vh - ${SHEET_HEADER_PX}px)`
 
   return (
     <AnimatePresence>
@@ -99,16 +119,25 @@ function MobileSheet({ open, onClose, title, children }) {
           transition={{ type: 'spring', damping: 30, stiffness: 260 }}
           style={{ y }}
           drag="y"
+          dragListener={false}
+          dragControls={dragControls}
           dragConstraints={{ top: 0, bottom: 0 }}
           dragElastic={0.05}
           dragMomentum={false}
           onDragEnd={handleDragEnd}
-          className="pointer-events-auto fixed inset-x-0 top-0 z-40 h-screen bg-[var(--bg-secondary)] border-t border-[var(--border-subtle)] rounded-t-2xl shadow-2xl overflow-y-auto"
+          className="pointer-events-auto fixed inset-x-0 top-0 z-40 h-screen bg-[var(--bg-secondary)] border-t border-[var(--border-subtle)] rounded-t-2xl shadow-2xl"
           data-testid="world-node-panel"
           data-variant="mobile"
+          data-snap={snap}
         >
-          <div className="sticky top-0 bg-[var(--bg-secondary)] rounded-t-2xl z-10">
-            <div className="flex items-center justify-center py-2 cursor-grab active:cursor-grabbing" aria-hidden="true">
+          <div
+            className="bg-[var(--bg-secondary)] rounded-t-2xl touch-none cursor-grab active:cursor-grabbing"
+            onPointerDown={(e) => {
+              if (e.target.closest('button')) return  // X stays a click
+              dragControls.start(e)
+            }}
+          >
+            <div className="flex items-center justify-center py-2" aria-hidden="true">
               <GripHorizontal size={20} className="text-[var(--text-tertiary)]" />
             </div>
             <div className="flex items-center justify-between px-4 pb-3 border-b border-[var(--border-subtle)]">
@@ -118,7 +147,13 @@ function MobileSheet({ open, onClose, title, children }) {
               </button>
             </div>
           </div>
-          <div className="p-4">{children}</div>
+          <div
+            className="p-4 overflow-y-auto overscroll-contain"
+            style={{ height: contentHeight }}
+            data-testid="world-node-panel-content"
+          >
+            {children}
+          </div>
         </motion.aside>
       )}
     </AnimatePresence>

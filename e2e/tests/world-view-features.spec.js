@@ -28,11 +28,11 @@ const SHOT_DIR = 'e2e/screenshots'
 let session = null
 let targetNode = null // a non-you node with at least one non-you connection
 
-test.describe.serial('World view: search + grouped panel + stable load', () => {
-  test.beforeAll(async ({ request }) => {
-    expect(SERVICE_KEY, 'E2E_SUPABASE_SERVICE_KEY must be set').toBeTruthy()
-    expect(ANON_KEY, 'E2E_SUPABASE_ANON_KEY must be set').toBeTruthy()
-    expect(SUPABASE_URL).toContain(SUPABASE_REF)
+async function setupSessionAndTarget(request) {
+  if (session && targetNode) return
+  expect(SERVICE_KEY, 'E2E_SUPABASE_SERVICE_KEY must be set').toBeTruthy()
+  expect(ANON_KEY, 'E2E_SUPABASE_ANON_KEY must be set').toBeTruthy()
+  expect(SUPABASE_URL).toContain(SUPABASE_REF)
 
     // 1. Admin-mint a magic link for the account (test project only)
     const linkRes = await request.post(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
@@ -76,23 +76,33 @@ test.describe.serial('World view: search + grouped panel + stable load', () => {
       .sort((a, b) => (degree.get(b.id) || 0) - (degree.get(a.id) || 0))[0]
     expect(targetNode, 'account must have a connected non-you node').toBeTruthy()
     console.log(`[world-spec] target node: ${targetNode.label} (${targetNode.type}), edges=${degree.get(targetNode.id)}`)
-  })
+}
 
-  async function openWorld(page) {
-    // Install the session before the app boots, plus the redesign flag
-    // and dismissed onboarding/hints so no overlay intercepts clicks.
-    await page.addInitScript(([ref, sess]) => {
-      localStorage.setItem(`sb-${ref}-auth-token`, JSON.stringify(sess))
-      localStorage.setItem('hridai_features', JSON.stringify({ vault_redesign: true }))
-      localStorage.setItem('hridai_beta_acknowledged', 'true')
-      localStorage.setItem('hridai_onboarding_complete', 'true')
-      localStorage.setItem('hridai_spotlight_tour_complete', 'true')
-      localStorage.setItem('hridai_tab_hint_world', 'true')
-    }, [SUPABASE_REF, session])
-    await page.goto('/vault/world', { waitUntil: 'domcontentloaded' })
-    await page.waitForURL(/\/vault\/world/, { timeout: 15_000 })
-    await expect(page.locator('svg circle').first()).toBeVisible({ timeout: 20_000 })
-  }
+async function openWorld(page) {
+  // Install the session before the app boots, plus the redesign flag
+  // and dismissed onboarding/hints so no overlay intercepts clicks.
+  await page.addInitScript(([ref, sess]) => {
+    localStorage.setItem(`sb-${ref}-auth-token`, JSON.stringify(sess))
+    localStorage.setItem('hridai_features', JSON.stringify({ vault_redesign: true }))
+    localStorage.setItem('hridai_beta_acknowledged', 'true')
+    localStorage.setItem('hridai_onboarding_complete', 'true')
+    localStorage.setItem('hridai_spotlight_tour_complete', 'true')
+    localStorage.setItem('hridai_tab_hint_world', 'true')
+  }, [SUPABASE_REF, session])
+  await page.goto('/vault/world', { waitUntil: 'domcontentloaded' })
+  await page.waitForURL(/\/vault\/world/, { timeout: 15_000 })
+  // Scope to the force-graph svg — bare `svg circle` can match a lucide
+  // icon inside the hidden desktop rail on mobile viewports.
+  await expect(page.locator('svg[data-build-count] circle').first()).toBeVisible({ timeout: 20_000 })
+}
+
+async function selectTargetViaSearch(page) {
+  await page.getByTestId('world-search-input').fill(targetNode.label)
+  await page.getByTestId('world-search-results').getByText(targetNode.label, { exact: true }).first().click()
+}
+
+test.describe.serial('World view: search + grouped panel + stable load', () => {
+  test.beforeAll(async ({ request }) => { await setupSessionAndTarget(request) })
 
   test('graph loads once — no rebuild flicker', async ({ page }) => {
     await openWorld(page)
@@ -177,5 +187,31 @@ test.describe.serial('World view: search + grouped panel + stable load', () => {
     await expect(page.getByTestId('world-node-connections')).toBeVisible()
     console.log(`[world-spec] re-anchored onto: ${entryLabel}`)
     await page.screenshot({ path: `${SHOT_DIR}/world-04-reanchored.png` })
+  })
+})
+
+test.describe('World view mobile: bottom sheet', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test.beforeAll(async ({ request }) => { await setupSessionAndTarget(request) })
+
+  test('panel content scrolls fully at the partial snap (no cut-off)', async ({ page }) => {
+    await openWorld(page)
+    await selectTargetViaSearch(page)
+
+    const panel = page.getByTestId('world-node-panel')
+    await expect(panel).toHaveAttribute('data-variant', 'mobile')
+    await expect(panel).toHaveAttribute('data-snap', 'partial')
+
+    // The content area is sized to the VISIBLE part of the sheet and
+    // scrolls internally — every connection entry must be reachable.
+    const content = page.getByTestId('world-node-panel-content')
+    const lastEntry = content.locator('button').last()
+    await lastEntry.scrollIntoViewIfNeeded()
+    await expect(lastEntry).toBeVisible()
+    const box = await lastEntry.boundingBox()
+    expect(box.y).toBeGreaterThanOrEqual(0)
+    expect(box.y + box.height).toBeLessThanOrEqual(845)
+    await page.screenshot({ path: `${SHOT_DIR}/world-05-mobile-sheet-scrolled.png` })
   })
 })

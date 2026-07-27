@@ -180,24 +180,32 @@ function cardPosition(step, rect, cardWidth) {
   const vh = window.innerHeight
   const EST_H = 440 // rough card height for clamping; card also max-h clamps
   const effW = Math.min(cardWidth, vw - 32) // card's real width after maxWidth clamp
+  // Bottom-anchored cards grow UP from `bottom`; the space they may fill
+  // is what's ABOVE the anchor, not the whole viewport — without this
+  // cap a tall card's top slides off-screen and its content is cut off.
+  const bottomAnchored = (anchorTop) => ({
+    bottom: Math.min(vh - 16, vh - anchorTop + 14),
+    maxHeight: Math.max(200, anchorTop - 30),
+  })
   if (step.anchor === 'composer') {
     // Above the composer, nudged right of the rail
     return {
       left: Math.max(16, Math.min(rect.left + 120, vw - effW - 16)),
-      bottom: Math.min(vh - 16, vh - rect.top + 14),
+      ...bottomAnchored(rect.top),
     }
   }
   if (rect.top > vh * 0.6) {
     // Bottom-nav anchor (mobile): card above the button, centered on it
     return {
       left: Math.max(16, Math.min(rect.left + rect.width / 2 - effW / 2, vw - effW - 16)),
-      bottom: Math.min(vh - 16, vh - rect.top + 14),
+      ...bottomAnchored(rect.top),
     }
   }
   // Side-rail anchor (desktop): card sits to the right of the rail
   return {
     left: Math.max(16, Math.min(rect.right + 18, vw - effW - 16)),
     top: Math.max(16, Math.min(rect.top - 60, vh - EST_H - 16)),
+    maxHeight: vh - 32,
   }
 }
 
