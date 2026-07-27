@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import { User, Bot, Loader2, Sparkles, Brain, Square, X, Clock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import ToolCallCard, { shouldShowToolCall } from './ToolCallCard';
@@ -208,8 +208,16 @@ export default function MessageList({
   // can see them lined up. `onCancelQueued(index)` removes one.
   queuedMessages = [],
   onCancelQueued,
+  // Past-transcript messages (chat history feature). Rendered ABOVE the
+  // live conversation, sharing the same date-ribbon stream. Prepends via
+  // "Load older messages" preserve the scroll position.
+  historyMessages = [],
+  hasMoreHistory = false,
+  onLoadOlder,
+  loadingOlder = false,
 }) {
   const bottomRef = useRef(null);
+  const scrollRef = useRef(null);
   const isAlexMode = mode === 'alex';
   // ISS-248: single "now" reference for the whole list — persona
   // anchor in demo mode, real Date.now() for real users.
@@ -219,6 +227,26 @@ export default function MessageList({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  // History-aware scrolling:
+  //  - initial history load → jump to the bottom (newest content)
+  //  - "Load older" prepend  → keep the viewport anchored where it was
+  //    (add exactly the height that appeared above it)
+  const prevHistLenRef = useRef(0);
+  const prevScrollHeightRef = useRef(0);
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (historyMessages.length > prevHistLenRef.current) {
+      if (prevHistLenRef.current === 0) {
+        el.scrollTop = el.scrollHeight;
+      } else {
+        el.scrollTop += el.scrollHeight - prevScrollHeightRef.current;
+      }
+    }
+    prevHistLenRef.current = historyMessages.length;
+    prevScrollHeightRef.current = el.scrollHeight;
+  }, [historyMessages]);
 
   if (isInitializing) {
     return (
@@ -231,7 +259,7 @@ export default function MessageList({
     );
   }
 
-  if (messages.length === 0 && !isLoading) {
+  if (messages.length === 0 && historyMessages.length === 0 && !isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div className="text-center max-w-sm">
@@ -267,9 +295,23 @@ export default function MessageList({
   }
   
   let prevDayKey = null;
+  const stream = historyMessages.length ? [...historyMessages, ...messages] : messages;
   return (
-    <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
-      {messages.map((message, idx) => {
+    <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
+      {hasMoreHistory && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={onLoadOlder}
+            disabled={loadingOlder}
+            data-testid="load-older-messages"
+            className="px-4 py-1.5 rounded-full text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700 disabled:opacity-50 transition-colors"
+          >
+            {loadingOlder ? 'Loading…' : 'Load older messages'}
+          </button>
+        </div>
+      )}
+      {stream.map((message, idx) => {
         const dayKey = localDayKey(message.timestamp);
         const showRibbon = dayKey && dayKey !== prevDayKey;
         prevDayKey = dayKey;

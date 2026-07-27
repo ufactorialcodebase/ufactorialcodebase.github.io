@@ -5,7 +5,7 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ContextPanel from './ContextPanelContainer';
 import DailyLimitCard from './DailyLimitCard';
-import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, endSession, endSessionBeacon, getGreeting, createCheckoutSession } from '../../lib/api/index.js';
+import { sendMessageStream, clearSessionId, clearAccessCode, getSessionId, setSessionId, endSession, endSessionBeacon, getGreeting, getChatHistory, createCheckoutSession } from '../../lib/api/index.js';
 import { signOut } from '../../lib/auth';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
@@ -17,6 +17,22 @@ import { useMobileContextPanel } from '../vault/VaultLayout';
  */
 function generateId() {
   return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Convert /chat/history messages into MessageBubble-shaped entries.
+ * `historical: true` marks them as past-transcript context (rendered like
+ * normal bubbles; timestamps drive the existing date ribbons — `ts` falls
+ * back to the transcript's created_at server-side for pre-feature rows).
+ */
+function historyToBubbles(messages) {
+  return (messages || []).map((m, i) => ({
+    id: `hist_${m.session_id || 's'}_${m.ts || i}_${i}`,
+    role: m.role,
+    content: m.content,
+    timestamp: m.ts || null,
+    historical: true,
+  }));
 }
 
 /**
@@ -99,6 +115,15 @@ export default function Chat({
   const greetingInFlightRef = useRef(false);
   const greetingLoaded = useRef(false);
   const [greetingError, setGreetingError] = useState(null);
+
+  // Chat history (device-switch continuation + rolling transcripts).
+  // historyMessages render ABOVE the live conversation; historyCursor
+  // drives "Load older messages". Authenticated users only — demo modes
+  // never fetch history (shared persona user_ids).
+  const [historyMessages, setHistoryMessages] = useState([]);
+  const [historyCursor, setHistoryCursor] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const historyBootRef = useRef(false);
 
   // Daily usage limit (ISS-214) — persistent "you've hit today's cap" state.
   // The hook hydrates from localStorage on mount, ticks the countdown, and
@@ -334,6 +359,24 @@ export default function Chat({
     setQueuedMessages((prev) => [...prev, text]);
   }, []);
 
+  /** "Load older messages" — fetch the next-older history page and
+   * prepend it (MessageList preserves the scroll position). */
+  const handleLoadOlder = useCallback(async () => {
+    if (!historyCursor || historyLoading) return;
+    setHistoryLoading(true);
+    try {
+      const page = await getChatHistory({ before: historyCursor });
+      const older = historyToBubbles(page?.messages || []);
+      if (older.length) setHistoryMessages((prev) => [...older, ...prev]);
+      // An empty page means we've walked past the oldest transcript.
+      setHistoryCursor(older.length ? (page?.next_cursor || null) : null);
+    } catch (e) {
+      console.warn('Older-history fetch failed:', e);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [historyCursor, historyLoading]);
+
   /**
    * Retract a queued message that hasn't been dispatched yet. Bound to the
    * × affordance on each pending user bubble.
@@ -528,7 +571,20 @@ export default function Chat({
     // false so retry from the empty-state chip re-enters cleanly.
     greetingLoaded.current = false;
     await loadGreeting();
-  }, [abortFn, loadGreeting]);
+
+    // Refresh the history strip so the just-ended conversation appears as
+    // past transcript. Deliberately IGNORES `resumable` — Reset is an
+    // explicit "start fresh"; re-adopting the old session would undo it.
+    if (isAuthUser) {
+      try {
+        const page = await getChatHistory();
+        setHistoryMessages(historyToBubbles(page?.messages || []));
+        setHistoryCursor(page?.next_cursor || null);
+      } catch (e) {
+        console.warn('History refresh after reset failed:', e);
+      }
+    }
+  }, [abortFn, loadGreeting, isAuthUser]);
   
   /**
    * Handle exit demo
@@ -618,8 +674,42 @@ export default function Chat({
       return;
     }
 
+    // Authenticated users bootstrap through chat history first:
+    //   - render the transcript tail (last exchanges) above the live chat
+    //   - if the latest session is still warm (backend's 2h window),
+    //     adopt its id and SKIP the greeting — a device switch or fresh
+    //     tab becomes a seamless continuation of the same conversation
+    //   - otherwise fall through to the normal proactive greeting, which
+    //     appears after the historical transcript
+    if (isAuthUser) {
+      // Once the bootstrap has started it OWNS the greeting decision —
+      // a re-run of this effect (StrictMode double-invoke, dep change)
+      // must not race a parallel loadGreeting() past the gate.
+      if (historyBootRef.current) return;
+      historyBootRef.current = true;
+      (async () => {
+        try {
+          const page = await getChatHistory();
+          if (page?.messages?.length) {
+            setHistoryMessages(historyToBubbles(page.messages));
+          }
+          setHistoryCursor(page?.next_cursor || null);
+          if (page?.resumable?.session_id) {
+            setSessionId(page.resumable.session_id);
+            greetingLoaded.current = true;
+            setIsInitializing(false);
+            return;
+          }
+        } catch (e) {
+          console.warn('History bootstrap failed (continuing to greeting):', e);
+        }
+        loadGreeting();
+      })();
+      return;
+    }
+
     loadGreeting();
-  }, [authInitialized, loadGreeting, initialGreeting, dailyLimit.isBlocked]);
+  }, [authInitialized, loadGreeting, initialGreeting, dailyLimit.isBlocked, isAuthUser]);
   
   // Handle browser close/refresh - persist session using sendBeacon
   useEffect(() => {
@@ -798,6 +888,10 @@ export default function Chat({
               mode={mode}
               queuedMessages={queuedMessages}
               onCancelQueued={handleCancelQueued}
+              historyMessages={historyMessages}
+              hasMoreHistory={!!historyCursor}
+              onLoadOlder={handleLoadOlder}
+              loadingOlder={historyLoading}
             />
             {dailyLimit.isBlocked && (
               <DailyLimitCard

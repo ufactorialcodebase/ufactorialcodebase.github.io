@@ -175,6 +175,32 @@ export async function sendMessage(message, sessionId = null) {
   }
 }
 
+/**
+ * Page backwards through past chat transcripts (device-switch
+ * continuation + rolling history). First page (no cursor) also returns
+ * `resumable` — the still-warm session id to adopt instead of greeting.
+ * Degrades to an empty page on any failure: history is an enhancement,
+ * never a blocker for the chat itself.
+ */
+export async function getChatHistory({ before = null, limit = 8 } = {}) {
+  const authHeaders = await getAuthHeaders()
+  if (Object.keys(authHeaders).length === 0) {
+    return { messages: [], next_cursor: null, resumable: null }
+  }
+  try {
+    const params = new URLSearchParams({ limit: String(limit) })
+    if (before) params.set('cursor', before)
+    const response = await fetch(`${BASE_URL}/chat/history?${params.toString()}`, {
+      headers: { ...authHeaders },
+    })
+    if (!response.ok) return { messages: [], next_cursor: null, resumable: null }
+    return await response.json()
+  } catch (error) {
+    console.warn('Chat history fetch failed:', error)
+    return { messages: [], next_cursor: null, resumable: null }
+  }
+}
+
 export async function getContext(message = null) {
   const authHeaders = await getAuthHeaders()
   if (Object.keys(authHeaders).length === 0) {
