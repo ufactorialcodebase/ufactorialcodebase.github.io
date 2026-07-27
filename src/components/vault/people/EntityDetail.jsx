@@ -2,8 +2,22 @@
 import { useState } from 'react'
 import InlineEdit from '../InlineEdit'
 import { getTypeColor, getTypeLabel } from './entity-utils'
+import { getNodeColor } from '../../../lib/world-view-utils'
 
-export default function EntityDetail({ entity, onUpdate, onDelete, onMerge, allEntities = [] }) {
+export default function EntityDetail({
+  entity,
+  onUpdate,
+  onDelete,
+  onMerge,
+  allEntities = [],
+  // Entity-to-entity connections derived from the world graph
+  // (see lib/entity-connections.js); [] when none or world not loaded.
+  connections = [],
+  // Clicking a connected entity's name opens ITS detail panel.
+  onSelectEntity,
+  // Saving an edited relationship label (kg_relationships row).
+  onUpdateRelationship,
+}) {
   const [addingAlias, setAddingAlias] = useState(false)
   const [newAlias, setNewAlias] = useState('')
   const [merging, setMerging] = useState(false)
@@ -36,7 +50,22 @@ export default function EntityDetail({ entity, onUpdate, onDelete, onMerge, allE
           {initial}
         </div>
         <div>
-          <div className="text-[var(--text-primary)] text-lg font-semibold">{entity.name}</div>
+          {/* Editable canonical name — the AI can mis-store names. Saving
+              propagates via PUT /vault/entities/{id}; the OLD name is kept
+              as an alias so past-transcript mentions still resolve. */}
+          <div data-testid="entity-name-edit">
+            <InlineEdit
+              value={entity.name}
+              onSave={(newName) => {
+                const oldName = (entity.name || '').trim()
+                const nextAliases = oldName && oldName.toLowerCase() !== newName.toLowerCase()
+                  ? [...new Set([...aliases, oldName])]
+                  : aliases
+                onUpdate?.({ ...entity, name: newName, aliases: nextAliases })
+              }}
+              className="text-lg font-semibold"
+            />
+          </div>
           <span className="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wide font-medium"
             style={{ backgroundColor: `${color}22`, color }}>
             {getTypeLabel(entity.type)}
@@ -44,11 +73,53 @@ export default function EntityDetail({ entity, onUpdate, onDelete, onMerge, allE
         </div>
       </div>
 
-      {/* Relationship */}
+      {/* Relationship to you — editable, propagates via the same PUT */}
       {relationship && (
         <div className="p-3 bg-[var(--bg-tertiary)] rounded-lg mb-4">
           <div className="text-[var(--text-tertiary)] text-[10px] uppercase tracking-wide">Relationship</div>
-          <div className="text-[var(--text-primary)] text-sm mt-0.5">{relationship}</div>
+          <InlineEdit
+            value={relationship}
+            onSave={(newRel) => onUpdate?.({ ...entity, relationship_to_self: newRel })}
+            className="text-sm"
+          />
+        </div>
+      )}
+
+      {/* Entity-to-entity connections (from the world graph) */}
+      {connections.length > 0 && (
+        <div className="mb-4" data-testid="entity-connections">
+          <div className="text-[var(--text-secondary)] text-[10px] uppercase tracking-wide mb-2">
+            Connected to ({connections.length})
+          </div>
+          <div className="space-y-1">
+            {connections.map((c) => (
+              <div key={`${c.otherId}-${c.relation}`} className="flex items-center gap-2 p-2 bg-[var(--bg-primary)] rounded-lg">
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: getNodeColor({ id: c.otherId, type: c.otherType }) }}
+                  aria-hidden="true"
+                />
+                <button
+                  type="button"
+                  onClick={() => onSelectEntity?.(c.otherId)}
+                  className="text-[var(--text-primary)] text-sm truncate hover:underline underline-offset-2 text-left"
+                >
+                  {c.otherLabel}
+                </button>
+                <span className="ml-auto flex-shrink-0">
+                  {c.relId && onUpdateRelationship ? (
+                    <InlineEdit
+                      value={c.relation}
+                      onSave={(newLabel) => onUpdateRelationship(c.relId, newLabel)}
+                      className="text-xs"
+                    />
+                  ) : (
+                    <span className="text-[var(--text-tertiary)] text-xs">{c.relation}</span>
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
