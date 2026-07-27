@@ -208,6 +208,26 @@ test.describe.serial('ISS-236 (3b): multi-code UX happy path', () => {
     await page.screenshot({ path: `${SHOT_DIR}/mc-04-invalid-code.png` })
   })
 
+  test('mc-06-exhausted-code-shows-already-used-and-stays-locked', async ({ page, request }) => {
+    // A code whose signup redemptions are spent (use_count >= max_uses) must
+    // fail at blur-validation with a specific "already been used" message —
+    // NOT unlock the form and fail late at submit / after the OAuth round
+    // trip. (validate_access_code alone can't catch this: it checks the
+    // demo-session counter; purpose='signup' adds the use_count check.)
+    const code = `E2E-MC-EXHAUSTED-${RUN_ID}`
+    await upsertCode(request, code, {
+      mode: 'unified', max_uses: 1, use_count: 1, is_active: true,
+      notes: '{"source":"e2e","purpose":"exhausted-code validation UX"}',
+    })
+    const { submitted } = await fillAndSubmitSignup(page, {
+      code, email: `e2e.mc06.${RUN_ID}@e2e.ufactorial.com`, password: `E2eMc06!${RUN_ID}`,
+    })
+    expect(submitted).toBe(false)
+    await expect(page.getByText(/already been used/i)).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator('#signup-email')).toBeDisabled()
+    await page.screenshot({ path: `${SHOT_DIR}/mc-06-exhausted-code-locked.png` })
+  })
+
   test('mc-05-empty-code-keeps-signup-locked', async ({ page }) => {
     // With no code at all, checking both consent boxes is not enough — every
     // signup method stays disabled.

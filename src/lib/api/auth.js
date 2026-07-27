@@ -25,12 +25,16 @@ export function clearSessionId() {
   sessionStorage.removeItem('hrdai_session_id')
 }
 
-export async function validateAccessCode(code) {
+// purpose: 'demo' (default) checks demo-session availability; 'signup' also
+// requires signup redemptions left (use_count < max_uses) so the signup form
+// can reject an already-used code before the user fills anything in. Older
+// backends ignore the field.
+export async function validateAccessCode(code, purpose = 'demo') {
   try {
     const response = await fetch(`${BASE_URL}/auth/validate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, purpose }),
     })
     if (!response.ok) {
       const error = await response.json()

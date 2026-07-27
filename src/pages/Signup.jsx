@@ -89,7 +89,7 @@ function SignupForm() {
 
   const handleCodeBlur = async () => {
     if (!accessCode.trim()) { setCodeValid(null); return }
-    const result = await validateAccessCode(accessCode.trim().toUpperCase())
+    const result = await validateAccessCode(accessCode.trim().toUpperCase(), 'signup')
     setCodeValid(result.valid)
     if (!result.valid) {
       setError(result.error || 'Invalid access code')
