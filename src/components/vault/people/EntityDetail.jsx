@@ -3,6 +3,7 @@ import { useState } from 'react'
 import InlineEdit from '../InlineEdit'
 import { getTypeColor, getTypeLabel } from './entity-utils'
 import { getNodeColor } from '../../../lib/world-view-utils'
+import { humanizeRelationship, normalizeRelationship } from '../../../lib/relationship-format'
 
 export default function EntityDetail({
   entity,
@@ -73,13 +74,15 @@ export default function EntityDetail({
         </div>
       </div>
 
-      {/* Relationship to you — editable, propagates via the same PUT */}
+      {/* Relationship to you — editable, propagates via the same PUT.
+          Displayed humanized ("extended family"); stored snake_case so
+          backend exact-matchers (inner-circle list etc.) keep working. */}
       {relationship && (
         <div className="p-3 bg-[var(--bg-tertiary)] rounded-lg mb-4">
           <div className="text-[var(--text-tertiary)] text-[10px] uppercase tracking-wide">Relationship</div>
           <InlineEdit
-            value={relationship}
-            onSave={(newRel) => onUpdate?.({ ...entity, relationship_to_self: newRel })}
+            value={humanizeRelationship(relationship)}
+            onSave={(newRel) => onUpdate?.({ ...entity, relationship_to_self: normalizeRelationship(newRel) })}
             className="text-sm"
           />
         </div>

@@ -45,6 +45,24 @@ describe('EntityDetail editing', () => {
     )
   })
 
+  it('underscored relationships display humanized and store snake_case', () => {
+    const onUpdate = vi.fn()
+    render(
+      <EntityDetail
+        entity={{ ...ENTITY, relationship_to_self: 'extended_family' }}
+        onUpdate={onUpdate}
+      />
+    )
+    // Display form has no underscore
+    const input = startInlineEdit('extended family')
+    fireEvent.change(input, { target: { value: 'in law' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+    // Storage form goes back to snake_case — backend matchers stay intact
+    expect(onUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ relationship_to_self: 'in_law' })
+    )
+  })
+
   it('relationship-to-self is editable and propagates', () => {
     const onUpdate = vi.fn()
     render(<EntityDetail entity={ENTITY} onUpdate={onUpdate} />)

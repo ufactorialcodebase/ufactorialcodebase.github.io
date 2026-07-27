@@ -1,12 +1,13 @@
 // src/components/vault/people/EntityCard.jsx
 import { getTypeColor, getTypeLabel } from './entity-utils'
 import { timeAgo } from '../../../lib/format-utils'
+import { humanizeRelationship } from '../../../lib/relationship-format'
 import { useNow } from '../../../hooks/useNow'
 
 export default function EntityCard({ entity, onClick }) {
   const color = getTypeColor(entity.type)
   const initial = (entity.name || '?').charAt(0).toUpperCase()
-  const relationship = entity.relationship_to_self || entity.relationship
+  const relationship = humanizeRelationship(entity.relationship_to_self || entity.relationship)
   const attributes = entity.attributes || {}
   const pills = Object.entries(attributes)
     .filter(([k]) => !['id', 'entity_id', 'type', 'user_id', 'name'].includes(k))

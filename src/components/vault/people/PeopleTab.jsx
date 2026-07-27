@@ -13,6 +13,7 @@ import { getEntities, deleteEntity, updateEntity, mergeEntities } from '../../..
 import { updateRelationship } from '../../../lib/api/vault-relationships'
 import { getWorld } from '../../../lib/api/vault-world'
 import { entityConnections } from '../../../lib/entity-connections'
+import { normalizeRelationship } from '../../../lib/relationship-format'
 import { normalizeEntity } from './entity-utils'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
 
@@ -57,7 +58,7 @@ export default function PeopleTab() {
 
   const handleUpdateRelationship = useCallback(async (relId, newLabel) => {
     try {
-      await updateRelationship(relId, newLabel)
+      await updateRelationship(relId, normalizeRelationship(newLabel))
       // World cache holds the edge labels — refresh so the panel and the
       // World tab both show the new label.
       refetchWorld()
