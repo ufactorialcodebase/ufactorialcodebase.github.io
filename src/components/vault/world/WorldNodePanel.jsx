@@ -78,11 +78,18 @@ function MobileSheet({ open, onClose, title, children }) {
   // swallowed touch scrolls inside the content area.
   const dragControls = useDragControls()
 
+  // Reset to the partial snap whenever the sheet (re)opens —
+  // adjust-during-render form so no setState-in-effect cascade.
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
+    if (open) setSnap('partial')
+  }
+
   // When `open` toggles on/off, animate to the appropriate snap point.
   useEffect(() => {
     if (open) {
       y.set('60vh')  // partial on open — user can drag up for full
-      setSnap('partial')
     } else {
       y.set('100vh')
     }
