@@ -1,49 +1,82 @@
 // src/components/vault/world/ForceGraph.jsx
 import { useRef, useEffect } from 'react'
 import { select } from 'd3-selection'
-import { zoom as d3Zoom, zoomIdentity } from 'd3-zoom'
+import { zoom as d3Zoom } from 'd3-zoom'
 import { forceSimulation, forceManyBody, forceCenter, forceCollide, forceLink, forceX, forceY } from 'd3-force'
 import { drag as d3Drag } from 'd3-drag'
 import { glowTierForDistance, GLOW_TIERS, GLOW_COLOR, DIM_FILTER_ID, DIM_STATE } from '../../../lib/graph-highlight'
 import { computeNodeRadius } from '../../../lib/graph-node-size'
-
-const TYPE_COLORS = {
-  you: '#fbbf24',
-  person: '#60a5fa',
-  org: '#34d399',
-  organization: '#34d399',
-  location: '#fb923c',
-  place: '#fb923c',
-  other: '#c084fc',
-}
-
-function getNodeColor(node) {
-  if (node.id === 'you') return TYPE_COLORS.you
-  if (node.type === 'topic') return '#c084fc'
-  return TYPE_COLORS[node.type] || TYPE_COLORS.other
-}
+import { getNodeColor } from '../../../lib/world-view-utils'
 
 function truncateLabel(label, max = 12) {
   if (!label) return ''
   return label.length > max ? label.slice(0, max) + '...' : label
 }
 
+/**
+ * Structural fingerprint of everything that affects the rendered graph.
+ * The vault cache is stale-while-revalidate, so WorldTab hands us NEW
+ * array identities on every revalidation (world, then entities, then
+ * topics enrichment) even when nothing changed — rebuilding the whole
+ * simulation each time is what made the graph visibly "load 2-3 times".
+ * Rebuild only when this signature actually changes.
+ */
+function graphSignature(nodes, edges, width, height) {
+  const n = nodes.map((x) => `${x.id}|${x.label}|${x.type}|${x.mention_count ?? ''}`).join(';')
+  const e = edges.map((x) => `${x.source}>${x.target}|${x.label || x.type || ''}|${x.strength ?? ''}`).join(';')
+  return `${Math.round(width)}x${Math.round(height)}::${n}::${e}`
+}
+
 export default function ForceGraph({ nodes, edges, onNodeClick, width, height, highlightDistances = null, onBackgroundClick }) {
   const svgRef = useRef(null)
   const simulationRef = useRef(null)
+  const lastSigRef = useRef(null)
+  // id → {x, y} from the previous simulation — seeds rebuilds so a data
+  // refresh (e.g. mention-count enrichment landing) adjusts in place
+  // instead of re-exploding the layout from scratch.
+  const positionsRef = useRef(new Map())
+  const buildCountRef = useRef(0)
+  // Keep handlers in refs so a parent re-render with a new callback
+  // identity never forces a simulation rebuild.
+  const onNodeClickRef = useRef(onNodeClick)
+  const onBackgroundClickRef = useRef(onBackgroundClick)
+  onNodeClickRef.current = onNodeClick
+  onBackgroundClickRef.current = onBackgroundClick
 
   useEffect(() => {
     if (!svgRef.current || !nodes.length || !width || !height) return
 
+    // Same structure as the last build → nothing to do (the running
+    // simulation continues undisturbed).
+    const sig = graphSignature(nodes, edges, width, height)
+    if (sig === lastSigRef.current) return
+    lastSigRef.current = sig
+
+    // Tear down the previous build ourselves (the effect has no
+    // per-change cleanup — see the unmount-only effect below), saving
+    // node positions first so the rebuild starts where the old one was.
+    if (simulationRef.current) {
+      for (const d of simulationRef.current.nodes()) {
+        if (d.x != null) positionsRef.current.set(d.id, { x: d.x, y: d.y })
+      }
+      simulationRef.current.stop()
+    }
+
     // Deep copy data so D3 mutations don't affect React state. Radius is
     // computed via the (feature-flagged) node-size module — 'frequency'
     // mode scales by mention_count, 'fixed' reverts to pre-batch-2 defaults.
-    const nodeData = nodes.map(n => ({
-      ...n,
-      radius: computeNodeRadius(n),
-      color: getNodeColor(n),
-      ...(n.id === 'you' ? { fx: width / 2, fy: height / 2 } : {}),
-    }))
+    let seededCount = 0
+    const nodeData = nodes.map(n => {
+      const prev = positionsRef.current.get(n.id)
+      if (prev) seededCount++
+      return {
+        ...n,
+        radius: computeNodeRadius(n),
+        color: getNodeColor(n),
+        ...(prev ? { x: prev.x, y: prev.y } : {}),
+        ...(n.id === 'you' ? { fx: width / 2, fy: height / 2 } : {}),
+      }
+    })
 
     const edgeData = edges.map(e => ({
       source: e.source,
@@ -112,7 +145,14 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height, h
       )
       .alphaDecay(0.015)
 
+    // Rebuild of an already-laid-out graph (most nodes seeded from the
+    // previous run): start cool so the layout adjusts gently instead of
+    // re-exploding from the center.
+    if (seededCount >= nodeData.length / 2) simulation.alpha(0.15)
+
     simulationRef.current = simulation
+    buildCountRef.current += 1
+    svg.attr('data-build-count', buildCountRef.current)
 
     // Draw edges. Stroke-width is FIXED at 1 — user feedback: the
     // Item-8 strength-scaled width didn't read well. Kept the tie-
@@ -184,13 +224,13 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height, h
       })
     node.call(drag)
 
-    // Click handlers
+    // Click handlers — via refs so parent re-renders never rebuild the sim
     node.on('click', (event, d) => {
       event.stopPropagation()
-      if (d.id !== 'you' && onNodeClick) onNodeClick(d)
+      if (d.id !== 'you') onNodeClickRef.current?.(d)
     })
     svg.on('click', (event) => {
-      if (event.target === svgRef.current && onBackgroundClick) onBackgroundClick()
+      if (event.target === svgRef.current) onBackgroundClickRef.current?.()
     })
 
     // Hover — radius bump only. Full label on hover regardless.
@@ -204,12 +244,24 @@ export default function ForceGraph({ nodes, edges, onNodeClick, width, height, h
         label.filter(l => l.id === d.id).text(truncateLabel(d.label))
       })
 
+    // NO per-change cleanup here: teardown happens either at the top of
+    // the next signature-changing rebuild (positions preserved) or in the
+    // unmount-only effect below. A cleanup on every dep change would kill
+    // the simulation before the signature check gets a chance to skip.
+  }, [nodes, edges, width, height])
+
+  // Unmount-only teardown. Also resets the signature so a StrictMode
+  // remount (unmount+remount with identical props) rebuilds cleanly
+  // instead of skipping into a stopped, empty graph.
+  useEffect(() => {
+    const svgEl = svgRef.current
     return () => {
-      simulation.stop()
+      simulationRef.current?.stop()
       simulationRef.current = null
-      svg.selectAll('*').remove()
+      lastSigRef.current = null
+      if (svgEl) select(svgEl).selectAll('*').remove()
     }
-  }, [nodes, edges, width, height, onNodeClick, onBackgroundClick])
+  }, [])
 
   // Highlight effect — dual filter: glow for the clicked node + its
   // 1° / 2° / 3° neighbours, dim for everything else so the lit

@@ -8,6 +8,7 @@ export {
 export {
   getGreeting, sendMessage, sendMessageStream,
   getContext, endSession, endSessionBeacon, checkHealth,
+  getChatHistory,
 } from './chat.js'
 
 export {

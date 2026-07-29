@@ -1,5 +1,6 @@
 // src/components/vault/world/WorldTab.jsx
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { Search } from 'lucide-react'
 import PageHeader from '../PageHeader'
 import TabHint from '../TabHint'
 import EmptyState from '../EmptyState'
@@ -10,6 +11,8 @@ import { getWorld } from '../../../lib/api/vault-world'
 import { getEntities } from '../../../lib/api/vault-entities'
 import { getTopics } from '../../../lib/api/vault-topics'
 import { bfsDistances, DEFAULT_BRIDGE_EXCLUDED } from '../../../lib/graph-highlight'
+import { rankNodeMatches, groupConnections, getNodeColor } from '../../../lib/world-view-utils'
+import { timeAgo } from '../../../lib/format-utils'
 
 const NODE_FILTERS = [
   { value: 'all', label: 'All' },
@@ -34,27 +37,6 @@ export default function WorldTab() {
   const containerRef = useRef(null)
   const [dimensions, setDimensions] = useState(null)
 
-  // Responsive sizing — wait for real measurements before rendering graph
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-
-    // Get initial size immediately
-    const rect = el.getBoundingClientRect()
-    if (rect.width > 0 && rect.height > 0) {
-      setDimensions({ width: rect.width, height: Math.max(rect.height, 500) })
-    }
-
-    const observer = new ResizeObserver(entries => {
-      const { width, height } = entries[0].contentRect
-      if (width > 0) {
-        setDimensions({ width, height: Math.max(height, 500) })
-      }
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-
   const handleNodeClick = useCallback((node) => {
     if (node.id === 'you') return
     setSelectedNode(node)
@@ -65,12 +47,17 @@ export default function WorldTab() {
   }, [])
 
   const [nodeFilter, setNodeFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Build a nodeId → mention_count map from the shared caches, then enrich
   // world nodes with it so ForceGraph's `computeNodeRadius` can scale by
   // frequency. Falls back gracefully when caches haven't loaded yet.
   const mentionCountMap = useMemo(() => {
     const m = new Map()
+    // Enrich only once BOTH sources have landed — applying them one at a
+    // time rebuilt the graph once per arrival (the "loads 2-3 times"
+    // flicker; the other half of that fix is ForceGraph's signature guard).
+    if (!entityData || !topicData) return m
     for (const e of (entityData || [])) {
       const id = e.id || e.entity_id
       if (id != null && typeof e.mention_count === 'number') m.set(id, e.mention_count)
@@ -115,6 +102,33 @@ export default function WorldTab() {
 
   const hasGraph = !loading && !error && rawNodes.length > 1
 
+  // Responsive sizing. Measurement is gated on hasGraph: the controls +
+  // legend rows only render once the graph data is in, and measuring
+  // before they exist gave the first build a taller container than the
+  // final layout — the graph then rebuilt on the ~57px shrink (one of
+  // the "world view loads 2-3 times" sources). Measuring after hasGraph
+  // means the first build already uses the settled height.
+  useEffect(() => {
+    if (!hasGraph) return
+    const el = containerRef.current
+    if (!el) return
+
+    // Get initial size immediately (layout already includes controls)
+    const rect = el.getBoundingClientRect()
+    if (rect.width > 0 && rect.height > 0) {
+      setDimensions({ width: rect.width, height: Math.max(rect.height, 500) })
+    }
+
+    const observer = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect
+      if (width > 0) {
+        setDimensions({ width, height: Math.max(height, 500) })
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasGraph])
+
   // BFS distance map from the selected node — drives which nodes get
   // the glow filter and which get the dim filter. `bridgeExcluded:
   // ['you']` prevents BFS from walking through the central "you" hub;
@@ -135,6 +149,47 @@ export default function WorldTab() {
     for (const n of rawNodes) m.set(n.id, n)
     return m
   }, [rawNodes])
+
+  // nodeId → last_mentioned from the shared entity/topic caches — shown
+  // beside each connection entry so the panel carries recency signal.
+  const lastMentionedMap = useMemo(() => {
+    const m = new Map()
+    for (const e of (entityData || [])) {
+      const id = e.id || e.entity_id
+      if (id != null && e.last_mentioned) m.set(id, e.last_mentioned)
+    }
+    for (const t of (topicData || [])) {
+      if (t.id != null && t.last_mentioned) m.set(t.id, t.last_mentioned)
+    }
+    return m
+  }, [entityData, topicData])
+
+  // Search: substring match on node labels; Enter/Search picks the top
+  // match, clicking a suggestion picks that node. Selection goes through
+  // the exact same state as a manual graph click, so the highlight +
+  // panel behavior is identical.
+  const searchMatches = useMemo(
+    () => rankNodeMatches(rawNodes, searchQuery),
+    [rawNodes, searchQuery]
+  )
+
+  const handleSearchSelect = useCallback((node) => {
+    setSelectedNode(node)
+    setSearchQuery('')
+  }, [])
+
+  const handleSearchSubmit = useCallback((e) => {
+    e.preventDefault()
+    if (searchMatches.length > 0) handleSearchSelect(searchMatches[0])
+  }, [searchMatches, handleSearchSelect])
+
+  // Clicking a connection entry re-anchors the selection on that node —
+  // the panel then shows ITS connections and the graph highlight follows.
+  const handleConnectionClick = useCallback((otherId) => {
+    if (otherId === 'you') return
+    const node = nodesById.get(otherId)
+    if (node) setSelectedNode(node)
+  }, [nodesById])
 
   // Relations touching the selected node — every edge where selectedNode
   // is either endpoint. Kept intentionally unopinionated about direction
@@ -162,8 +217,9 @@ export default function WorldTab() {
         otherId,
         otherLabel: other.label || otherId,
         otherType: other.type,
-        otherColor: other.color,
+        otherColor: other.color || getNodeColor(other),
         relation: label,
+        lastMentioned: lastMentionedMap.get(otherId) || null,
       })
     }
     // Stable ordering: `you` first (most important context), then by
@@ -175,7 +231,14 @@ export default function WorldTab() {
       return a.otherLabel.localeCompare(b.otherLabel)
     })
     return out
-  }, [selectedNode, rawEdges, nodesById])
+  }, [selectedNode, rawEdges, nodesById, lastMentionedMap])
+
+  // Panel view: People / Organizations / Places / Topics buckets in fixed
+  // order ("you" pulled out on top).
+  const groupedConnections = useMemo(
+    () => groupConnections(selectedConnections),
+    [selectedConnections]
+  )
 
   // Overlay content shown inside the always-mounted container
   const overlay = loading ? (
@@ -210,23 +273,68 @@ export default function WorldTab() {
         <PageHeader title="Your World" subtitle="Your life, visualized" />
         <TabHint tab="world" count={nodes.length > 1 ? nodes.length : 0} />
       </div>
-      {/* Node filter — chip strip matching FilterBar / TopicFilters pattern. */}
+      {/* Controls row: search + node-filter chips */}
       {hasGraph && (
-        <div className="px-6 mt-1 flex gap-1" data-testid="world-node-filter">
-          {NODE_FILTERS.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setNodeFilter(f.value)}
-              data-filter={f.value}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                nodeFilter === f.value
-                  ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] font-medium'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]/50'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="px-6 mt-1 flex items-center gap-3 flex-wrap">
+          <form onSubmit={handleSearchSubmit} className="relative" data-testid="world-search">
+            <div className="flex items-center gap-1.5">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search your world…"
+                data-testid="world-search-input"
+                className="w-56 px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-secondary)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-active)]"
+              />
+              <button
+                type="submit"
+                aria-label="Search"
+                className="px-2.5 py-1.5 rounded-lg text-xs bg-[var(--bg-tertiary)] text-[var(--text-primary)] flex items-center gap-1 hover:opacity-90 transition-opacity"
+              >
+                <Search size={12} /> Search
+              </button>
+            </div>
+            {searchMatches.length > 0 && (
+              <ul
+                data-testid="world-search-results"
+                className="absolute z-20 mt-1 w-64 max-h-64 overflow-y-auto rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-secondary)] shadow-xl"
+              >
+                {searchMatches.map((n) => (
+                  <li key={n.id}>
+                    <button
+                      type="button"
+                      onClick={() => handleSearchSelect(n)}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--bg-tertiary)] transition-colors"
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: n.color || getNodeColor(n) }}
+                        aria-hidden="true"
+                      />
+                      <span className="text-[var(--text-primary)] truncate flex-1">{n.label}</span>
+                      <span className="text-[var(--text-tertiary)] text-[10px] capitalize flex-shrink-0">{n.type}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </form>
+          <div className="flex gap-1" data-testid="world-node-filter">
+            {NODE_FILTERS.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setNodeFilter(f.value)}
+                data-filter={f.value}
+                className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                  nodeFilter === f.value
+                    ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] font-medium'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]/50'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
       {/* Legend — only visible when graph is shown. Topic swatch hidden
@@ -282,21 +390,53 @@ export default function WorldTab() {
                   No connections recorded yet.
                 </div>
               ) : (
-                <ul className="space-y-2">
-                  {selectedConnections.map((c) => (
-                    <li key={`${c.otherId}-${c.relation}`} className="flex items-start gap-2 text-sm">
+                <div className="space-y-3">
+                  {/* "you" edge first — most important context, not a bucket */}
+                  {groupedConnections.youConnection && (
+                    <div className="flex items-start gap-2 text-sm px-1.5">
                       <span
-                        className="mt-1.5 w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: c.otherColor || 'var(--text-tertiary)' }}
+                        className="mt-1.5 w-2 h-2 rounded-full flex-shrink-0 bg-[#fbbf24]"
                         aria-hidden="true"
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-[var(--text-primary)] truncate">{c.otherLabel}</div>
-                        <div className="text-[var(--text-tertiary)] text-xs">{c.relation}</div>
+                        <div className="text-[var(--text-primary)]">You</div>
+                        <div className="text-[var(--text-tertiary)] text-xs">{groupedConnections.youConnection.relation}</div>
                       </div>
-                    </li>
+                    </div>
+                  )}
+                  {groupedConnections.groups.map((g) => (
+                    <div key={g.name} data-testid={`world-connection-group-${g.name.toLowerCase()}`}>
+                      <div className="text-[10px] uppercase tracking-wide text-[var(--text-tertiary)] mb-1">
+                        {g.name} ({g.items.length})
+                      </div>
+                      <ul className="space-y-0.5">
+                        {g.items.map((c) => (
+                          <li key={`${c.otherId}-${c.relation}`}>
+                            {/* Clicking re-anchors selection on this node */}
+                            <button
+                              type="button"
+                              onClick={() => handleConnectionClick(c.otherId)}
+                              className="w-full flex items-start gap-2 text-sm text-left px-1.5 py-1 rounded-md hover:bg-[var(--bg-tertiary)] transition-colors"
+                            >
+                              <span
+                                className="mt-1.5 w-2 h-2 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: c.otherColor || 'var(--text-tertiary)' }}
+                                aria-hidden="true"
+                              />
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-[var(--text-primary)] truncate">{c.otherLabel}</span>
+                                <span className="block text-[var(--text-tertiary)] text-xs">
+                                  {c.relation}
+                                  {c.lastMentioned ? ` · ${timeAgo(c.lastMentioned)}` : ''}
+                                </span>
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           </div>

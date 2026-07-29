@@ -60,6 +60,14 @@ test.describe.serial('Mobile: cluster nav + top bar', () => {
     await page.getByRole('button', { name: 'Next →' }).click()
     await expect(page.getByText('Everything I remember about your world.')).toBeVisible()
     await expectHoleOnAnchor(page, 'memory')
+    // Tallest card must sit fully inside the viewport (bottom-anchored
+    // cards cap their height to the space above the anchor and scroll
+    // internally — regression: the card top used to slide off-screen).
+    const card = page.getByText('Everything I remember about your world.')
+      .locator('xpath=ancestor::div[contains(@class,"fixed")]').last()
+    const cardBox = await card.boundingBox()
+    expect(cardBox.y).toBeGreaterThanOrEqual(0)
+    expect(cardBox.y + cardBox.height).toBeLessThanOrEqual(845)
     await page.screenshot({ path: `${SHOT_DIR}/mob-07-spotlight-memories.png` })
     await page.getByRole('button', { name: 'Next →' }).click()
     await expect(page.getByText('The things I keep for you.')).toBeVisible()

@@ -1,5 +1,5 @@
 // src/components/vault/people/PeopleTab.jsx
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
 import PageHeader from '../PageHeader'
 import TabHint from '../TabHint'
@@ -10,6 +10,10 @@ import EntityCard from './EntityCard'
 import EntityDetail from './EntityDetail'
 import SortToggle from '../SortToggle'
 import { getEntities, deleteEntity, updateEntity, mergeEntities } from '../../../lib/api/vault-entities'
+import { updateRelationship } from '../../../lib/api/vault-relationships'
+import { getWorld } from '../../../lib/api/vault-world'
+import { entityConnections } from '../../../lib/entity-connections'
+import { normalizeRelationship } from '../../../lib/relationship-format'
 import { normalizeEntity } from './entity-utils'
 import { useVaultData, setCached } from '../../../lib/vault-cache'
 
@@ -31,7 +35,37 @@ export default function PeopleTab() {
   const [selectedEntity, setSelectedEntity] = useState(null)
   const [sort, setSort] = useState('frequency')
 
+  // World graph (cached by the vault for the World tab) — source for the
+  // entity-to-entity "Connected to" section in the detail panel.
+  const { data: worldData, refetch: refetchWorld } = useVaultData('world', getWorld)
+
   useEffect(() => { if (entityData) setEntities(entityData) }, [entityData])
+
+  const selectedConnections = useMemo(
+    () => entityConnections(selectedEntity?.id || selectedEntity?.entity_id, worldData),
+    [selectedEntity, worldData]
+  )
+
+  // Clicking a connected entity in the panel opens ITS detail. Falls back
+  // silently if the target isn't in the entities list (e.g. filtered type).
+  const handleSelectConnected = useCallback((otherId) => {
+    setEntities((prev) => {
+      const target = prev.find((e) => (e.id || e.entity_id) === otherId)
+      if (target) setSelectedEntity(target)
+      return prev
+    })
+  }, [])
+
+  const handleUpdateRelationship = useCallback(async (relId, newLabel) => {
+    try {
+      await updateRelationship(relId, normalizeRelationship(newLabel))
+      // World cache holds the edge labels — refresh so the panel and the
+      // World tab both show the new label.
+      refetchWorld()
+    } catch (err) {
+      toast.error('Failed to update relationship: ' + err.message)
+    }
+  }, [refetchWorld])
 
   const filtered = useMemo(() => {
     let list = Array.isArray(entities) ? entities : []
@@ -197,6 +231,9 @@ export default function PeopleTab() {
             onDelete={handleDelete}
             onMerge={handleMerge}
             allEntities={entities}
+            connections={selectedConnections}
+            onSelectEntity={handleSelectConnected}
+            onUpdateRelationship={handleUpdateRelationship}
           />
         )}
       </SidePanel>
